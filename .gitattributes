@@ -1,0 +1,7 @@
+# Normalise line endings so the repo is identical on Windows, Linux and CI.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.zip binary
+*.npz binary
