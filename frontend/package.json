@@ -1,0 +1,23 @@
+{
+  "name": "warehouse-rl-dashboard",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Dashboard for the AI-based warehouse automation system (RL robot navigation)",
+  "scripts": {
+    "predev": "node scripts/copy-data.mjs",
+    "dev": "vite",
+    "prebuild": "node scripts/copy-data.mjs",
+    "build": "vite build",
+    "preview": "vite preview",
+    "copy-data": "node scripts/copy-data.mjs"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^5.4.11"
+  }
+}
