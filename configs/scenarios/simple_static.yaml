@@ -1,0 +1,19 @@
+# Experiment 1: small static warehouse. The easiest navigation problem, used
+# to check that a controller works at all before harder scenarios are run.
+extends: ../default.yaml
+
+name: simple_static
+description: >
+  15x11 warehouse with a single row of shelf blocks, no dynamic obstacles and
+  an effectively unlimited battery. Shortest paths are short and unobstructed.
+
+max_steps: 200
+
+layout:
+  width: 15
+  height: 11
+  n_packing_stations: 1
+  n_charging_stations: 2
+
+tasks:
+  min_separation: 4

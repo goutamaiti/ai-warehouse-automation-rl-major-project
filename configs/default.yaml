@@ -1,0 +1,60 @@
+# Baseline scenario: static warehouse, one robot, one delivery task.
+#
+# Every other scenario in configs/scenarios/ inherits from this file with
+# "extends: ../default.yaml" and overrides only what it changes, so that any
+# difference in results can be traced to a named parameter.
+name: default
+description: >
+  21x15 warehouse, one robot, one pickup-and-delivery task, no dynamic
+  obstacles, battery large enough that it is not the limiting factor.
+
+max_steps: 400
+seed: 0
+# Side length of the square local occupancy patch the agent observes.
+observation_window: 5
+
+layout:
+  width: 21
+  height: 15
+  shelf_block_height: 2
+  shelf_block_width: 3
+  aisle_width: 1
+  top_aisle: 1
+  station_rows: 2
+  n_packing_stations: 2
+  n_charging_stations: 2
+
+battery:
+  capacity: 100.0
+  start_level: 100.0
+  move_cost: 0.5        # a full battery allows 200 moves
+  idle_cost: 0.05
+  charge_rate: 8.0
+  low_threshold: 30.0
+  critical_threshold: 10.0
+
+obstacles:
+  n_dynamic: 0
+  move_probability: 0.6
+  behaviour: random_walk
+
+tasks:
+  tasks_per_episode: 1
+  min_separation: 6
+
+# Initial reward weights, chosen by reasoning about the task (see
+# docs/rl-formulation.md). They have NOT been validated by a hyper-parameter
+# search yet; any claim about them must come from a real experiment.
+reward:
+  step_penalty: 0.05
+  progress_weight: 1.0
+  # Must stay at 1.0 unless step_penalty is raised above
+  # max_distance * (1 - shaping_gamma); otherwise loitering becomes profitable.
+  shaping_gamma: 1.0
+  pickup_reward: 5.0
+  delivery_reward: 20.0
+  collision_penalty: 1.0
+  wait_penalty: 0.1
+  energy_weight: 0.02
+  battery_depleted_penalty: 10.0
+  timeout_penalty: 5.0

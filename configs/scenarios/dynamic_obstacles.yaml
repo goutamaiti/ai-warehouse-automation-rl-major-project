@@ -1,0 +1,17 @@
+# Experiment 3: the default warehouse plus moving traffic (simulated workers
+# and other robots). The shortest static path is no longer guaranteed to be
+# collision free, so a planner has to react.
+extends: ../default.yaml
+
+name: dynamic_obstacles
+description: >
+  21x15 warehouse with 8 randomly walking dynamic obstacles. Obstacles never
+  step onto the robot, so every collision recorded here was caused by the
+  controller driving into an obstacle.
+
+max_steps: 500
+
+obstacles:
+  n_dynamic: 8
+  move_probability: 0.6
+  behaviour: random_walk

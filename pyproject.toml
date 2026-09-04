@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "warehouse-rl"
+version = "0.1.0"
+description = "AI-Based Warehouse Automation System Using Reinforcement Learning for Intelligent Robot Navigation"
+requires-python = ">=3.10"
+
+[tool.setuptools]
+packages = ["simulation", "environment", "rl_agent", "baselines", "analytics", "backend"]
+
+[tool.pytest.ini_options]
+# The project is run from the repository root without being installed, so the
+# root has to be importable during tests.
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = [
+    "ignore::DeprecationWarning:google.protobuf.*",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["B008"]  # FastAPI's Depends() in defaults is idiomatic
