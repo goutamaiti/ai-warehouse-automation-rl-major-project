@@ -1,0 +1,20 @@
+# Experiment 2: larger static warehouse with more shelves and longer aisles.
+extends: ../default.yaml
+
+name: complex_static
+description: >
+  31x21 warehouse with denser shelving. Paths are longer and contain more
+  forced detours, which is where a shaped RL policy and A* start to differ.
+
+max_steps: 600
+
+layout:
+  width: 31
+  height: 21
+  shelf_block_height: 3
+  shelf_block_width: 3
+  n_packing_stations: 3
+  n_charging_stations: 2
+
+tasks:
+  min_separation: 10

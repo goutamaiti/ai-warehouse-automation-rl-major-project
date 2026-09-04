@@ -1,0 +1,25 @@
+# Experiment 4: the battery becomes the binding constraint. The robot starts
+# at 45% and every move costs 1.5%, so a two-task episode cannot be completed
+# without visiting a charging station.
+extends: ../default.yaml
+
+name: battery_constrained
+description: >
+  21x15 warehouse, two delivery tasks per episode, small starting charge and
+  expensive movement. Tests whether a controller detours to a charger before
+  the battery runs out.
+
+max_steps: 600
+
+battery:
+  capacity: 100.0
+  start_level: 45.0
+  move_cost: 1.5        # 30 moves on the starting charge
+  idle_cost: 0.1
+  charge_rate: 10.0
+  low_threshold: 35.0
+  critical_threshold: 15.0
+
+tasks:
+  tasks_per_episode: 2
+  min_separation: 6
