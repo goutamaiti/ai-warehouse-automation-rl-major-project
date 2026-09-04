@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  python-tests:
+    name: Python tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      # The test suite covers the simulator, the Gymnasium environment, the
+      # classical planners, the analytics and the API - none of which need
+      # torch. Installing the full requirements.txt (torch is ~2 GB on Linux)
+      # would multiply the CI time for no extra coverage. Training itself is
+      # verified locally, not in CI.
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy PyYAML gymnasium pytest fastapi "uvicorn[standard]" httpx
+
+      - name: Run tests
+        run: pytest
+
+  frontend-build:
+    name: Dashboard build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --prefix frontend
+
+      - name: Build (also verifies the data copy step)
+        run: npm run build --prefix frontend
