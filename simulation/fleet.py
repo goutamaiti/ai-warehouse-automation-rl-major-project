@@ -32,12 +32,14 @@ from dataclasses import dataclass, field
 import numpy as np
 
 from .config import ScenarioConfig
+from .dispatch import DispatchDecision, TaskQueue
 from .engine import Action
 from .navigation import DIRECTIONS, Position, bfs_distance_field
 from .obstacles import ObstacleField
 from .robot import Robot
 from .tasks import Task, TaskGenerator, TaskStatus
 from .warehouse import CellType, WarehouseLayout, build_layout
+from .zones import Zone, build_zones, zone_of
 
 #: Consecutive steps with no fleet-wide progress before the run is declared
 #: deadlocked. "Progress" is deliberately broad - any move, pickup, delivery or
@@ -98,8 +100,15 @@ class FleetMember:
     """One robot, its current job and its tally."""
 
     robot: Robot
-    task: Task
+    #: The job in hand. ``None`` means idle - in queue mode a robot waits with
+    #: no task until dispatch gives it one.
+    task: Task | None
     counters: RobotCounters = field(default_factory=RobotCounters)
+    #: The zone this robot waits in when idle. Not an assignment boundary:
+    #: dispatch sends the nearest idle robot anywhere on the floor.
+    home_zone: str = ""
+    #: Which of its zone's waiting cells this robot parks on.
+    waiting_point: Position | None = None
     #: False once the robot's battery is flat; it stops acting but stays on the
     #: floor as an obstacle, because a dead robot does not vanish from an aisle.
     alive: bool = True
@@ -115,7 +124,9 @@ class FleetMember:
     def to_dict(self, config) -> dict:
         return {
             **self.robot.to_dict(config),
-            "task": self.task.to_dict(),
+            "task": self.task.to_dict() if self.task else None,
+            "home_zone": self.home_zone,
+            "waiting_point": list(self.waiting_point) if self.waiting_point else None,
             "alive": self.alive,
             "counters": self.counters.to_dict(),
         }
@@ -198,6 +209,7 @@ class FleetSimulation:
         config: ScenarioConfig,
         n_robots: int = 3,
         layout: WarehouseLayout | None = None,
+        task_queue: TaskQueue | None = None,
     ) -> None:
         if n_robots < 1:
             raise ValueError(f"a fleet needs at least one robot, got {n_robots}")
@@ -205,6 +217,13 @@ class FleetSimulation:
         self.n_robots = int(n_robots)
         self.layout = layout if layout is not None else build_layout(config.layout)
         self._walkable = self.layout.walkable_mask()
+        self.zones: tuple[Zone, ...] = build_zones(self.layout)
+        #: When set, robots draw work from this shared queue instead of each
+        #: generating its own task. This is what stops two robots being routed
+        #: to the same storage point, which is how the five-robot run jammed.
+        self.queue = task_queue
+        #: Assignments made on the most recent tick, for replays and the API.
+        self.last_dispatch: list[DispatchDecision] = []
 
         start_cells = self._candidate_start_cells()
         if self.n_robots > len(start_cells):
@@ -263,6 +282,7 @@ class FleetSimulation:
         self._task_generator = TaskGenerator(self.layout, self.config.tasks, self.rng)
 
         self.members = {}
+        taken: dict[str, int] = {}
         for robot_id, start in enumerate(starts):
             robot = Robot(
                 robot_id=robot_id,
@@ -271,16 +291,30 @@ class FleetSimulation:
                     self.config.battery.start_level, self.config.battery.capacity
                 ),
             )
-            task = self._task_generator.generate(step=0)
+            task = None if self.queue is not None else self._task_generator.generate(0)
             member = FleetMember(robot=robot, task=task)
-            member.counters.optimal_path_length = self._optimal_legs(start, task)
+            if task is not None:
+                member.counters.optimal_path_length = self._optimal_legs(start, task)
+
+            # Home zone from the start cell, and the next free waiting cell in
+            # it, so two robots homed in one zone never park on top of each other.
+            zone = zone_of(self.zones, start)
+            if zone is not None:
+                member.home_zone = zone.name
+                index = taken.get(zone.name, 0)
+                taken[zone.name] = index + 1
+                if index < len(zone.waiting_points):
+                    member.waiting_point = zone.waiting_points[index]
             self.members[robot_id] = member
 
         forbidden = set(starts)
         forbidden.update(self.layout.charging_stations)
         forbidden.update(self.layout.packing_stations)
         for member in self.members.values():
-            forbidden.update({member.task.pickup, member.task.dropoff})
+            if member.task is not None:
+                forbidden.update({member.task.pickup, member.task.dropoff})
+            if member.waiting_point is not None:
+                forbidden.add(member.waiting_point)
         self.obstacles = ObstacleField.spawn(
             self._walkable, self.config.obstacles, self.rng, forbidden
         )
@@ -288,6 +322,7 @@ class FleetSimulation:
         self._target_fields = {}
         self._idle_streak = 0
         self._done = False
+        self.last_dispatch = []
 
     @property
     def done(self) -> bool:
@@ -318,10 +353,19 @@ class FleetSimulation:
         # Reconcile aliveness before anyone acts. A robot is retired by its
         # battery, not by a flag, so a robot that is already flat must never
         # get a move - however its charge reached zero.
-        for member in self.members.values():
+        for robot_id, member in self.members.items():
             if member.alive and member.robot.is_depleted():
                 member.alive = False
-                member.task.mark_failed()
+                if member.task is not None:
+                    member.task.mark_failed()
+                if self.queue is not None:
+                    self.queue.release(robot_id, member.counters.steps)
+                    member.task = None
+
+        # Dispatch before anyone moves, so a request added this tick is being
+        # served on this tick - which is what "the robot should start moving the
+        # instant I add the location" requires.
+        self.last_dispatch = self._dispatch()
 
         outcome = FleetStepOutcome()
         resolved = self._resolve_moves(actions, outcome)
@@ -346,7 +390,13 @@ class FleetSimulation:
                 member.alive = False
                 robot_outcome.battery_depleted = True
                 robot_outcome.events.append("battery_depleted")
-                member.task.mark_failed()
+                if member.task is not None:
+                    member.task.mark_failed()
+                if self.queue is not None:
+                    # The product still needs moving, so it returns to the
+                    # queue for someone else rather than dying with the robot.
+                    self.queue.release(robot_id, member.counters.steps)
+                    member.task = None
 
         # The rest of the world moves once, after every robot has acted, and
         # routes around every robot - living or dead.
@@ -430,6 +480,8 @@ class FleetSimulation:
         """
         position = member.position
         task = member.task
+        if task is None:
+            return
         if task.status is TaskStatus.PENDING and position == task.pickup:
             task.mark_picked_up(member.counters.steps)
             member.robot.carrying = True
@@ -441,13 +493,19 @@ class FleetSimulation:
             outcome.delivered = True
             outcome.events.append("delivery")
             member.counters.tasks_delivered += 1
-            # A fleet keeps working: the robot picks up a fresh job rather than
-            # the run ending. A shared queue replaces this in the next phase.
-            member.task = self._task_generator.generate(step=member.counters.steps)
-            member.counters.optimal_path_length += self._optimal_legs(
-                position, member.task
-            )
-            outcome.events.append("new_task")
+            if self.queue is not None:
+                # Request complete; the robot goes idle and becomes a candidate
+                # for the next dispatch rather than inventing its own next job.
+                self.queue.mark_delivered(task.task_id, member.counters.steps)
+                member.task = None
+            else:
+                # Independent-task mode: the robot picks up a fresh job, so a
+                # fleet without a queue keeps working instead of stopping.
+                member.task = self._task_generator.generate(step=member.counters.steps)
+                member.counters.optimal_path_length += self._optimal_legs(
+                    position, member.task
+                )
+                outcome.events.append("new_task")
 
     def _handle_charging(self, member: FleetMember, outcome: RobotStepOutcome) -> None:
         if self.layout.cell(member.position) is CellType.CHARGING:
@@ -456,6 +514,52 @@ class FleetSimulation:
                 outcome.charged = gained
                 outcome.events.append("charging")
                 member.counters.charging_events += 1
+
+    def _dispatch(self) -> list[DispatchDecision]:
+        """Hand waiting requests to the nearest idle robots."""
+        if self.queue is None:
+            return []
+        idle = {
+            robot_id: member.position
+            for robot_id, member in self.members.items()
+            if member.alive and member.task is None
+        }
+        if not idle:
+            return []
+
+        step = max((m.counters.steps for m in self.members.values()), default=0)
+        decisions = self.queue.dispatch(idle, self.path_distance, step=step)
+        for decision in decisions:
+            member = self.members[decision.robot_id]
+            request = self.queue.requests[decision.request_id]
+            member.task = self.queue.as_task(request)
+            member.counters.optimal_path_length += self._optimal_legs(
+                member.position, member.task
+            )
+        return decisions
+
+    def path_distance(self, origin: Position, destination: Position) -> int:
+        """Cells driven through the aisles, or -1 if there is no route.
+
+        Geodesic, not straight-line: on a floor of shelf blocks a robot one
+        aisle over can be metres away and twenty cells of driving away, and
+        dispatching on straight-line distance would pick it over a better robot.
+        """
+        return int(self._field(destination)[origin])
+
+    def target_for(self, robot_id: int) -> Position:
+        """Where a robot is currently heading.
+
+        A robot with a job heads for its task target. An idle robot heads for
+        its zone's waiting cell, so it clears the aisles and sits near power
+        ready for the next request. With no waiting cell free it holds station.
+        """
+        member = self.members[robot_id]
+        if member.task is not None:
+            return member.task.target
+        if member.waiting_point is not None:
+            return member.waiting_point
+        return member.position
 
     def _optimal_legs(self, start: Position, task: Task) -> int:
         """Shortest achievable length for a task, ignoring traffic and peers."""
@@ -474,7 +578,7 @@ class FleetSimulation:
     # ------------------------------------------------------------------
     def distance_to_target(self, robot_id: int) -> int:
         member = self.members[robot_id]
-        return int(self._field(member.task.target)[member.position])
+        return int(self._field(self.target_for(robot_id))[member.position])
 
     def nearest_charger(self, position: Position) -> tuple[Position, int]:
         """Closest reachable charging station by path length, not straight line."""
@@ -529,4 +633,12 @@ class FleetSimulation:
             "obstacles": self.obstacles.to_list(),
             "events": [list(e) for e in (events or [])],
             "deadlocked": self._idle_streak >= DEADLOCK_STREAK,
+            "zones": [z.to_dict() for z in self.zones],
+            "dispatch": [d.to_dict() for d in self.last_dispatch],
+            "queue": self.queue.stats() if self.queue is not None else None,
+            "requests": (
+                [r.to_dict() for r in self.queue.requests.values()]
+                if self.queue is not None
+                else []
+            ),
         }
