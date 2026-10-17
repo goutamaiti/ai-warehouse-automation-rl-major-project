@@ -257,11 +257,44 @@ def test_queue_stats_report_turnaround_only_once_something_is_delivered():
 # ----------------------------------------------------------------------
 
 
-def test_an_idle_robot_heads_for_its_zone_waiting_point():
+def test_an_idle_robot_heads_for_the_nearest_free_waiting_cell():
+    """Nearest, not pre-assigned.
+
+    Dispatch sends the nearest idle robot to any request, so a robot has no
+    stable work region to be "from". Pinning it to a home zone's cell made it
+    commute across the floor: measured at eight robots, all of them ended up
+    jammed in the corner by one charger while four assigned waiting cells sat
+    empty at the far end, and throughput fell from 110 deliveries to 34.
+    """
     sim, _ = queued_fleet(n_robots=3)
+    all_waiting = {cell for zone in sim.zones for cell in zone.waiting_points}
+
     for robot_id, member in sim.members.items():
         assert member.task is None
-        assert sim.target_for(robot_id) == member.waiting_point
+        target = sim.target_for(robot_id)
+        assert target in all_waiting
+
+        others = {
+            other.position
+            for other_id, other in sim.members.items()
+            if other_id != robot_id
+        }
+        reachable = {
+            cell: sim.path_distance(member.position, cell)
+            for cell in all_waiting
+            if cell not in others
+        }
+        nearest = min(d for d in reachable.values() if d >= 0)
+        assert reachable[target] == nearest, (target, reachable)
+
+
+def test_idle_robots_do_not_all_pick_the_same_waiting_cell():
+    """Occupied cells are skipped, so the fleet spreads out rather than piling up."""
+    sim, _ = queued_fleet(n_robots=4)
+    for _ in range(40):
+        sim.step({})
+    parked = [m.position for m in sim.members.values()]
+    assert len(set(parked)) == len(parked), "robots converged on one cell"
 
 
 def test_a_working_robot_heads_for_its_task():
@@ -444,3 +477,34 @@ def test_an_idle_robot_tops_up_before_parking():
 
     member.robot.battery = sim.config.battery.capacity
     assert controller._goal_for(sim, 0) == member.waiting_point
+
+
+def test_start_placement_is_balanced_across_zones():
+    """Regression: every extra robot used to cluster around one charger.
+
+    Spill-over was ordered by distance from charging_stations[0], so at twelve
+    robots the home zones split 11 to 1 - one zone crushed while the other's
+    waiting cells went unused. Start cells are now taken round-robin from each
+    zone in turn.
+    """
+    import collections
+
+    for n_robots in (8, 12, 16):
+        sim, _ = queued_fleet(n_robots=n_robots)
+        homes = collections.Counter(m.home_zone for m in sim.members.values())
+        assert len(homes) == len(sim.zones), f"n={n_robots}: a zone got nobody"
+        spread = max(homes.values()) - min(homes.values())
+        assert spread <= 1, f"n={n_robots}: unbalanced homes {dict(homes)}"
+
+
+def test_every_robot_has_somewhere_to_wait_however_large_the_fleet():
+    """Regression: robots past the waiting-cell cap froze where they stood.
+
+    With a fixed cap of eight per zone, a twelve-robot fleet left three robots
+    with no waiting point, and target_for() then returned their current cell -
+    so they stopped mid-aisle and became permanent obstacles.
+    """
+    for n_robots in (8, 12, 16, 20):
+        sim, _ = queued_fleet(n_robots=n_robots)
+        missing = [r for r, m in sim.members.items() if m.waiting_point is None]
+        assert not missing, f"n={n_robots}: robots {missing} have nowhere to wait"

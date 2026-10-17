@@ -255,7 +255,15 @@ class FleetSimulation:
         self.n_robots = int(n_robots)
         self.layout = layout if layout is not None else build_layout(config.layout)
         self._walkable = self.layout.walkable_mask()
-        self.zones: tuple[Zone, ...] = build_zones(self.layout)
+        # Enough waiting cells for the whole fleet in any single zone. With a
+        # fixed cap, a fleet larger than the cap left robots with no waiting
+        # point at all, and target_for() then returned their current cell - so
+        # they froze wherever they happened to stop, mid-aisle, as permanent
+        # obstacles. Measured at twelve robots: three frozen, and throughput
+        # below the eight-robot fleet's.
+        self.zones: tuple[Zone, ...] = build_zones(
+            self.layout, max_waiting_points=max(8, int(n_robots))
+        )
         #: When set, robots draw work from this shared queue instead of each
         #: generating its own task. This is what stops two robots being routed
         #: to the same storage point, which is how the five-robot run jammed.
@@ -297,15 +305,39 @@ class FleetSimulation:
         never starts parked on a packing station.
         """
         stations = list(self.layout.charging_stations)
-        field = bfs_distance_field(self._walkable, stations[0])
         reserved = set(stations) | set(self.layout.packing_stations)
+        fields = [bfs_distance_field(self._walkable, station) for station in stations]
 
-        spill = [
-            (int(r), int(c))
-            for r, c in zip(*np.nonzero(self._walkable))
-            if (int(r), int(c)) not in reserved and field[int(r), int(c)] >= 0
-        ]
-        spill.sort(key=lambda cell: (int(field[cell]), cell))
+        # Spill-over is taken round-robin from each zone in turn, nearest that
+        # zone's own charger first. Sorting the whole floor by distance from
+        # stations[0] instead - which is what this did - clustered every extra
+        # robot around one charger: at twelve robots the homes split 11 to 1,
+        # so one zone was crushed while the other's waiting cells went unused.
+        per_zone: list[list[Position]] = []
+        for index, station in enumerate(stations):
+            field = fields[index]
+            own = [
+                cell
+                for cell in (
+                    (int(r), int(c)) for r, c in zip(*np.nonzero(self._walkable))
+                )
+                if cell not in reserved
+                and field[cell] >= 0
+                # The cell belongs to this zone: no other charger is nearer.
+                # min() breaks ties on the index, matching build_zones.
+                and min(
+                    (int(f[cell]), i) for i, f in enumerate(fields) if f[cell] >= 0
+                )[1]
+                == index
+            ]
+            own.sort(key=lambda cell: (int(field[cell]), cell))
+            per_zone.append(own)
+
+        spill: list[Position] = []
+        for rank in range(max((len(cells) for cells in per_zone), default=0)):
+            for cells in per_zone:
+                if rank < len(cells):
+                    spill.append(cells[rank])
         return stations + spill
 
     # ------------------------------------------------------------------
@@ -667,14 +699,45 @@ class FleetSimulation:
         """Where a robot is currently heading.
 
         A robot with a job heads for its task target. An idle robot heads for
-        its zone's waiting cell, so it clears the aisles and sits near power
-        ready for the next request. With no waiting cell free it holds station.
+        the **nearest free** waiting cell, anywhere on the floor.
+
+        Nearest rather than a cell assigned up front, because dispatch sends the
+        nearest idle robot to any request, so a robot has no stable work region
+        to be "from". Pinning each robot to a home zone's cell made it commute:
+        measured at eight robots, every one of them ended up jammed in the
+        corner by one charger while four of their assigned waiting cells sat
+        empty at the far end, 3,145 of 3,147 blocked moves happened to robots
+        carrying work, and throughput fell from 110 deliveries to 34.
+
+        Cells currently occupied are skipped. Two robots can still choose the
+        same cell on the same tick; the id-priority rule settles that, and the
+        loser picks another next tick - which is cheaper than coordinating
+        reservations for somewhere to stand idle.
         """
         member = self.members[robot_id]
         if member.task is not None:
             return member.task.target
-        if member.waiting_point is not None:
-            return member.waiting_point
+
+        taken = {
+            other.position
+            for other_id, other in self.members.items()
+            if other_id != robot_id
+        }
+        best: Position | None = None
+        best_distance = -1
+        for zone in self.zones:
+            for cell in zone.waiting_points:
+                if cell in taken:
+                    continue
+                distance = int(self._field(cell)[member.position])
+                if distance < 0:
+                    continue
+                if best is None or (distance, cell) < (best_distance, best):
+                    best, best_distance = cell, distance
+        if best is not None:
+            return best
+        # Every waiting cell is taken or unreachable: hold station rather than
+        # wander, and leave the aisle-blocking to the deadlock detector.
         return member.position
 
     def _optimal_legs(self, start: Position, task: Task) -> int:
