@@ -941,3 +941,194 @@ thead th {
 .reveal {
   margin-top: 20px;
 }
+
+/* What a result block means, set off from the table it reads. A left rule
+   rather than a tinted box: it is commentary on the numbers above, not a
+   warning or an aside, and the palette has no second colour to spend on it. */
+.takeaway {
+  margin: 12px 0 0;
+  padding-left: 13px;
+  border-left: 2px solid var(--s6);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--s5);
+}
+
+/* --------------------------------------------- numbers, anywhere on the site */
+
+/* Both the comparison chart and the Info walkthrough mark their figures with
+   .num, which had no rule - the chart only looked right because .bar-value and
+   .tied b happened to set mono themselves. One utility, so a number reads as a
+   number wherever it appears and columns of them line up. */
+.num {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* -------------------------------------------------- Info reward walkthrough */
+
+/* The reward function used to be a static table of weights: a claim about what
+   the agent is paid. This drives the same terms from a real recording, so the
+   reader sees what each one actually charged on a given step. The prose stays
+   underneath each value - the explanation is the point of the page. */
+
+/* Which recording to walk. The same segmented pick as the results chart, so
+   "choose a thing to look at" looks the same wherever the site offers it. */
+.walk-pick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 14px 0 0;
+}
+
+.walk-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0 0;
+}
+
+.walk-controls input[type='range'] {
+  flex: 1 1 160px;
+  min-width: 0;
+  accent-color: var(--s6);
+}
+
+.walk-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  align-items: baseline;
+  padding: 10px 0;
+  margin-top: 10px;
+  border-top: 1px solid var(--s2);
+  border-bottom: 1px solid var(--s2);
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.walk-head b {
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+/* An event on this step - a pickup, a delivery, a charge - called out rather
+   than left for the reader to infer from which term lit up. */
+.walk-event {
+  margin-left: auto;
+  padding: 1px 8px;
+  border: 1px solid var(--s6);
+  color: var(--text);
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+}
+
+.terms {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(255px, 1fr));
+  gap: 1px;
+  margin-top: 18px;
+  background: var(--s2);
+  border: 1px solid var(--s2);
+}
+
+/* Hairline grid, no card shadows: the cells are separated by the gap showing
+   through, which is why the container carries the line colour. */
+.term {
+  display: flex;
+  flex-direction: column;
+  background: var(--s0);
+  padding: 12px 14px 14px;
+}
+
+/* A term that fired on this step is the only thing emphasised, and it is
+   emphasised by fill - the left edge goes to ink. No second colour. */
+.term.fired {
+  box-shadow: inset 2px 0 0 var(--s6);
+}
+
+.term header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.term header h3 {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.term header b {
+  font-size: 0.9rem;
+  color: var(--s3);
+}
+
+.term.fired header b {
+  color: var(--text);
+}
+
+.term-rule {
+  margin: 6px 0 0;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--s5);
+  line-height: 1.45;
+}
+
+.term-why {
+  margin: 6px 0 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* Pinned to the bottom of its cell: the terms carry different amounts of
+   prose, and strips that each stopped wherever their paragraph ended could not
+   be read down the column as a set. */
+.term-strip {
+  position: relative;
+  display: flex;
+  gap: 1px;
+  height: 13px;
+  margin-top: auto;
+  padding-top: 12px;
+  box-sizing: content-box;
+}
+
+.term-strip i {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.term-strip i.off {
+  background: var(--s1);
+}
+
+.term-strip i.credit {
+  background: var(--s6);
+}
+
+.term-strip i.charge {
+  background: var(--s3);
+}
+
+/* The playhead, same idiom as the confidence bracket on the results chart. */
+.term-strip u {
+  position: absolute;
+  top: 9px;
+  bottom: -3px;
+  width: 0;
+  border-left: 1px solid var(--s6);
+  text-decoration: none;
+}
+
+@media (max-width: 760px) {
+  .walk-event {
+    margin-left: 0;
+  }
+}
