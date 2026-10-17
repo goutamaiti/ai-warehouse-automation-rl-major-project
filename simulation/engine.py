@@ -153,7 +153,13 @@ class WarehouseSimulation:
         if seed is not None:
             self.rng = np.random.default_rng(seed)
 
-        start = self.layout.charging_stations[0]
+        stations = self.layout.charging_stations
+        if self.config.random_start_charger and len(stations) > 1:
+            # Drawn from the episode RNG, so reset(seed=k) still rebuilds
+            # episode k exactly - the start is varied, not nondeterministic.
+            start = stations[int(self.rng.integers(len(stations)))]
+        else:
+            start = stations[0]
         self.robot = Robot(
             robot_id=0,
             position=start,

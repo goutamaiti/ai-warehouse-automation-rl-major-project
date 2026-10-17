@@ -1,3 +1,4 @@
+import { controllerRank, scenarioAdds, scenarioRank, scenarioTier } from '../lib/complexity';
 import { controllerLabel, formatPercent, formatStat, titleCase } from '../lib/format';
 
 const COLUMNS = [
@@ -34,10 +35,20 @@ export default function ResultsTable({ results }) {
   return (
     <section className="results">
       <h2>Experimental results</h2>
-      {results.map((result) => (
+      {/* Cards ascend the complexity ladder; rows inside go classical first,
+          then the learned policy, so each table reads as a comparison. */}
+      {[...results]
+        .sort((a, b) => scenarioRank(a.scenario) - scenarioRank(b.scenario))
+        .map((result) => (
         <article key={result.id} className="result-card">
           <header>
-            <h3>{titleCase(result.scenario)}</h3>
+            <h3>
+              {scenarioTier(result.scenario) ? `${scenarioTier(result.scenario)}. ` : ''}
+              {titleCase(result.scenario)}
+            </h3>
+            {scenarioAdds(result.scenario) && (
+              <p className="muted small">{scenarioAdds(result.scenario)}</p>
+            )}
             <span className="muted small">
               {result.id}
               {result.generatedAt ? ` · generated ${result.generatedAt}` : ''}
@@ -55,7 +66,9 @@ export default function ResultsTable({ results }) {
                 </tr>
               </thead>
               <tbody>
-                {result.summaries.map((summary) => (
+                {[...result.summaries]
+                  .sort((a, b) => controllerRank(a.controller) - controllerRank(b.controller))
+                  .map((summary) => (
                   <tr key={summary.controller}>
                     <td>{controllerLabel(summary.controller)}</td>
                     <td>
@@ -70,7 +83,7 @@ export default function ResultsTable({ results }) {
             </table>
           </div>
         </article>
-      ))}
+        ))}
     </section>
   );
 }

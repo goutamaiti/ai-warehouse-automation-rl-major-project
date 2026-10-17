@@ -62,6 +62,7 @@ moving obstacle blocks the only aisle, and it is how the robot charges.
 ```text
 r = - step_penalty
     + progress_weight * (gamma_s * Phi(s') - Phi(s))     [potential shaping]
+    + (gamma_s * Phi_b(s') - Phi_b(s))                   [battery reserve, optional]
     + pickup_reward        if a package was picked up
     + delivery_reward      if a package was delivered
     - collision_penalty    if the robot drove into a wall, shelf or obstacle
@@ -104,6 +105,53 @@ explain:
    reached, cancelling the delivery reward. Regression test:
    `tests/test_env.py::test_delivery_step_is_not_punished_by_the_shaping_term`.
 
+### The second potential: battery reserve
+
+`battery_reserve_weight` is 0 in `configs/default.yaml` and in every scenario
+that predates it, so the term is inert unless a scenario switches it on
+(`battery_tuned.yaml` does). When active:
+
+```text
+Phi_b(s) = -w * max(0, safety * d_charger(s) * move_cost - battery(s)) / capacity
+```
+
+Read it as *the charge the robot is short of what it needs to still reach a
+charging station*, as a fraction of a full battery. It is exactly 0 while a
+charger is comfortably in reach, so it contributes nothing during ordinary
+navigation - measured: on an A* episode of the battery world the term is 0 on all
+64 steps, while on the old failing PPO policy it fires on 12-20 steps out of 30.
+
+It is a function of state alone, so it is a legitimate potential and the Ng,
+Harada & Russell (1999) result applies to it as well: **it cannot change which
+policy is optimal.** What it changes is the credit-assignment distance. Without
+it, "drove past the last charger at 12% charge" and "battery flat" are forty
+steps apart; with it, the mistake is charged immediately.
+
+Why not simply pay a bonus for charging? Because that is farmable: the robot
+could step off a charger and back on to collect the bonus repeatedly. A
+potential-based term telescopes, so any loop returning to the same state pays
+exactly zero. Regression test:
+`tests/test_env.py::test_battery_reserve_shaping_cannot_be_farmed_by_a_round_trip`.
+
+### Why the depletion penalty had to change
+
+Potential-based shaping cannot rescue a broken objective, and on
+`battery_constrained` the objective was broken: dying was *profitable*. The
+measured evidence is in `data/results/battery_constrained_ppo_vs_baselines.json`
+- 30/30 episodes ended in `battery_depleted`, zero charging events ever, and yet
+every episode scored positively (21.6 to 44.6, mean 33.13). With the old penalty
+of 10 already subtracted, a dying episode banked up to 54.6 beforehand: one
+pickup (5), one delivery (20) and roughly 27 of accumulated progress shaping.
+
+So the agent was not failing to learn. It was correctly maximising a reward
+function that paid it to deliver one package and expire. The penalty has to
+exceed everything an episode can bank, which is what
+`battery_tuned.yaml` sets it to (60).
+
+This is the only part of the fix that moves the optimum. The shaping term
+deliberately cannot, which is why the two are separated into two scenarios and
+measured independently - see `docs/experiments.md`.
+
 ### Reward-hacking checklist
 
 | Question | Answer in this design |
@@ -113,6 +161,8 @@ explain:
 | Can it profit from colliding? | No: a collision costs reward and makes no progress. |
 | Can it avoid the timeout penalty by dying early? | Battery depletion costs more (10) than a timeout (5). |
 | Is charging exploitable? | Charging gives no reward of its own; it is only worth it because it prevents the depletion penalty. |
+| Can it profit by dying after partial progress? | Not under `battery_tuned`. Under the original `battery_constrained` weights it **could**, and did - see above. |
+| Can it farm the battery-reserve term? | No: it is potential-based, so any state cycle sums to 0. |
 
 ## Algorithms
 

@@ -99,6 +99,17 @@ class RewardConfig:
     energy_weight: float = 0.02
     battery_depleted_penalty: float = 10.0
     timeout_penalty: float = 5.0
+    #: Weight of the battery-reserve potential, a *second* potential-based
+    #: shaping term (Ng et al., 1999) measuring how far the robot has fallen
+    #: below the charge it needs to still reach a charging station. 0.0
+    #: disables it, which is the default so that every scenario predating this
+    #: term keeps its original reward exactly.
+    battery_reserve_weight: float = 0.0
+    #: Safety factor on the energy needed to reach a charger, used by that
+    #: potential. 1.0 means "just enough charge to limp to a charger"; above
+    #: 1.0 asks the robot to keep a margin, because the direct route to the
+    #: charger may be blocked by traffic.
+    battery_reserve_safety: float = 2.0
 
 
 @dataclass(frozen=True)
@@ -111,6 +122,13 @@ class ScenarioConfig:
     seed: int = 0
     #: Side length of the square local occupancy patch given to the agent.
     observation_window: int = 5
+    #: Start each episode on a randomly chosen charging station instead of
+    #: always the first one. With a fixed start the robot learns the absolute
+    #: route to that one charger and ignores the nearest-charger features in
+    #: its observation, which measurably costs it detours (see
+    #: docs/experiments.md). Defaults to False so that every scenario predating
+    #: this flag keeps its exact episode definitions and committed results.
+    random_start_charger: bool = False
     layout: LayoutConfig = field(default_factory=LayoutConfig)
     battery: BatteryConfig = field(default_factory=BatteryConfig)
     obstacles: ObstacleConfig = field(default_factory=ObstacleConfig)

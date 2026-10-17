@@ -84,6 +84,15 @@ PPO_MODEL_TAGS = {
     "default": "ppo_default",
     "dynamic_obstacles": "ppo_dynamic",
     "battery_constrained": "ppo_battery",
+    # The battery ablation. Each arm must resolve to the policy that was
+    # actually trained on *its* reward, otherwise the fallback below would
+    # quietly serve ppo_default - a policy trained on a different scenario -
+    # and the dashboard would report it as that arm's result.
+    # The 2,000,000-step run; the 600k run on the same reward is
+    # ppo_battery_tuned_s0 and reaches only ~0-17%.
+    "battery_tuned": "ppo_battery_long_s0",
+    "simple_static": "ppo_simple",
+    "complex_static": "ppo_complex",
 }
 
 

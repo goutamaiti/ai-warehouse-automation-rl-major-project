@@ -25,16 +25,26 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 #: scenario -> (model tag, training timesteps for a full run)
 TRAINED_SCENARIOS = {
     "default": ("ppo_default", 300_000),
+    "simple_static": ("ppo_simple", 300_000),
+    "complex_static": ("ppo_complex", 600_000),
     "dynamic_obstacles": ("ppo_dynamic", 400_000),
     "battery_constrained": ("ppo_battery", 600_000),
+    # The battery ablation: the same world as battery_constrained with three
+    # successively corrected reward functions. Same training budget as the
+    # original so the arms are comparable. See docs/experiments.md.
+    # 2,000,000 steps, not 600,000: on this world the corrected reward needs
+    # roughly 1.5M before success leaves zero at all, so a 600k run reproduces
+    # a camping policy rather than the reported result. The 600k runs are kept
+    # as the budget ablation (see docs/experiments.md), not as the headline.
+    "battery_tuned": ("ppo_battery_long_s0", 2_000_000),
 }
 
 #: Scenarios evaluated with classical controllers only.
-BASELINE_ONLY_SCENARIOS = ("simple_static", "complex_static")
+BASELINE_ONLY_SCENARIOS: tuple[str, ...] = ()
 
 EPISODES = 30
 FIRST_SEED = 1000
-CONTROLLERS = ["astar", "bfs", "random"]
+CONTROLLERS = ["astar", "bfs"]
 
 
 def run(command: list[str], dry_run: bool = False) -> None:

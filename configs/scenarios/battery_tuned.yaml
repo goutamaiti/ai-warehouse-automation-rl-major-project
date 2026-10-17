@@ -1,0 +1,75 @@
+# Experiment 4b: the battery_constrained world with a corrected reward.
+#
+# The same warehouse, battery model, task count and step budget as
+# battery_constrained - inherited unchanged, so this is the identical
+# navigation problem and any difference in results traces to the reward alone.
+# Three terms change, each for a measured reason.
+#
+# 1. battery_depleted_penalty: 10 -> 60
+# ------------------------------------
+# On battery_constrained the trained policy died in 30/30 episodes and still
+# scored a *positive* 33.13 reward on average (range 21.6 to 44.6), because the
+# old penalty of 10 was cheaper than the credit a policy could bank before
+# dying: one pickup (5), one delivery (20) and roughly 27 of progress shaping.
+# Dying was profitable, so the agent correctly learned to do it. The best dying
+# episode banked 44.6 + 10 = 54.6 before the penalty, so the penalty has to
+# exceed that to reverse the ordering. 60 does, with margin, and stays well
+# below a successful episode (~97, measured from the A* controller here).
+#
+# This is the term that actually changes which policy is optimal.
+#
+# 2. battery_reserve_weight: 0 -> 10
+# ----------------------------------
+#   Phi_b(s) = -w * max(0, safety * d_charger(s) * move_cost - battery(s))
+#              / capacity
+#
+# the charge the robot is short of what it needs to still reach a charger. A
+# function of state only, so by Ng, Harada & Russell (1999) it cannot change
+# which policy is optimal - only how quickly it is found, by turning "ran the
+# battery flat forty steps from now" into an immediate signal. A bonus paid per
+# charging event was rejected instead: it is farmable by stepping off a charger
+# and back on, whereas a potential telescopes to zero over any such loop.
+#
+# 3. wait_penalty: 0.1 -> 0.5
+# ---------------------------
+# With dying no longer profitable the agent stopped dying - and learned to
+# *camp on the charging station* for all 600 steps instead (measured:
+# charging_events = 600, tasks delivered = 0, every episode a timeout). Camping
+# is a refuge because of discounting. Under gamma = 0.99:
+#
+#   camp on the charger for 600 steps   -15.2   <- cheapest failure
+#   leave and run the battery flat      -45.7
+#   deliver both tasks                  +27.9   (plus progress shaping)
+#
+# Undiscounted, camping is the *worst* of the three (-96.2); discounted, a
+# trickle of 0.15 per step over 600 steps is far cheaper than one -60 spike. The
+# reward ordering was already correct - succeeding dominates - so this was an
+# exploration trap, not a broken objective. wait_penalty is the knob the project
+# already had for "do not stand around" and was simply too small to price a
+# 600-step camp. At 0.5 the discounted cost of camping is about -55, worse than
+# dying, while a legitimate charging stop of ~9 steps costs about 5 - negligible
+# against a successful episode. The classical controller averages 9.17 charging
+# steps here, so that is the real cost being taxed. There are no dynamic
+# obstacles in this world, so "wait" has no use other than charging and raising
+# its price removes no needed behaviour.
+#
+# Budget
+# ------
+# This reward needs roughly 1.5M environment steps before success leaves zero at
+# all; at 600,000 it still scores 0/30 because the agent spends that budget
+# camping. Train it with 2,000,000 steps or the result does not reproduce - see
+# scripts/run_experiments.py and docs/experiments.md.
+extends: battery_constrained.yaml
+
+name: battery_tuned
+description: >
+  battery_constrained with a corrected reward: a depletion penalty that exceeds
+  anything an episode can bank, a potential-based battery-reserve term, and a
+  waiting penalty that stops camping on a charger being the cheapest way to
+  avoid dying.
+
+reward:
+  battery_depleted_penalty: 60.0
+  battery_reserve_weight: 10.0
+  battery_reserve_safety: 2.0
+  wait_penalty: 0.5

@@ -13,6 +13,7 @@ import {
   loadScenarios,
   runLiveEpisode,
 } from '../lib/api';
+import { byComplexity, scenarioTier } from '../lib/complexity';
 import { controllerLabel, titleCase } from '../lib/format';
 import { useEpisodePlayer } from '../lib/useEpisodePlayer';
 
@@ -123,8 +124,11 @@ export default function DashboardPage({ health }) {
               Episode
               <select value={selectedId ?? ''} onChange={(event) => setSelectedId(event.target.value)}>
                 {selectedId === null && <option value="">live run</option>}
-                {(index.episodes ?? []).map((item) => (
+                {/* Ordered by scenario complexity, not alphabetically, so the
+                    picker reads as the experiment ladder it is. */}
+                {[...(index.episodes ?? [])].sort(byComplexity).map((item) => (
                   <option key={item.id} value={item.id}>
+                    {scenarioTier(item.scenario) ? `${scenarioTier(item.scenario)}. ` : ''}
                     {titleCase(item.scenario)} · {controllerLabel(item.controller)} · seed {item.seed}
                   </option>
                 ))}

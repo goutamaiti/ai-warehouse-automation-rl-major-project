@@ -49,6 +49,12 @@ class PPOConfig:
     net_arch: tuple[int, ...] = (128, 128)
     #: Master seed for torch/numpy/env, so a run can be repeated exactly.
     seed: int = 0
+    #: Optional path to an already-trained policy whose network weights this
+    #: run starts from, instead of a random initialisation. Used to hand a
+    #: harder scenario the navigation skill a simpler one already learned, so
+    #: that training only has to discover what is genuinely new (curriculum /
+    #: transfer learning). The observation and action spaces must match.
+    init_from: str | None = None
     #: Run periodic evaluation every N training steps (0 disables it).
     eval_freq: int = 25_000
     #: Episodes per periodic evaluation.

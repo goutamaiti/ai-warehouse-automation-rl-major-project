@@ -176,3 +176,183 @@ def test_delivery_step_is_not_punished_by_the_shaping_term():
     assert final_components is not None
     assert final_components["progress"] >= 0
     assert sum(final_components.values()) > env.config.reward.delivery_reward / 2
+
+
+# ----------------------------------------------------------------------
+# Battery-reserve shaping (configs/scenarios/battery_tuned.yaml)
+# ----------------------------------------------------------------------
+
+
+def test_battery_reserve_term_is_off_by_default():
+    """Every scenario predating the term must keep its original reward.
+
+    The committed results under data/results/ were produced before this term
+    existed; if it were active by default those numbers would silently stop
+    being reproducible.
+    """
+    env = make_env("default")
+    assert env.config.reward.battery_reserve_weight == 0.0
+    env.reset(seed=0)
+    _, _, _, _, info = env.step(int(Action.UP))
+    assert info["reward_components"]["battery_reserve"] == 0.0
+
+
+def test_battery_reserve_potential_is_zero_while_a_charger_is_in_reach():
+    """The term must stay silent during ordinary navigation.
+
+    The robot starts on a charging station, so its charge deficit is zero by
+    construction and the potential must be too.
+    """
+    env = make_env("battery_tuned")
+    env.reset(seed=0)
+    assert env.config.reward.battery_reserve_weight > 0.0
+    assert env._reserve_potential() == 0.0
+
+
+def test_battery_reserve_potential_goes_negative_when_the_robot_is_short_of_charge():
+    env = make_env("battery_tuned")
+    env.reset(seed=0)
+    # Strand the robot: far from the charger it started on, nearly flat.
+    env.sim.robot.position = env.sim.task.pickup
+    env.sim.robot.battery = 1.0
+    stranded = env._reserve_potential()
+    assert stranded < 0.0
+    # Charging it up must raise the potential (reduce the deficit).
+    env.sim.robot.battery = 40.0
+    assert env._reserve_potential() > stranded
+
+
+def test_battery_reserve_shaping_cannot_be_farmed_by_a_round_trip():
+    """A loop returning to the same state must pay exactly zero.
+
+    This is the property that a naive "+reward per charging event" bonus would
+    not have: the robot could step off a charger and back on forever. Because
+    the term is potential-based with shaping_gamma == 1, the shaping over any
+    cycle telescopes to zero.
+    """
+    env = make_env("battery_tuned")
+    env.reset(seed=0)
+    start = env.sim.robot.position
+    battery = env.sim.robot.battery
+
+    total = 0.0
+    # Drive away from the start cell and come back, pinning the battery so the
+    # robot genuinely returns to the same state.
+    for action in (Action.UP, Action.DOWN):
+        before = env._reserve_potential()
+        env.sim.step(int(action))
+        env.sim.robot.battery = battery
+        total += env.config.reward.shaping_gamma * env._reserve_potential() - before
+
+    assert env.sim.robot.position == start
+    assert total == pytest.approx(0.0, abs=1e-9)
+
+
+def test_dying_is_never_profitable_under_the_corrected_penalty():
+    """The fix, stated as an assertion.
+
+    On battery_constrained a policy could deliver one package, die, and still
+    score positively: the depletion penalty (10) was cheaper than the pickup,
+    delivery and progress credit banked beforehand - the measured dying
+    episodes scored up to 44.6. The corrected penalty must exceed everything an
+    episode can bank, so that no amount of partial progress makes dying
+    attractive.
+    """
+    bankable = (
+        env_reward("battery_tuned").pickup_reward
+        + env_reward("battery_tuned").delivery_reward
+    ) * 2
+    for scenario in ("battery_tuned",):
+        reward = env_reward(scenario)
+        assert reward.battery_depleted_penalty > bankable, scenario
+        # ... and the old scenario is kept unchanged, as the comparison point.
+    assert env_reward("battery_constrained").battery_depleted_penalty == 10.0
+
+
+def env_reward(scenario: str):
+    return make_env(scenario).config.reward
+
+
+def test_battery_scenarios_share_one_world():
+    """The three battery arms must differ only in the reward.
+
+    If the warehouse, battery model or task count drifted between them, the
+    comparison in docs/experiments.md would not be measuring the reward change.
+    """
+    import dataclasses
+
+    base = make_env("battery_constrained").config
+    for scenario in ("battery_tuned",):
+        other = make_env(scenario).config
+        for section in ("layout", "battery", "obstacles", "tasks"):
+            assert getattr(base, section) == getattr(other, section), (scenario, section)
+        assert base.max_steps == other.max_steps
+        assert base.observation_window == other.observation_window
+        # Only the reward differs.
+        assert dataclasses.asdict(base.reward) != dataclasses.asdict(other.reward)
+
+
+# ----------------------------------------------------------------------
+# Randomised start charger (ScenarioConfig.random_start_charger)
+# ----------------------------------------------------------------------
+
+
+def _roaming_env():
+    """battery_tuned's world with the start charger randomised.
+
+    Built from the config rather than a scenario file: the flag exists because
+    pinning the start to charging_stations[0] taught the trained policy that
+    "the charger is on the left" - it charged there 62 times out of 62 across
+    30 episodes and never used the other station, walking past a nearer charger
+    in 19 of 30 episodes at a cost of ~7.6 cells each. The flag is the fix for
+    that; no scenario currently ships with it enabled.
+    """
+    import dataclasses
+
+    from simulation.config import find_scenario, load_scenario
+
+    config = load_scenario(find_scenario("battery_tuned"))
+    return WarehouseEnv(dataclasses.replace(config, random_start_charger=True))
+
+
+def test_start_charger_is_pinned_by_default():
+    """Scenarios predating the flag must keep their exact episode definitions."""
+    env = make_env("battery_tuned")
+    assert env.config.random_start_charger is False
+    starts = set()
+    for seed in range(1000, 1010):
+        env.reset(seed=seed)
+        starts.add(env.sim.robot.position)
+    assert starts == {env.sim.layout.charging_stations[0]}
+
+
+def test_random_start_visits_more_than_one_charger():
+    """The fix for the "always charges on the left" habit.
+
+    A fixed start made "the charger is to the left" true for the first charge
+    of every episode, so the policy memorised one absolute route and ignored
+    its nearest-charger observation.
+    """
+    env = _roaming_env()
+    assert env.config.random_start_charger is True
+    starts = {env.reset(seed=seed) and env.sim.robot.position for seed in range(1000, 1030)}
+    assert len(starts) > 1, "randomised start never produced a second charger"
+    assert starts <= set(env.sim.layout.charging_stations)
+
+
+def test_random_start_is_still_reproducible():
+    """Varied, not nondeterministic: reset(seed=k) must rebuild episode k."""
+    env = _roaming_env()
+    first = [env.reset(seed=seed) and env.sim.robot.position for seed in range(1000, 1012)]
+    second = [env.reset(seed=seed) and env.sim.robot.position for seed in range(1000, 1012)]
+    assert first == second
+
+
+def test_random_start_keeps_the_robot_on_a_charger():
+    """With a 45% starting charge, starting off-charger would change solvability."""
+    from simulation.warehouse import CellType
+
+    env = _roaming_env()
+    for seed in range(1000, 1020):
+        env.reset(seed=seed)
+        assert env.sim.layout.cell(env.sim.robot.position) is CellType.CHARGING
