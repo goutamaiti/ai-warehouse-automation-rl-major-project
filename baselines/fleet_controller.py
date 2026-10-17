@@ -34,6 +34,7 @@ import numpy as np
 from simulation.engine import Action
 from simulation.fleet import FleetSimulation
 from simulation.navigation import DIRECTIONS, Position
+from simulation.rmfs import astar_directed
 
 from .astar import astar
 from .bfs import bfs
@@ -80,6 +81,7 @@ class FleetPlannerController:
         planner: str = "astar",
         battery_aware: bool = True,
         safety_factor: float = DEFAULT_SAFETY_FACTOR,
+        directions=None,
     ) -> None:
         if planner not in PLANNERS:
             raise ValueError(
@@ -95,6 +97,11 @@ class FleetPlannerController:
         if safety_factor < 1.0:
             raise ValueError("safety_factor below 1.0 cannot even reach a charger")
         self.safety_factor = float(safety_factor)
+        #: Optional one-way grid from simulation.rmfs. When present the planner
+        #: only ever proposes a legal first move, which is the structural fix
+        #: for the aisle standoff measured in Phase 2 - on a one-way lane two
+        #: robots cannot face each other at all.
+        self.directions = directions
         self.nodes_expanded = 0
 
     @property
@@ -127,6 +134,15 @@ class FleetPlannerController:
 
         blocked = sim.blocked_grid(exclude=robot_id)
         blocked[position] = False
+        if self.directions is not None:
+            # The one-way rule has to be INSIDE the search. Filtering only the
+            # first move returns routes that are illegal from step two, the
+            # controller replans, proposes the same route, and the robot
+            # thrashes - measured at 1 delivery against 19.
+            path = astar_directed(blocked, self.directions, position, goal)
+            if len(path) >= 2:
+                return _action_towards(position, path[1])
+            return int(Action.WAIT)
         plan = self._plan(blocked, position, goal)
         self.nodes_expanded += plan.nodes_expanded
 
