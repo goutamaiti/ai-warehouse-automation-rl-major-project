@@ -94,6 +94,9 @@ class FleetPlannerController:
         #: on `default` a robot has 200 moves of charge and nothing else in the
         #: system routes it to power.
         self.battery_aware = battery_aware
+        #: Charge level, as a fraction of capacity, at which a robot counts as
+        #: full and stops diverting to top up.
+        self.charge_until = 0.9
         if safety_factor < 1.0:
             raise ValueError("safety_factor below 1.0 cannot even reach a charger")
         self.safety_factor = float(safety_factor)
@@ -185,6 +188,22 @@ class FleetPlannerController:
         if to_target < 0 or from_target < 0:
             return target
         needed = (to_target + from_target) * battery_cfg.move_cost * self.safety_factor
+
+        # Charging is only worth a detour while it would actually add charge.
+        # On a large floor the reserve can exceed the battery outright - a trip
+        # of 60 cells plus a 45-cell return needs 105 against a capacity of 100 -
+        # and a robot that diverts on an unsatisfiable reserve parks at a
+        # charger at 100% for ever, because topping up can never clear the
+        # condition. Measured on the realistic floor: a package picked up at
+        # tick 30 was still undelivered at tick 340, the robot sitting on a
+        # charger it no longer needed.
+        #
+        # So: once effectively full, go. There is nothing better available, and
+        # running out en route is a real outcome the metrics should record
+        # rather than one the controller hides by refusing to start.
+        effectively_full = battery >= battery_cfg.capacity * self.charge_until
+        if effectively_full:
+            return target
         if battery <= needed or battery <= battery_cfg.critical_threshold:
             return charger
         return target

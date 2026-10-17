@@ -21,6 +21,11 @@ import {
  * fixed seeds through the offline pipeline.
  */
 
+const FLOORS = [
+  { id: 'default', label: 'Scenario floor · 21×15' },
+  { id: 'rmfs', label: 'Robotic fulfilment floor · 46×30' },
+];
+
 const SCENARIOS = [
   { id: 'default', label: 'Default floor' },
   { id: 'dynamic_obstacles', label: 'With moving traffic' },
@@ -47,6 +52,7 @@ export default function FleetPage() {
 
   const [nRobots, setNRobots] = useState(5);
   const [scenario, setScenario] = useState('default');
+  const [floor, setFloor] = useState('default');
   const [pickup, setPickup] = useState({ row: '', col: '' });
   const [dropoff, setDropoff] = useState({ row: '', col: '' });
   const [lastAdded, setLastAdded] = useState(null);
@@ -82,6 +88,7 @@ export default function FleetPage() {
         nRobots: Number(nRobots),
         controller: 'astar',
         seed: 1000,
+        floor,
       });
       setLayout(payload.layout);
       setFrame(payload.state);
@@ -178,6 +185,20 @@ export default function FleetPage() {
       <div className="floor-controls">
         <label>
           Floor
+          <select
+            value={floor}
+            onChange={(event) => setFloor(event.target.value)}
+            disabled={running}
+          >
+            {FLOORS.map((option) => (
+              <option key={option.id} value={option.id}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Rules
           <select
             value={scenario}
             onChange={(event) => setScenario(event.target.value)}
@@ -296,7 +317,12 @@ export default function FleetPage() {
                   the rulers on the map. */}
               <div className="card-choices">
                 <p className="choice-group">
-                  <strong>Pick up from</strong>
+                  <strong>
+                    Pick up from
+                    {layout.pickup_total > (layout.pickup_choices ?? []).length
+                      ? ` · ${(layout.pickup_choices ?? []).length} of ${layout.pickup_total}`
+                      : ''}
+                  </strong>
                   {(layout.pickup_choices ?? []).map((cell) => {
                     const active =
                       String(cell[0]) === pickup.row && String(cell[1]) === pickup.col;

@@ -35,6 +35,7 @@ from simulation.config import ScenarioConfig
 from simulation.dispatch import TaskQueue
 from simulation.fleet import FleetSimulation
 from simulation.navigation import Position
+from simulation.rmfs import RmfsConfig, build_rmfs_layout, direction_summary
 from simulation.warehouse import CellType, WarehouseLayout
 
 #: Upper bound on queued-but-unserved requests. Not a limit on the warehouse -
@@ -61,9 +62,26 @@ class FleetSession:
         controller: str = "astar",
         layout: WarehouseLayout | None = None,
         seed: int = 0,
+        floor: str = "default",
     ) -> None:
         self.config = config
         self.seed = int(seed)
+        self.floor = floor
+        #: One-way lane directions, when the floor has them. Only the controller
+        #: reads this; the engine's movement rules are unchanged, so a policy is
+        #: never silently overridden by the floor.
+        self.directions = None
+        if floor == "rmfs":
+            if layout is not None:
+                raise FleetSessionError(
+                    "the realistic floor generates its own layout; it cannot be "
+                    "combined with a hand-drawn one"
+                )
+            layout, self.directions = build_rmfs_layout(RmfsConfig())
+        elif floor != "default":
+            raise FleetSessionError(
+                f"unknown floor {floor!r}; expected 'default' or 'rmfs'"
+            )
         self.queue = TaskQueue()
         try:
             self.sim = FleetSimulation(
@@ -75,7 +93,9 @@ class FleetSession:
             raise FleetSessionError(str(exc)) from exc
         self.sim.reset(seed=self.seed)
         try:
-            self.controller = FleetPlannerController(planner=controller)
+            self.controller = FleetPlannerController(
+                planner=controller, directions=self.directions
+            )
         except ValueError as exc:
             raise FleetSessionError(str(exc)) from exc
         self.controller.reset(self.sim)
@@ -180,6 +200,7 @@ class FleetSession:
             {
                 "ticks": self.ticks,
                 "scenario": self.config.name,
+                "floor": self.floor,
                 "controller": self.controller.name,
                 "n_robots": self.sim.n_robots,
                 "fleet": self.sim.fleet_counters(),
@@ -201,10 +222,21 @@ class FleetSession:
         payload["zones"] = [z.to_dict(include_cells=True) for z in self.sim.zones]
         # Convenient for a UI that offers "pick a storage point" rather than
         # making someone type coordinates.
-        payload["pickup_choices"] = [list(p) for p in self.sim.layout.storage_points]
+        # The realistic floor has 306 pick points; a dropdown of all of them is
+        # useless, so the UI gets a readable sample plus the full count.
+        storage = self.sim.layout.storage_points
+        step = max(1, len(storage) // 24)
+        payload["pickup_choices"] = [list(p) for p in storage[::step]][:24]
+        payload["pickup_total"] = len(storage)
         payload["dropoff_choices"] = [
             list(p) for p in self.sim.layout.packing_stations
         ]
+        payload["floor"] = self.floor
+        if self.directions is not None:
+            # Sent once with the layout, never per frame: 1,380 integers is
+            # fine alongside the grid and wasteful ten times a second.
+            payload["directions"] = self.directions.astype(int).tolist()
+            payload["direction_summary"] = direction_summary(self.directions)
         return payload
 
 
@@ -227,11 +259,17 @@ def start(
     controller: str = "astar",
     layout: WarehouseLayout | None = None,
     seed: int = 0,
+    floor: str = "default",
 ) -> FleetSession:
     """Start a warehouse, replacing any already running."""
     global _session
     _session = FleetSession(
-        config, n_robots=n_robots, controller=controller, layout=layout, seed=seed
+        config,
+        n_robots=n_robots,
+        controller=controller,
+        layout=layout,
+        seed=seed,
+        floor=floor,
     )
     return _session
 

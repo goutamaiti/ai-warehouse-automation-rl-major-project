@@ -40,7 +40,7 @@ export function fleetHealth() {
 }
 
 /** Start a warehouse running. Replaces one already running. */
-export function startFleet({ scenario, nRobots, controller, seed }) {
+export function startFleet({ scenario, nRobots, controller, seed, floor }) {
   return request(
     '/start',
     json({
@@ -48,6 +48,7 @@ export function startFleet({ scenario, nRobots, controller, seed }) {
       n_robots: nRobots,
       controller,
       seed,
+      floor,
     })
   );
 }

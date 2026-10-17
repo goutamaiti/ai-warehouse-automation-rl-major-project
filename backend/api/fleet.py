@@ -51,6 +51,13 @@ class StartRequest(BaseModel):
         ),
     )
     controller: str = Field(default="astar", description="astar | bfs")
+    floor: str = Field(
+        default="default",
+        description=(
+            "'default' = the 21x15 scenario floor; 'rmfs' = the realistic "
+            "robotic-fulfilment floor with a pod field and one-way aisles"
+        ),
+    )
     seed: int = Field(default=0, ge=0, le=2**31 - 1)
     layout: list[list[int]] | None = Field(
         default=None,
@@ -117,6 +124,7 @@ def start(request: StartRequest) -> dict[str, Any]:
         controller=request.controller,
         layout=custom,
         seed=request.seed,
+        floor=request.floor,
     )
     return {"layout": session.layout(), "state": session.state()}
 

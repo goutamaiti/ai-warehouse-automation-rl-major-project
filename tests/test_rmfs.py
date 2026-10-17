@@ -265,9 +265,14 @@ def test_a_fleet_places_and_runs_on_the_realistic_floor():
 def test_one_way_routing_all_but_eliminates_robot_on_robot_blocking():
     """The measured benefit of the one-way field.
 
-    On the two-way floor an eight-robot fleet records thousands of refusals; on
-    the one-way field it records single digits, because two robots cannot face
-    each other in a lane at all.
+    Twelve robots and a real backlog, because the effect is a congestion
+    effect: at eight robots over two hundred ticks both floors record single
+    digits and the comparison says nothing. At this load the two-way floor
+    records thousands of refusals and the one-way field tens, because two
+    robots cannot face each other in a lane at all.
+
+    The assertion is deliberately loose - a fivefold gap against a measured
+    hundredfold - so it tests the mechanism rather than a specific seed.
     """
     from baselines.fleet_controller import FleetPlannerController
 
@@ -276,12 +281,12 @@ def test_one_way_routing_all_but_eliminates_robot_on_robot_blocking():
 
     def blocked_events(directions):
         queue = TaskQueue()
-        sim = FleetSimulation(config, n_robots=8, layout=layout, task_queue=queue)
+        sim = FleetSimulation(config, n_robots=12, layout=layout, task_queue=queue)
         sim.reset(seed=1000)
         controller = FleetPlannerController(directions=directions)
         controller.reset(sim)
         rng = np.random.default_rng(1000)
-        for _ in range(60):
+        for _ in range(200):
             queue.add(
                 layout.storage_points[int(rng.integers(len(layout.storage_points)))],
                 layout.packing_stations[
@@ -289,10 +294,49 @@ def test_one_way_routing_all_but_eliminates_robot_on_robot_blocking():
                 ],
                 step=0,
             )
-        for _ in range(200):
+        for _ in range(400):
             if sim.done:
                 break
             sim.step(controller.act(sim))
         return sim.fleet_counters()["blocked_by_robot"]
 
-    assert blocked_events(direction) * 20 < blocked_events(None)
+    one_way = blocked_events(direction)
+    two_way = blocked_events(None)
+    assert two_way > 200, f"the load did not produce congestion to compare ({two_way})"
+    assert one_way * 5 < two_way, f"one-way {one_way} vs two-way {two_way}"
+
+
+def test_a_full_robot_does_not_park_at_a_charger_it_no_longer_needs():
+    """Regression for a park that stalled deliveries indefinitely.
+
+    On a large floor the reserve can exceed the battery outright - a 60-cell
+    trip plus a 45-cell return needs 105 against a capacity of 100 - so a robot
+    that diverts whenever the reserve is unmet sits at a charger at full charge
+    for ever, since topping up can never clear the condition. Measured before
+    the fix: a package picked up at tick 30 was still undelivered at tick 340.
+    """
+    from baselines.fleet_controller import FleetPlannerController
+
+    layout, direction = floor()
+    config = load_scenario(find_scenario("default"))
+    queue = TaskQueue()
+    sim = FleetSimulation(config, n_robots=12, layout=layout, task_queue=queue)
+    sim.reset(seed=1000)
+    controller = FleetPlannerController(directions=direction)
+    controller.reset(sim)
+
+    # A trip that crosses the floor, which is what makes the reserve
+    # unsatisfiable: a far corner pick point to the far-side station.
+    queue.add((2, 41), layout.packing_stations[0], step=0)
+
+    delivered_at = None
+    for tick in range(400):
+        if sim.done:
+            break
+        sim.step(controller.act(sim))
+        if queue.stats()["delivered"]:
+            delivered_at = tick + 1
+            break
+
+    assert delivered_at is not None, "the robot never delivered; it is parked again"
+    assert delivered_at < 400

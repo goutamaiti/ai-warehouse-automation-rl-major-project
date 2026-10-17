@@ -30,6 +30,8 @@ const INK = {
   robotDead: '#9ca3af',
   obstacle: '#be123c',
   ruler: '#8a93a5',
+  shelfSide: '#a8aeb8',
+  arrow: 'rgba(32, 38, 52, 0.26)',
   zoneA: 'rgba(37, 99, 235, 0.05)',
   zoneB: 'rgba(180, 83, 9, 0.05)',
   pending: '#0891b2',
@@ -47,6 +49,8 @@ const CELL_FILL = {
 };
 
 const MAX_CELL = 26;
+//: Below this the ruler labels and robot ids stop being readable.
+const MIN_LABEL_CELL = 15;
 
 //: Width of the ruler gutter. The card asks for a row and a column, so the map
 //: has to be readable as a coordinate grid - without this you have to count
@@ -108,13 +112,53 @@ export default function FleetCanvas({ layout, frame, highlight }) {
         });
       });
 
-      // 2. the static map
+      // 2. the static map. Shelving is drawn with a lit top face and a darker
+      //    side so a dense pod field reads as physical racking rather than a
+      //    block of colour - without it the realistic floor looks flat.
+      const lift = Math.max(2, Math.round(cell * 0.22));
       for (let row = 0; row < layout.height; row += 1) {
         for (let col = 0; col < layout.width; col += 1) {
-          const fill = CELL_FILL[layout.grid[row][col]];
+          const type = layout.grid[row][col];
+          const fill = CELL_FILL[type];
           if (!fill) continue;
-          ctx.fillStyle = fill;
-          ctx.fillRect(col * cell, row * cell, cell, cell);
+          const x = col * cell;
+          const y = row * cell;
+          if (type === CELL.SHELF) {
+            const exposed =
+              row + 1 >= layout.height || layout.grid[row + 1][col] !== CELL.SHELF;
+            if (exposed) {
+              ctx.fillStyle = INK.shelfSide;
+              ctx.fillRect(x, y + cell - lift, cell, lift);
+            }
+            ctx.fillStyle = fill;
+            ctx.fillRect(x, y, cell, cell - (exposed ? lift : 0));
+          } else {
+            ctx.fillStyle = fill;
+            ctx.fillRect(x, y, cell, cell);
+          }
+        }
+      }
+
+      // 2b. one-way lane arrows, faint. This is the floor's actual traffic
+      //     rule, and seeing it is how the congestion difference is explained.
+      if (layout.directions) {
+        ctx.strokeStyle = INK.arrow;
+        ctx.lineWidth = 1;
+        const every = cell >= 14 ? 2 : 3;
+        for (let row = 0; row < layout.height; row += every) {
+          for (let col = 0; col < layout.width; col += every) {
+            const code = layout.directions[row][col];
+            if (!code) continue;
+            const x = col * cell + cell / 2;
+            const y = row * cell + cell / 2;
+            const a = Math.max(2, cell * 0.16);
+            ctx.beginPath();
+            if (code === 1) { ctx.moveTo(x - a, y - a); ctx.lineTo(x + a, y); ctx.lineTo(x - a, y + a); }
+            if (code === 2) { ctx.moveTo(x + a, y - a); ctx.lineTo(x - a, y); ctx.lineTo(x + a, y + a); }
+            if (code === 3) { ctx.moveTo(x - a, y - a); ctx.lineTo(x, y + a); ctx.lineTo(x + a, y - a); }
+            if (code === 4) { ctx.moveTo(x - a, y + a); ctx.lineTo(x, y - a); ctx.lineTo(x + a, y + a); }
+            ctx.stroke();
+          }
         }
       }
 
@@ -199,7 +243,7 @@ export default function FleetCanvas({ layout, frame, highlight }) {
           ctx.lineWidth = 1;
         }
 
-        if (cell >= 16) {
+        if (cell >= MIN_LABEL_CELL) {
           ctx.fillStyle = INK.paper;
           ctx.font = `600 ${Math.round(cell * 0.42)}px ${MONO}`;
           ctx.textAlign = 'center';
