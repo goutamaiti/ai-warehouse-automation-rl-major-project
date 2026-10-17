@@ -40,6 +40,24 @@ from .bfs import bfs
 
 PLANNERS = {"astar": astar, "bfs": bfs}
 
+#: Multiplier on the charge a robot reserves to finish its leg and still reach
+#: a charger. The single-robot PlannerPolicy uses 1.2, which is enough there
+#: because nothing obstructs it. A fleet robot is repeatedly refused by peers,
+#: so it spends ticks waiting and cells detouring that 1.2 never budgeted for -
+#: measured, every fleet death was a robot already diverting to a charger that
+#: died one to four cells short. The value here is set from the sweep recorded
+#: in the commit message, not from reasoning.
+#:
+#: MEASURED on `default`, 600 ticks, 300 requests, seed 1000, fleets of 3 to 16:
+#:   1.2  deadlocks at 3 and 8 robots, and loses robots at every size
+#:   1.5  no deadlocks, still loses robots (2/3, 7/8, 7/12, 15/16 surviving)
+#:   2.0  no deadlocks, every robot survives up to 8, best throughput (110 at 8)
+#:   2.5  every robot survives at 12 and 16, but throughput falls (76 at 8)
+#:   3.0  similar survival, no throughput gain
+#: 2.0 is the knee: above it robots spend their time charging rather than
+#: delivering, below it they die one to four cells short of a charger.
+DEFAULT_SAFETY_FACTOR = 2.0
+
 
 def _action_towards(current: Position, nxt: Position) -> int:
     delta = (nxt[0] - current[0], nxt[1] - current[1])
@@ -57,7 +75,12 @@ class FleetPlannerController:
     rather than being given a pointless move.
     """
 
-    def __init__(self, planner: str = "astar", battery_aware: bool = True) -> None:
+    def __init__(
+        self,
+        planner: str = "astar",
+        battery_aware: bool = True,
+        safety_factor: float = DEFAULT_SAFETY_FACTOR,
+    ) -> None:
         if planner not in PLANNERS:
             raise ValueError(
                 f"unknown planner {planner!r}, expected one of {sorted(PLANNERS)}"
@@ -69,6 +92,9 @@ class FleetPlannerController:
         #: on `default` a robot has 200 moves of charge and nothing else in the
         #: system routes it to power.
         self.battery_aware = battery_aware
+        if safety_factor < 1.0:
+            raise ValueError("safety_factor below 1.0 cannot even reach a charger")
+        self.safety_factor = float(safety_factor)
         self.nodes_expanded = 0
 
     @property
@@ -142,7 +168,7 @@ class FleetPlannerController:
         from_target = sim.path_distance(target, charger)
         if to_target < 0 or from_target < 0:
             return target
-        needed = (to_target + from_target) * battery_cfg.move_cost * 1.2
+        needed = (to_target + from_target) * battery_cfg.move_cost * self.safety_factor
         if battery <= needed or battery <= battery_cfg.critical_threshold:
             return charger
         return target

@@ -35,7 +35,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from .navigation import Position, bfs_distance_field
+from .navigation import DIRECTIONS, Position, bfs_distance_field
 from .warehouse import WarehouseLayout
 
 
@@ -48,9 +48,11 @@ class Zone:
     charger: Position
     #: Every walkable cell nearer to this zone's charger than to any other.
     cells: frozenset[Position]
-    #: Where idle robots wait, nearest-first. Never a station cell, so a waiting
-    #: robot blocks neither power nor a drop-off. More than one, because a zone
-    #: may hold several idle robots at once and they cannot share a cell.
+    #: Where idle robots wait, nearest-first among the cells that are safe to
+    #: park on. Never a station or storage cell, and never a cell adjacent to a
+    #: charging station - see build_zones for why that last one is not optional.
+    #: More than one, because a zone may hold several idle robots at once and
+    #: they cannot share a cell.
     waiting_points: tuple[Position, ...]
 
     def contains(self, position: Position) -> bool:
@@ -84,10 +86,25 @@ def build_zones(layout: WarehouseLayout, max_waiting_points: int = 8) -> tuple[Z
 
     walkable = layout.walkable_mask()
     fields = [bfs_distance_field(walkable, station) for station in stations]
+
+    # Cells a robot must pass through to reach a charger. Parking on one of
+    # these blockades the charger behind it, which is not a theoretical risk:
+    # it was measured. Every approach cell to both chargers on `default` was
+    # being handed out as a waiting point - and as the FIRST choice - so the
+    # first two idle robots in each zone parked squarely on the only routes in.
+    # Robots then died one to three cells from a charger that was free for 203
+    # of 600 ticks, because they could not get to it.
+    approaches = {
+        (station[0] + d_row, station[1] + d_col)
+        for station in stations
+        for d_row, d_col in DIRECTIONS
+        if layout.is_walkable((station[0] + d_row, station[1] + d_col))
+    }
     reserved = (
         set(layout.charging_stations)
         | set(layout.packing_stations)
         | set(layout.storage_points)
+        | approaches
     )
 
     members: list[list[Position]] = [[] for _ in stations]
@@ -109,8 +126,9 @@ def build_zones(layout: WarehouseLayout, max_waiting_points: int = 8) -> tuple[Z
         cells = members[index]
         field = fields[index]
         # Waiting cells: closest to this zone's charger first, so idle robots
-        # sit near power without occupying it. Stations are excluded, and
-        # storage points too - waiting on a pickup cell would block a delivery.
+        # sit near power without occupying *or blocking* it. Stations and
+        # storage points are excluded because waiting on one blocks a delivery;
+        # charger approach cells because waiting on one blocks charging itself.
         candidates = sorted(
             (cell for cell in cells if cell not in reserved),
             key=lambda cell: (int(field[cell]), cell),

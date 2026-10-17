@@ -359,3 +359,88 @@ def test_outstanding_work_follows_the_queue_and_the_robots():
     member.robot.position = member.task.dropoff
     sim.step({0: Action.WAIT})
     assert not sim.has_outstanding_work(), "everything delivered, nothing queued"
+
+
+# ----------------------------------------------------------------------
+# Fleet battery management
+# ----------------------------------------------------------------------
+
+
+def test_no_waiting_point_blocks_access_to_a_charger():
+    """Regression: idle robots used to park on the only routes into a charger.
+
+    Measured before the fix: every approach cell to both chargers on `default`
+    was handed out as a waiting point, and as the FIRST choice, so the first two
+    idle robots in each zone parked squarely on the way in. Robots then died one
+    to three cells from a charger that stood free for 203 of 600 ticks, and two
+    corpses on the two approach cells sealed it permanently.
+    """
+    from simulation.navigation import DIRECTIONS
+
+    sim, _ = queued_fleet(n_robots=1)
+    approaches = {
+        (station[0] + d_row, station[1] + d_col)
+        for station in sim.layout.charging_stations
+        for d_row, d_col in DIRECTIONS
+        if sim.layout.is_walkable((station[0] + d_row, station[1] + d_col))
+    }
+    assert approaches, "the test is meaningless if no approach cells exist"
+    for zone in sim.zones:
+        blocking = [p for p in zone.waiting_points if p in approaches]
+        assert not blocking, f"zone {zone.name} would park robots on {blocking}"
+
+
+def test_every_charger_keeps_at_least_one_free_approach():
+    """A charger nothing can reach is the same as no charger."""
+    from simulation.navigation import DIRECTIONS
+
+    sim, _ = queued_fleet(n_robots=8)
+    parked = {m.waiting_point for m in sim.members.values()}
+    for station in sim.layout.charging_stations:
+        approaches = [
+            (station[0] + d_row, station[1] + d_col)
+            for d_row, d_col in DIRECTIONS
+            if sim.layout.is_walkable((station[0] + d_row, station[1] + d_col))
+        ]
+        assert any(a not in parked for a in approaches), (
+            f"charger {station} would be sealed in by parked robots"
+        )
+
+
+def test_the_fleet_reserves_more_charge_than_a_single_robot_does():
+    """A fleet robot is refused by peers, so it must budget for the detours.
+
+    The single-robot planner reserves 1.2x the charge it needs; copying that
+    into a fleet killed robots one to four cells short of a charger, because it
+    never budgeted for the ticks spent blocked and the cells spent detouring.
+    """
+    from baselines.controller import PlannerPolicy
+    from baselines.fleet_controller import DEFAULT_SAFETY_FACTOR, FleetPlannerController
+
+    assert DEFAULT_SAFETY_FACTOR > PlannerPolicy().safety_factor
+    assert FleetPlannerController().safety_factor == DEFAULT_SAFETY_FACTOR
+
+
+def test_a_safety_factor_below_one_is_refused():
+    """Below 1.0 the reserve cannot even cover the trip to the charger."""
+    from baselines.fleet_controller import FleetPlannerController
+
+    with pytest.raises(ValueError, match="cannot even reach"):
+        FleetPlannerController(safety_factor=0.5)
+
+
+def test_an_idle_robot_tops_up_before_parking():
+    """Idle time is the only time a charging detour costs no delivery."""
+    from baselines.fleet_controller import FleetPlannerController
+
+    sim, _ = queued_fleet(n_robots=2)
+    controller = FleetPlannerController()
+    member = sim.members[0]
+    assert member.task is None
+
+    member.robot.battery = sim.config.battery.capacity * 0.5
+    charger, _ = sim.nearest_charger(member.position)
+    assert controller._goal_for(sim, 0) == charger
+
+    member.robot.battery = sim.config.battery.capacity
+    assert controller._goal_for(sim, 0) == member.waiting_point
