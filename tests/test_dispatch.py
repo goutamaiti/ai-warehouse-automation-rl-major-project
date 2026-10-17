@@ -15,6 +15,7 @@ from simulation.config import ScenarioConfig, find_scenario, load_scenario
 from simulation.dispatch import RequestStatus, TaskQueue
 from simulation.engine import Action
 from simulation.fleet import FleetSimulation
+from simulation.warehouse import CellType
 from simulation.zones import build_zones, zone_of
 
 
@@ -293,3 +294,68 @@ def test_snapshot_exposes_zones_requests_and_dispatch():
     assert len(payload["requests"]) == 1
     assert len(payload["dispatch"]) == 1
     assert payload["robots"][0]["home_zone"] in {"A", "B"}
+
+
+# ----------------------------------------------------------------------
+# An idle fleet is not a jammed fleet
+# ----------------------------------------------------------------------
+
+
+def test_an_idle_fleet_with_an_empty_queue_is_not_deadlocked():
+    """Regression: the deadlock detector used to fire on a caught-up warehouse.
+
+    Robots parked at their waiting points with nothing queued make no moves, no
+    pickups, no deliveries and no charges - the same signature as a standoff.
+    Conflating the two stopped a continuous warehouse the moment it caught up
+    with its work, which is the normal state of a warehouse between requests.
+    """
+    from simulation.fleet import DEADLOCK_STREAK
+
+    sim, queue = queued_fleet(n_robots=3)
+    assert not queue.requests
+    assert not sim.has_outstanding_work()
+
+    for _ in range(DEADLOCK_STREAK * 2):
+        outcome = sim.step({})
+        assert not outcome.deadlocked, "an idle fleet was reported as deadlocked"
+    assert not sim.done
+    assert sim.snapshot()["idle"] is True
+
+
+def test_a_fleet_with_queued_work_it_cannot_reach_is_still_deadlocked():
+    """The detector must keep working once there IS something to do."""
+    from simulation.fleet import DEADLOCK_STREAK
+
+    sim, queue = queued_fleet(n_robots=1)
+    queue.add(sim.layout.storage_points[0], sim.layout.packing_stations[0])
+    sim.step({})
+    assert sim.has_outstanding_work()
+
+    # Off the charging station first - a robot topping up is making progress,
+    # and would legitimately reset the streak every tick.
+    sim.members[0].robot.position = (1, 5)
+    assert sim.layout.cell(sim.members[0].position) is not CellType.CHARGING
+
+    outcome = None
+    for _ in range(DEADLOCK_STREAK):
+        # Drive into the outer wall every tick: work outstanding, no progress.
+        outcome = sim.step({0: Action.UP})
+    assert outcome is not None and outcome.deadlocked
+
+
+def test_outstanding_work_follows_the_queue_and_the_robots():
+    sim, queue = queued_fleet(n_robots=1)
+    assert not sim.has_outstanding_work()
+
+    queue.add(sim.layout.storage_points[0], sim.layout.packing_stations[0])
+    assert sim.has_outstanding_work(), "a waiting request is outstanding work"
+
+    sim.step({})
+    assert sim.has_outstanding_work(), "an assigned task is outstanding work"
+
+    member = sim.members[0]
+    member.robot.position = member.task.pickup
+    sim.step({0: Action.WAIT})
+    member.robot.position = member.task.dropoff
+    sim.step({0: Action.WAIT})
+    assert not sim.has_outstanding_work(), "everything delivered, nothing queued"

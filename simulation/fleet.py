@@ -49,6 +49,32 @@ from .zones import Zone, build_zones, zone_of
 #: a continuous session wastes minutes on it.
 DEADLOCK_STREAK = 8
 
+#: Consecutive refusals by a peer before a robot steps aside to break the
+#: standoff. Three is long enough that ordinary contention resolves on its own -
+#: a robot waiting one or two ticks for an aisle to clear is normal - and short
+#: enough to break a genuine standoff well inside DEADLOCK_STREAK.
+#:
+#: Why the engine does this and not the controller: the id-priority rule makes
+#: swaps impossible, so two robots facing each other in a one-wide aisle retry
+#: forever. That standoff is a property of the arbitration rule, so the remedy
+#: belongs with it. It also has to be here for the comparison to stay fair - a
+#: learned policy has no observation feature for "I have been blocked three
+#: times", so requiring controllers to break standoffs would measure
+#: deadlock-handling rather than navigation, which is what the project studies.
+#:
+#: MEASURED: off by default, because it did not earn its place. On `default`
+#: with the shared queue, 180 ticks, seeds from 1000, yielding fired between 0
+#: and 11 times across fleets of 3 to 16 robots and showed no consistent
+#: benefit - at eight robots it was actively worse (27 delivered against 38
+#: with it disabled). The standoff it was built for is already prevented by
+#: exclusive assignment, which stops two robots being routed to the same
+#: pickup in the first place.
+#:
+#: The mechanism is kept, tested and opt-in rather than deleted: it is the
+#: documented remedy if a future layout with long one-wide aisles reintroduces
+#: standoffs. Set to a positive number to enable it.
+DEFAULT_YIELD_AFTER = 0
+
 
 @dataclass
 class RobotCounters:
@@ -68,6 +94,8 @@ class RobotCounters:
     dynamic_collisions: int = 0
     #: Moves refused because another robot held, or won, the target cell.
     blocked_by_robot: int = 0
+    #: Times this robot stepped aside to break a standoff.
+    yields: int = 0
     idle_steps: int = 0
     energy_consumed: float = 0.0
     charging_events: int = 0
@@ -87,6 +115,7 @@ class RobotCounters:
             "static_collisions": self.static_collisions,
             "dynamic_collisions": self.dynamic_collisions,
             "blocked_by_robot": self.blocked_by_robot,
+            "yields": self.yields,
             "idle_steps": self.idle_steps,
             "energy_consumed": round(self.energy_consumed, 3),
             "charging_events": self.charging_events,
@@ -109,6 +138,9 @@ class FleetMember:
     home_zone: str = ""
     #: Which of its zone's waiting cells this robot parks on.
     waiting_point: Position | None = None
+    #: Consecutive ticks this robot has been refused by a peer. Reset by any
+    #: successful move; drives the yielding rule.
+    blocked_streak: int = 0
     #: False once the robot's battery is flat; it stops acting but stays on the
     #: floor as an obstacle, because a dead robot does not vanish from an aisle.
     alive: bool = True
@@ -141,6 +173,8 @@ class RobotStepOutcome:
     blocked_by_static: bool = False
     blocked_by_obstacle: bool = False
     blocked_by_robot: bool = False
+    #: True when the engine turned a refused move into a sidestep.
+    yielded: bool = False
     waited: bool = False
     picked_up: bool = False
     delivered: bool = False
@@ -169,7 +203,7 @@ class FleetStepOutcome:
     def progressed(self) -> bool:
         """Did anything useful happen anywhere in the fleet this tick?"""
         return any(
-            o.moved or o.picked_up or o.delivered or o.charged > 0
+            o.moved or o.yielded or o.picked_up or o.delivered or o.charged > 0
             for o in self.robots.values()
         )
 
@@ -210,9 +244,13 @@ class FleetSimulation:
         n_robots: int = 3,
         layout: WarehouseLayout | None = None,
         task_queue: TaskQueue | None = None,
+        yield_after: int = DEFAULT_YIELD_AFTER,
     ) -> None:
         if n_robots < 1:
             raise ValueError(f"a fleet needs at least one robot, got {n_robots}")
+        if yield_after < 0:
+            raise ValueError("yield_after must be zero (disabled) or positive")
+        self.yield_after = int(yield_after)
         self.config = config
         self.n_robots = int(n_robots)
         self.layout = layout if layout is not None else build_layout(config.layout)
@@ -328,6 +366,19 @@ class FleetSimulation:
     def done(self) -> bool:
         return self._done
 
+    def has_outstanding_work(self) -> bool:
+        """Is there anything the fleet is currently supposed to be doing?
+
+        True while any living robot holds a task, or any request is still
+        waiting to be assigned. False means the floor has caught up - which is a
+        normal state for a warehouse that never resets, not a failure.
+        """
+        if any(m.task is not None for m in self.members.values() if m.alive):
+            return True
+        if self.queue is not None and self.queue.waiting():
+            return True
+        return False
+
     @property
     def positions(self) -> dict[int, Position]:
         return {rid: m.position for rid, m in self.members.items()}
@@ -405,7 +456,14 @@ class FleetSimulation:
         )
 
         self._idle_streak = 0 if outcome.progressed else self._idle_streak + 1
-        outcome.deadlocked = self._idle_streak >= DEADLOCK_STREAK
+        # A fleet is only deadlocked if it has work it cannot make progress on.
+        # An idle fleet parked at its waiting points with an empty queue makes
+        # no moves, pickups, deliveries or charges either - and it is not stuck,
+        # it is waiting for the next request. Conflating the two would stop a
+        # continuous warehouse the moment it caught up with its queue.
+        outcome.deadlocked = self.has_outstanding_work() and (
+            self._idle_streak >= DEADLOCK_STREAK
+        )
         outcome.all_dead = all(not m.alive for m in self.members.values())
         self._done = outcome.deadlocked or outcome.all_dead
         return outcome
@@ -457,17 +515,75 @@ class FleetSimulation:
                 robot_outcome.energy_used = battery_cfg.idle_cost
             elif target in occupied.values():
                 robot_outcome.blocked_by_robot = True
-                robot_outcome.events.append("blocked_by_robot")
                 member.counters.blocked_by_robot += 1
-                robot_outcome.energy_used = battery_cfg.idle_cost
+                member.blocked_streak += 1
+                sidestep = (
+                    self._sidestep(member, target, occupied)
+                    if self.yield_after and member.blocked_streak >= self.yield_after
+                    else None
+                )
+                if sidestep is not None:
+                    # Step aside to break the standoff. Recorded as a yield, not
+                    # as a move the controller asked for, so a replay shows the
+                    # engine intervened rather than the policy changing its mind.
+                    moves[robot_id] = sidestep
+                    occupied[robot_id] = sidestep
+                    robot_outcome.yielded = True
+                    robot_outcome.events.append("yielded")
+                    member.counters.yields += 1
+                    member.counters.moves += 1
+                    member.blocked_streak = 0
+                    robot_outcome.energy_used = battery_cfg.move_cost
+                else:
+                    robot_outcome.events.append("blocked_by_robot")
+                    robot_outcome.energy_used = battery_cfg.idle_cost
             else:
                 moves[robot_id] = target
                 occupied[robot_id] = target
                 robot_outcome.moved = True
                 robot_outcome.energy_used = battery_cfg.move_cost
                 member.counters.moves += 1
+                member.blocked_streak = 0
 
         return moves
+
+    def _sidestep(
+        self,
+        member: FleetMember,
+        refused: Position,
+        occupied: dict[int, Position],
+    ) -> Position | None:
+        """A free neighbouring cell to retreat into, or ``None`` if boxed in.
+
+        Candidates are every walkable neighbour that is free of racking, traffic
+        and peers, excluding the cell the robot was just refused - stepping
+        there is what it already failed to do. Among those, the cell *furthest*
+        from the refused cell is chosen, so the robot genuinely clears the
+        contested spot instead of shuffling alongside it; ties break on grid
+        order, keeping the choice deterministic and a run replayable.
+
+        A robot with nowhere to go is left blocked, and the deadlock detector
+        remains the backstop for a fleet that is wedged solid.
+        """
+        taken = set(occupied.values()) | set(self.obstacles.positions)
+        candidates = []
+        for d_row, d_col in DIRECTIONS:
+            cell = (member.position[0] + d_row, member.position[1] + d_col)
+            if cell == refused or cell in taken:
+                continue
+            if not self.layout.is_walkable(cell):
+                continue
+            candidates.append(cell)
+        if not candidates:
+            return None
+        return max(
+            candidates,
+            key=lambda cell: (
+                abs(cell[0] - refused[0]) + abs(cell[1] - refused[1]),
+                -cell[0],
+                -cell[1],
+            ),
+        )
 
     def _handle_interactions(
         self, member: FleetMember, outcome: RobotStepOutcome
@@ -611,6 +727,7 @@ class FleetSimulation:
             "moves": sum(c.moves for c in per_robot.values()),
             "collisions": sum(c.collisions for c in per_robot.values()),
             "blocked_by_robot": sum(c.blocked_by_robot for c in per_robot.values()),
+            "yields": sum(c.yields for c in per_robot.values()),
             "idle_steps": sum(c.idle_steps for c in per_robot.values()),
             "energy_consumed": round(
                 sum(c.energy_consumed for c in per_robot.values()), 3
@@ -619,6 +736,7 @@ class FleetSimulation:
             "tasks_delivered": sum(c.tasks_delivered for c in per_robot.values()),
             "robots_alive": sum(1 for m in self.members.values() if m.alive),
             "deadlock_streak": self._idle_streak,
+            "outstanding_work": self.has_outstanding_work(),
             "per_robot": {rid: c.to_dict() for rid, c in per_robot.items()},
         }
 
@@ -632,7 +750,9 @@ class FleetSimulation:
             ],
             "obstacles": self.obstacles.to_list(),
             "events": [list(e) for e in (events or [])],
-            "deadlocked": self._idle_streak >= DEADLOCK_STREAK,
+            "deadlocked": self.has_outstanding_work()
+            and self._idle_streak >= DEADLOCK_STREAK,
+            "idle": not self.has_outstanding_work(),
             "zones": [z.to_dict() for z in self.zones],
             "dispatch": [d.to_dict() for d in self.last_dispatch],
             "queue": self.queue.stats() if self.queue is not None else None,

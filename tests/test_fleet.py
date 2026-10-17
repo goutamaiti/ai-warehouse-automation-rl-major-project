@@ -13,7 +13,7 @@ import pytest
 
 from simulation.config import ScenarioConfig, find_scenario, load_scenario
 from simulation.engine import Action
-from simulation.fleet import DEADLOCK_STREAK, FleetSimulation
+from simulation.fleet import DEADLOCK_STREAK, DEFAULT_YIELD_AFTER, FleetSimulation
 from simulation.warehouse import CellType
 
 
@@ -21,8 +21,13 @@ def scenario(name: str = "default") -> ScenarioConfig:
     return load_scenario(find_scenario(name))
 
 
-def fleet(name: str = "default", n_robots: int = 3, seed: int = 1000) -> FleetSimulation:
-    sim = FleetSimulation(scenario(name), n_robots=n_robots)
+def fleet(
+    name: str = "default",
+    n_robots: int = 3,
+    seed: int = 1000,
+    yield_after: int = DEFAULT_YIELD_AFTER,
+) -> FleetSimulation:
+    sim = FleetSimulation(scenario(name), n_robots=n_robots, yield_after=yield_after)
     sim.reset(seed=seed)
     return sim
 
@@ -191,9 +196,10 @@ def test_a_robot_with_no_action_holds_position():
 # ----------------------------------------------------------------------
 
 
-def test_a_jammed_fleet_is_reported_as_deadlocked_rather_than_spinning():
-    """Two robots in a standoff must be noticed, not left to run forever."""
+def test_a_standoff_without_yielding_is_reported_as_a_deadlock():
+    """The detector is the backstop, and yielding is off by default."""
     sim = fleet(n_robots=2)
+    assert sim.yield_after == 0, "yielding is off by default; see DEFAULT_YIELD_AFTER"
     _two_robots_facing_each_other(sim)
 
     outcome = None
@@ -204,6 +210,68 @@ def test_a_jammed_fleet_is_reported_as_deadlocked_rather_than_spinning():
     assert sim.done
     with pytest.raises(RuntimeError, match="finished"):
         sim.step({0: Action.WAIT, 1: Action.WAIT})
+
+
+def test_yielding_breaks_a_standoff_when_it_is_enabled():
+    """The congestion fix: a robot refused repeatedly steps aside.
+
+    Two robots facing each other in an aisle can never swap under the
+    id-priority rule, so without this they retry until the deadlock detector
+    fires. With it, the loser clears the contested cell and traffic resumes.
+    """
+    sim = fleet(n_robots=2, yield_after=3)
+    left, right = _two_robots_facing_each_other(sim)
+
+    yielded = False
+    for _ in range(DEADLOCK_STREAK):
+        outcome = sim.step({0: Action.RIGHT, 1: Action.LEFT})
+        yielded = yielded or any(o.yielded for o in outcome.robots.values())
+        assert not outcome.deadlocked, "yielding should have prevented the deadlock"
+
+    assert yielded, "no robot ever stepped aside"
+    assert sum(m.counters.yields for m in sim.members.values()) >= 1
+    assert {sim.members[0].position, sim.members[1].position} != {left, right}
+
+
+def test_a_robot_yields_only_after_being_refused_repeatedly():
+    """Ordinary contention must resolve on its own, without a sidestep."""
+    yield_after = 3
+    sim = fleet(n_robots=2, yield_after=yield_after)
+    _two_robots_facing_each_other(sim)
+
+    for tick in range(yield_after - 1):
+        outcome = sim.step({0: Action.RIGHT, 1: Action.LEFT})
+        assert not any(o.yielded for o in outcome.robots.values()), (
+            f"yielded too early, on tick {tick}"
+        )
+
+    outcome = sim.step({0: Action.RIGHT, 1: Action.LEFT})
+    assert any(o.yielded for o in outcome.robots.values())
+
+
+def test_a_boxed_in_robot_has_nowhere_to_yield_to():
+    """With every escape taken, the sidestep must refuse rather than invent one.
+
+    The deadlock detector is the backstop for a fleet that is wedged solid, so
+    _sidestep returning None is the behaviour that hands over to it.
+    """
+    sim = fleet(n_robots=5, yield_after=3)
+    member = sim.members[0]
+    member.robot.position = (1, 5)
+    refused = (1, 6)
+
+    # Fill every other neighbour of (1, 5) with peers. Row 0 is the outer wall,
+    # so only the remaining walkable neighbours need occupying.
+    fillers = [
+        cell
+        for cell in ((0, 5), (2, 5), (1, 4))
+        if sim.layout.is_walkable(cell)
+    ]
+    for robot_id, cell in zip([1, 2, 3, 4], fillers):
+        sim.members[robot_id].robot.position = cell
+
+    occupied = dict(sim.positions)
+    assert sim._sidestep(member, refused, occupied) is None
 
 
 def test_charging_counts_as_progress_so_a_charging_fleet_is_not_deadlocked():
