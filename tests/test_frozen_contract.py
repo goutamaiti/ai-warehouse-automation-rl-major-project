@@ -158,3 +158,135 @@ def test_a_fixed_action_sequence_replays_identically(golden, scenario):
         assert bool(truncated) == expected["truncated"], where
 
     assert len(expected_steps) > 0, f"{scenario} recorded no steps"
+
+
+# ----------------------------------------------------------------------
+# Added after an audit found the fixed action sequence too shallow: it never
+# delivered, charged, depleted, timed out or regenerated a task, and nothing
+# downstream of the environment was frozen at all.
+# ----------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("scenario", SCENARIOS)
+def test_the_whole_resolved_config_is_unchanged(golden, scenario):
+    """Every field, not just the ones a frozen step happens to exercise.
+
+    Catches max_steps (which defines success), move_probability, min_separation,
+    charge_rate, the reward weights only terminal events trigger, a dataclass
+    default drifting, and a YAML section emptied to `null` - which silently
+    resets that entire section to defaults without tripping the unknown-key
+    check in simulation/config.py.
+    """
+    import dataclasses
+
+    expected = golden["scenarios"][scenario]["config"]
+    actual = dataclasses.asdict(make_env(scenario).config)
+    assert actual == expected, (
+        f"{scenario}: resolved config changed. Differing keys: "
+        f"{sorted(k for k in set(expected) | set(actual) if expected.get(k) != actual.get(k))}"
+    )
+
+
+@pytest.mark.parametrize("scenario", SCENARIOS)
+def test_scenario_name_resolves_to_the_same_file(golden, scenario):
+    """find_scenario prefers configs/<name>.yaml over configs/scenarios/<name>.yaml.
+
+    A fleet variant dropped at the configs root under an existing name would
+    silently shadow the frozen scenario, and results would still be filed under
+    the same config.name - so reruns would overwrite the committed tables with
+    numbers from a different world.
+    """
+    from pathlib import Path as _Path
+
+    from simulation.config import find_scenario
+
+    resolved = _Path(find_scenario(scenario)).resolve()
+    repo_root = _Path(__file__).resolve().parents[1]
+    assert (
+        resolved.relative_to(repo_root).as_posix()
+        == golden["scenarios"][scenario]["scenario_file"]
+    )
+
+
+@pytest.mark.parametrize("scenario", SCENARIOS)
+def test_a_full_astar_episode_replays_identically(golden, scenario):
+    """A complete episode with the classical controller.
+
+    This is what reaches the paths the fixed action sequence never touches -
+    pickup, delivery, charging, task regeneration, battery depletion, timeout -
+    and it pins the full EpisodeCounters record, from which analytics/metrics.py
+    derives every number reported in data/results/.
+
+    It also freezes A* itself, which matters because A* is the reference every
+    PPO claim in the project is measured against. If the yardstick moves, every
+    comparison moves with it.
+    """
+    from baselines.controller import PlannerPolicy
+
+    expected = golden["scenarios"][scenario]["astar_episode"]
+    env = make_env(scenario)
+    policy = PlannerPolicy(planner="astar")
+    observation, _info = env.reset(seed=SEED)
+    policy.reset(env, SEED)
+
+    total = 0.0
+    events: list[str] = []
+    terminated = truncated = False
+    while not (terminated or truncated):
+        observation, reward, terminated, truncated, info = env.step(
+            policy.act(observation, env)
+        )
+        total += reward
+        events.extend(info["events"])
+
+    assert env.sim.counters.to_dict() == expected["counters"], (
+        f"{scenario}: episode counters changed - every reported metric derives "
+        "from these"
+    )
+    assert total == pytest.approx(expected["total_reward"], abs=TOLERANCE)
+    assert bool(terminated) == expected["terminated"]
+    assert bool(truncated) == expected["truncated"]
+    assert env.sim.robot.battery == pytest.approx(
+        expected["final_battery"], abs=TOLERANCE
+    )
+    assert len(events) == expected["n_events"]
+    assert (
+        hashlib.sha256("|".join(events).encode()).hexdigest()
+        == expected["events_sha256"]
+    ), f"{scenario}: the ordered event stream changed"
+
+
+def test_measurement_pipeline_constants_are_unchanged(golden):
+    """The layer that turns behaviour into the committed numbers.
+
+    The environment can be preserved perfectly while the pipeline measuring it
+    changes underneath, which would move every table in data/results/ with
+    nothing in the environment tests noticing.
+    """
+    from analytics.metrics import SUCCESS_ONLY_METRICS, _mean_std
+    from baselines.controller import PlannerPolicy
+
+    expected = golden["pipeline"]
+    assert list(SUCCESS_ONLY_METRICS) == expected["success_only_metrics"], (
+        "which metrics are averaged over successful episodes only has changed; "
+        "adding one turns a measured value into 'n/a' in every report"
+    )
+
+    planner = PlannerPolicy(planner="astar")
+    assert planner.safety_factor == pytest.approx(
+        expected["planner_safety_factor"], abs=TOLERANCE
+    )
+    assert planner.charge_until == pytest.approx(
+        expected["planner_charge_until"], abs=TOLERANCE
+    )
+
+    probe = _mean_std([1.0, 2.0, 3.0, 4.0, 5.0])
+    for key, value in expected["mean_std_probe"].items():
+        actual = probe[key]
+        if isinstance(value, float):
+            assert actual == pytest.approx(value, abs=TOLERANCE), (
+                f"aggregation maths changed ({key}); every '+/-' in the project "
+                "shifts with no visible cause"
+            )
+        else:
+            assert actual == value

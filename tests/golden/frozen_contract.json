@@ -21,9 +21,98 @@
     4,
     4
   ],
+  "pipeline": {
+    "mean_std_probe": {
+      "ci95": 1.3859,
+      "mean": 3.0,
+      "n": 5,
+      "std": 1.5811
+    },
+    "planner_charge_until": 0.9,
+    "planner_safety_factor": 1.2,
+    "success_only_metrics": [
+      "steps",
+      "path_length",
+      "path_efficiency",
+      "delivery_time"
+    ]
+  },
   "precision": 6,
   "scenarios": {
     "battery_constrained": {
+      "astar_episode": {
+        "counters": {
+          "charging_events": 8,
+          "collisions": 0,
+          "dynamic_collisions": 0,
+          "energy_consumed": 86.2,
+          "idle_steps": 7,
+          "moves": 57,
+          "optimal_path_length": 53,
+          "static_collisions": 0,
+          "steps": 64,
+          "tasks_delivered": 2,
+          "tasks_failed": 0,
+          "termination_reason": "all_tasks_delivered"
+        },
+        "events_sha256": "dab8afbf8c4d545619d5d2cca3b36be6d6783f1a775b6f77510a9968341e74ca",
+        "final_battery": 38.8,
+        "n_events": 13,
+        "terminated": true,
+        "total_reward": 94.376,
+        "truncated": false
+      },
+      "config": {
+        "battery": {
+          "capacity": 100.0,
+          "charge_rate": 10.0,
+          "critical_threshold": 15.0,
+          "idle_cost": 0.1,
+          "low_threshold": 35.0,
+          "move_cost": 1.5,
+          "start_level": 45.0
+        },
+        "description": "21x15 warehouse, two delivery tasks per episode, small starting charge and expensive movement. Tests whether a controller detours to a charger before the battery runs out.\n",
+        "layout": {
+          "aisle_width": 1,
+          "height": 15,
+          "n_charging_stations": 2,
+          "n_packing_stations": 2,
+          "shelf_block_height": 2,
+          "shelf_block_width": 3,
+          "station_rows": 2,
+          "top_aisle": 1,
+          "width": 21
+        },
+        "max_steps": 600,
+        "name": "battery_constrained",
+        "observation_window": 5,
+        "obstacles": {
+          "behaviour": "random_walk",
+          "move_probability": 0.6,
+          "n_dynamic": 0
+        },
+        "random_start_charger": false,
+        "reward": {
+          "battery_depleted_penalty": 10.0,
+          "battery_reserve_safety": 2.0,
+          "battery_reserve_weight": 0.0,
+          "collision_penalty": 1.0,
+          "delivery_reward": 20.0,
+          "energy_weight": 0.02,
+          "pickup_reward": 5.0,
+          "progress_weight": 1.0,
+          "shaping_gamma": 1.0,
+          "step_penalty": 0.05,
+          "timeout_penalty": 5.0,
+          "wait_penalty": 0.1
+        },
+        "seed": 0,
+        "tasks": {
+          "min_separation": 6,
+          "tasks_per_episode": 2
+        }
+      },
       "layout": {
         "charging_stations": [
           [
@@ -250,6 +339,7 @@
         "timeout",
         "wait"
       ],
+      "scenario_file": "configs/scenarios/battery_constrained.yaml",
       "spaces": {
         "n_actions": 5,
         "observation_high": 1.0,
@@ -688,6 +778,79 @@
       ]
     },
     "battery_tuned": {
+      "astar_episode": {
+        "counters": {
+          "charging_events": 8,
+          "collisions": 0,
+          "dynamic_collisions": 0,
+          "energy_consumed": 86.2,
+          "idle_steps": 7,
+          "moves": 57,
+          "optimal_path_length": 53,
+          "static_collisions": 0,
+          "steps": 64,
+          "tasks_delivered": 2,
+          "tasks_failed": 0,
+          "termination_reason": "all_tasks_delivered"
+        },
+        "events_sha256": "dab8afbf8c4d545619d5d2cca3b36be6d6783f1a775b6f77510a9968341e74ca",
+        "final_battery": 38.8,
+        "n_events": 13,
+        "terminated": true,
+        "total_reward": 91.576,
+        "truncated": false
+      },
+      "config": {
+        "battery": {
+          "capacity": 100.0,
+          "charge_rate": 10.0,
+          "critical_threshold": 15.0,
+          "idle_cost": 0.1,
+          "low_threshold": 35.0,
+          "move_cost": 1.5,
+          "start_level": 45.0
+        },
+        "description": "battery_constrained with a corrected reward: a depletion penalty that exceeds anything an episode can bank, a potential-based battery-reserve term, and a waiting penalty that stops camping on a charger being the cheapest way to avoid dying.\n",
+        "layout": {
+          "aisle_width": 1,
+          "height": 15,
+          "n_charging_stations": 2,
+          "n_packing_stations": 2,
+          "shelf_block_height": 2,
+          "shelf_block_width": 3,
+          "station_rows": 2,
+          "top_aisle": 1,
+          "width": 21
+        },
+        "max_steps": 600,
+        "name": "battery_tuned",
+        "observation_window": 5,
+        "obstacles": {
+          "behaviour": "random_walk",
+          "move_probability": 0.6,
+          "n_dynamic": 0
+        },
+        "random_start_charger": false,
+        "reward": {
+          "battery_depleted_penalty": 60.0,
+          "battery_reserve_safety": 2.0,
+          "battery_reserve_weight": 10.0,
+          "collision_penalty": 1.0,
+          "delivery_reward": 20.0,
+          "energy_weight": 0.02,
+          "pickup_reward": 5.0,
+          "progress_weight": 1.0,
+          "shaping_gamma": 1.0,
+          "step_penalty": 0.05,
+          "timeout_penalty": 5.0,
+          "wait_penalty": 0.5
+        },
+        "seed": 0,
+        "tasks": {
+          "min_separation": 6,
+          "tasks_per_episode": 2
+        }
+      },
       "layout": {
         "charging_stations": [
           [
@@ -914,6 +1077,7 @@
         "timeout",
         "wait"
       ],
+      "scenario_file": "configs/scenarios/battery_tuned.yaml",
       "spaces": {
         "n_actions": 5,
         "observation_high": 1.0,
@@ -1352,6 +1516,79 @@
       ]
     },
     "complex_static": {
+      "astar_episode": {
+        "counters": {
+          "charging_events": 0,
+          "collisions": 0,
+          "dynamic_collisions": 0,
+          "energy_consumed": 19.5,
+          "idle_steps": 0,
+          "moves": 39,
+          "optimal_path_length": 39,
+          "static_collisions": 0,
+          "steps": 39,
+          "tasks_delivered": 1,
+          "tasks_failed": 0,
+          "termination_reason": "all_tasks_delivered"
+        },
+        "events_sha256": "ee8b061249369d480b95475a240343fc654beb1d7cef0839667813ed7dcf59fe",
+        "final_battery": 80.5,
+        "n_events": 2,
+        "terminated": true,
+        "total_reward": 60.66,
+        "truncated": false
+      },
+      "config": {
+        "battery": {
+          "capacity": 100.0,
+          "charge_rate": 8.0,
+          "critical_threshold": 10.0,
+          "idle_cost": 0.05,
+          "low_threshold": 30.0,
+          "move_cost": 0.5,
+          "start_level": 100.0
+        },
+        "description": "31x21 warehouse with denser shelving. Paths are longer and contain more forced detours, which is where a shaped RL policy and A* start to differ.\n",
+        "layout": {
+          "aisle_width": 1,
+          "height": 21,
+          "n_charging_stations": 2,
+          "n_packing_stations": 3,
+          "shelf_block_height": 3,
+          "shelf_block_width": 3,
+          "station_rows": 2,
+          "top_aisle": 1,
+          "width": 31
+        },
+        "max_steps": 600,
+        "name": "complex_static",
+        "observation_window": 5,
+        "obstacles": {
+          "behaviour": "random_walk",
+          "move_probability": 0.6,
+          "n_dynamic": 0
+        },
+        "random_start_charger": false,
+        "reward": {
+          "battery_depleted_penalty": 10.0,
+          "battery_reserve_safety": 2.0,
+          "battery_reserve_weight": 0.0,
+          "collision_penalty": 1.0,
+          "delivery_reward": 20.0,
+          "energy_weight": 0.02,
+          "pickup_reward": 5.0,
+          "progress_weight": 1.0,
+          "shaping_gamma": 1.0,
+          "step_penalty": 0.05,
+          "timeout_penalty": 5.0,
+          "wait_penalty": 0.1
+        },
+        "seed": 0,
+        "tasks": {
+          "min_separation": 10,
+          "tasks_per_episode": 1
+        }
+      },
       "layout": {
         "charging_stations": [
           [
@@ -1710,6 +1947,7 @@
         "timeout",
         "wait"
       ],
+      "scenario_file": "configs/scenarios/complex_static.yaml",
       "spaces": {
         "n_actions": 5,
         "observation_high": 1.0,
@@ -2156,6 +2394,79 @@
       ]
     },
     "default": {
+      "astar_episode": {
+        "counters": {
+          "charging_events": 0,
+          "collisions": 0,
+          "dynamic_collisions": 0,
+          "energy_consumed": 15.5,
+          "idle_steps": 0,
+          "moves": 31,
+          "optimal_path_length": 31,
+          "static_collisions": 0,
+          "steps": 31,
+          "tasks_delivered": 1,
+          "tasks_failed": 0,
+          "termination_reason": "all_tasks_delivered"
+        },
+        "events_sha256": "ee8b061249369d480b95475a240343fc654beb1d7cef0839667813ed7dcf59fe",
+        "final_battery": 84.5,
+        "n_events": 2,
+        "terminated": true,
+        "total_reward": 53.14,
+        "truncated": false
+      },
+      "config": {
+        "battery": {
+          "capacity": 100.0,
+          "charge_rate": 8.0,
+          "critical_threshold": 10.0,
+          "idle_cost": 0.05,
+          "low_threshold": 30.0,
+          "move_cost": 0.5,
+          "start_level": 100.0
+        },
+        "description": "21x15 warehouse, one robot, one pickup-and-delivery task, no dynamic obstacles, battery large enough that it is not the limiting factor.\n",
+        "layout": {
+          "aisle_width": 1,
+          "height": 15,
+          "n_charging_stations": 2,
+          "n_packing_stations": 2,
+          "shelf_block_height": 2,
+          "shelf_block_width": 3,
+          "station_rows": 2,
+          "top_aisle": 1,
+          "width": 21
+        },
+        "max_steps": 400,
+        "name": "default",
+        "observation_window": 5,
+        "obstacles": {
+          "behaviour": "random_walk",
+          "move_probability": 0.6,
+          "n_dynamic": 0
+        },
+        "random_start_charger": false,
+        "reward": {
+          "battery_depleted_penalty": 10.0,
+          "battery_reserve_safety": 2.0,
+          "battery_reserve_weight": 0.0,
+          "collision_penalty": 1.0,
+          "delivery_reward": 20.0,
+          "energy_weight": 0.02,
+          "pickup_reward": 5.0,
+          "progress_weight": 1.0,
+          "shaping_gamma": 1.0,
+          "step_penalty": 0.05,
+          "timeout_penalty": 5.0,
+          "wait_penalty": 0.1
+        },
+        "seed": 0,
+        "tasks": {
+          "min_separation": 6,
+          "tasks_per_episode": 1
+        }
+      },
       "layout": {
         "charging_stations": [
           [
@@ -2382,6 +2693,7 @@
         "timeout",
         "wait"
       ],
+      "scenario_file": "configs/default.yaml",
       "spaces": {
         "n_actions": 5,
         "observation_high": 1.0,
@@ -2820,6 +3132,79 @@
       ]
     },
     "dynamic_obstacles": {
+      "astar_episode": {
+        "counters": {
+          "charging_events": 0,
+          "collisions": 0,
+          "dynamic_collisions": 0,
+          "energy_consumed": 17.5,
+          "idle_steps": 0,
+          "moves": 35,
+          "optimal_path_length": 31,
+          "static_collisions": 0,
+          "steps": 35,
+          "tasks_delivered": 1,
+          "tasks_failed": 0,
+          "termination_reason": "all_tasks_delivered"
+        },
+        "events_sha256": "ee8b061249369d480b95475a240343fc654beb1d7cef0839667813ed7dcf59fe",
+        "final_battery": 82.5,
+        "n_events": 2,
+        "terminated": true,
+        "total_reward": 52.9,
+        "truncated": false
+      },
+      "config": {
+        "battery": {
+          "capacity": 100.0,
+          "charge_rate": 8.0,
+          "critical_threshold": 10.0,
+          "idle_cost": 0.05,
+          "low_threshold": 30.0,
+          "move_cost": 0.5,
+          "start_level": 100.0
+        },
+        "description": "21x15 warehouse with 8 randomly walking dynamic obstacles. Obstacles never step onto the robot, so every collision recorded here was caused by the controller driving into an obstacle.\n",
+        "layout": {
+          "aisle_width": 1,
+          "height": 15,
+          "n_charging_stations": 2,
+          "n_packing_stations": 2,
+          "shelf_block_height": 2,
+          "shelf_block_width": 3,
+          "station_rows": 2,
+          "top_aisle": 1,
+          "width": 21
+        },
+        "max_steps": 500,
+        "name": "dynamic_obstacles",
+        "observation_window": 5,
+        "obstacles": {
+          "behaviour": "random_walk",
+          "move_probability": 0.6,
+          "n_dynamic": 8
+        },
+        "random_start_charger": false,
+        "reward": {
+          "battery_depleted_penalty": 10.0,
+          "battery_reserve_safety": 2.0,
+          "battery_reserve_weight": 0.0,
+          "collision_penalty": 1.0,
+          "delivery_reward": 20.0,
+          "energy_weight": 0.02,
+          "pickup_reward": 5.0,
+          "progress_weight": 1.0,
+          "shaping_gamma": 1.0,
+          "step_penalty": 0.05,
+          "timeout_penalty": 5.0,
+          "wait_penalty": 0.1
+        },
+        "seed": 0,
+        "tasks": {
+          "min_separation": 6,
+          "tasks_per_episode": 1
+        }
+      },
       "layout": {
         "charging_stations": [
           [
@@ -3046,6 +3431,7 @@
         "timeout",
         "wait"
       ],
+      "scenario_file": "configs/scenarios/dynamic_obstacles.yaml",
       "spaces": {
         "n_actions": 5,
         "observation_high": 1.0,
@@ -3484,6 +3870,79 @@
       ]
     },
     "simple_static": {
+      "astar_episode": {
+        "counters": {
+          "charging_events": 0,
+          "collisions": 0,
+          "dynamic_collisions": 0,
+          "energy_consumed": 14.0,
+          "idle_steps": 0,
+          "moves": 28,
+          "optimal_path_length": 28,
+          "static_collisions": 0,
+          "steps": 28,
+          "tasks_delivered": 1,
+          "tasks_failed": 0,
+          "termination_reason": "all_tasks_delivered"
+        },
+        "events_sha256": "ee8b061249369d480b95475a240343fc654beb1d7cef0839667813ed7dcf59fe",
+        "final_battery": 86.0,
+        "n_events": 2,
+        "terminated": true,
+        "total_reward": 50.32,
+        "truncated": false
+      },
+      "config": {
+        "battery": {
+          "capacity": 100.0,
+          "charge_rate": 8.0,
+          "critical_threshold": 10.0,
+          "idle_cost": 0.05,
+          "low_threshold": 30.0,
+          "move_cost": 0.5,
+          "start_level": 100.0
+        },
+        "description": "15x11 warehouse with a single row of shelf blocks, no dynamic obstacles and an effectively unlimited battery. Shortest paths are short and unobstructed.\n",
+        "layout": {
+          "aisle_width": 1,
+          "height": 11,
+          "n_charging_stations": 2,
+          "n_packing_stations": 1,
+          "shelf_block_height": 2,
+          "shelf_block_width": 3,
+          "station_rows": 2,
+          "top_aisle": 1,
+          "width": 15
+        },
+        "max_steps": 200,
+        "name": "simple_static",
+        "observation_window": 5,
+        "obstacles": {
+          "behaviour": "random_walk",
+          "move_probability": 0.6,
+          "n_dynamic": 0
+        },
+        "random_start_charger": false,
+        "reward": {
+          "battery_depleted_penalty": 10.0,
+          "battery_reserve_safety": 2.0,
+          "battery_reserve_weight": 0.0,
+          "collision_penalty": 1.0,
+          "delivery_reward": 20.0,
+          "energy_weight": 0.02,
+          "pickup_reward": 5.0,
+          "progress_weight": 1.0,
+          "shaping_gamma": 1.0,
+          "step_penalty": 0.05,
+          "timeout_penalty": 5.0,
+          "wait_penalty": 0.1
+        },
+        "seed": 0,
+        "tasks": {
+          "min_separation": 4,
+          "tasks_per_episode": 1
+        }
+      },
       "layout": {
         "charging_stations": [
           [
@@ -3658,6 +4117,7 @@
         "timeout",
         "wait"
       ],
+      "scenario_file": "configs/scenarios/simple_static.yaml",
       "spaces": {
         "n_actions": 5,
         "observation_high": 1.0,
