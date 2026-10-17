@@ -124,6 +124,8 @@ export default function FleetCanvas({ layout, frame, highlight }) {
           const x = col * cell;
           const y = row * cell;
           if (type === CELL.SHELF) {
+            // Racking: a lit top face and a darker exposed side, so a dense pod
+            // field reads as physical structure.
             const exposed =
               row + 1 >= layout.height || layout.grid[row + 1][col] !== CELL.SHELF;
             if (exposed) {
@@ -132,9 +134,29 @@ export default function FleetCanvas({ layout, frame, highlight }) {
             }
             ctx.fillStyle = fill;
             ctx.fillRect(x, y, cell, cell - (exposed ? lift : 0));
-          } else {
+          } else if (type === CELL.WALL) {
             ctx.fillStyle = fill;
             ctx.fillRect(x, y, cell, cell);
+          } else {
+            // Storage, packing and charging are places ON the floor, not
+            // blockages: a robot stands on them. Filling the whole cell made
+            // the realistic floor's 306 pick points read as a dark
+            // checkerboard sealing the aisles, with the actual racking looking
+            // like empty space. They are drawn as markers instead - filled,
+            // outlined and dashed - which also keeps them apart without a
+            // second colour.
+            const inset = cell * 0.22;
+            const size = cell - inset * 2;
+            if (type === CELL.STORAGE) {
+              ctx.fillStyle = fill;
+              ctx.fillRect(x + inset, y + inset, size, size);
+            } else {
+              ctx.strokeStyle = fill;
+              ctx.lineWidth = Math.max(1, cell * 0.08);
+              if (type === CELL.CHARGING) ctx.setLineDash([cell * 0.14, cell * 0.1]);
+              ctx.strokeRect(x + inset, y + inset, size, size);
+              ctx.setLineDash([]);
+            }
           }
         }
       }

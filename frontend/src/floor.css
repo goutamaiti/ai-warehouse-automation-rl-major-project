@@ -156,8 +156,12 @@
 
 .floor-body {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(16rem, 21rem);
-  gap: 2rem;
+  /* The realistic floor is 46 cells wide. At the old fixed 21rem side column
+     the canvas got about 525px, which is 11px per cell - below the 15px the
+     ruler labels and robot ids need to stay readable on a projector. The side
+     column now yields first. */
+  grid-template-columns: minmax(0, 1fr) clamp(15rem, 22vw, 19rem);
+  gap: 1.75rem;
   align-items: start;
 }
 
@@ -428,4 +432,32 @@
   background: var(--accent);
   border-color: var(--accent);
   color: #fff;
+}
+
+/* ------------------------------------------------------- width behaviour */
+
+/* The coordinate inputs carried a 5.5rem min-width from the shared control
+   rule, which stopped the product card shrinking with its column and pushed
+   the page 41px wide. In a three-column grid they must be allowed to shrink. */
+.coord-row input[type='number'] {
+  min-width: 0;
+  width: 100%;
+}
+
+/* The realistic floor is 46 cells wide and needs about 710px to keep 15px
+   cells, which is what the ruler labels and robot ids need to stay readable on
+   a projector. Below a point where that cannot coexist with a side column,
+   the cards go under the canvas and the floor takes the full width - at a
+   1024px viewport that is 21px cells instead of 14. */
+@media (max-width: 1200px) {
+  .floor-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .floor-side {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1rem;
+    align-items: start;
+  }
 }
