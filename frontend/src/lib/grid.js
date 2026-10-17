@@ -31,13 +31,20 @@ export const CELL_NAMES = {
 // Shared with the editor's palette so a cell looks the same whether you are
 // painting it or watching a replay drive over it. Aisles stay near-black so
 // the things that matter (shelves, stations, robot) carry the contrast.
+/**
+ * Cell colours on the single slate ramp. There is no second hue anywhere on
+ * the site, so what a cell IS has to be carried by tint: walls are the darkest
+ * thing on the floor, shelving a light fill, and the three station types are
+ * distinguished in the canvas painters by fill versus outline versus dashed
+ * outline rather than by colour.
+ */
 export const CELL_COLORS = {
-  [CellType.EMPTY]: '#0d1526',
-  [CellType.WALL]: '#04060b',
-  [CellType.SHELF]: '#3a475e',
-  [CellType.STORAGE]: '#1e40af',
-  [CellType.PACKING]: '#15803d',
-  [CellType.CHARGING]: '#b45309',
+  [CellType.EMPTY]: '#ffffff',
+  [CellType.WALL]: '#1c2024',
+  [CellType.SHELF]: '#e8eaec',
+  [CellType.STORAGE]: '#4a5057',
+  [CellType.PACKING]: '#8b9299',
+  [CellType.CHARGING]: '#c3c8cd',
 };
 
 const BLOCKING = new Set([CellType.WALL, CellType.SHELF]);

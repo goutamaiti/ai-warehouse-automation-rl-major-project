@@ -1,15 +1,35 @@
 :root {
-  --bg: #070b14;
-  --surface: #0f1524;
-  --surface-2: #151d30;
-  --border: #1f2a40;
-  --text: #e2e8f0;
-  --muted: #94a3b8;
-  --accent: #60a5fa;
-  --ok: #34d399;
-  --warn: #fbbf24;
-  --danger: #f43f5e;
-  color-scheme: dark;
+  /* One hue, many tints. Nothing on this site is a second colour: controllers,
+     robot states and results are told apart by how dark they are and whether
+     they are filled or outlined, never by hue.
+
+     Light ground because the demo is a projector in a lit room, where a dark
+     theme washes out - and because it prints into the report unchanged. */
+  --s0: #ffffff;   /* page */
+  --s1: #f6f7f8;   /* fill, inactive, track */
+  --s2: #e8eaec;   /* hairline */
+  --s3: #c3c8cd;   /* light mark */
+  --s4: #8b9299;   /* secondary text, mid mark */
+  --s5: #4a5057;   /* strong mark */
+  --s6: #1c2024;   /* ink, primary mark */
+
+  /* Semantic names kept so the existing rules keep working, now mapped onto
+     the ramp. --ok/--warn/--danger are deliberately NOT colours any more;
+     state is carried by weight and fill, which is what "everything the same
+     colour" has to mean if it is to stay legible. */
+  --bg: var(--s0);
+  --surface: var(--s0);
+  --surface-2: var(--s1);
+  --border: var(--s2);
+  --text: var(--s6);
+  --muted: var(--s4);
+  --accent: var(--s6);
+  --ok: var(--s5);
+  --warn: var(--s4);
+  --danger: var(--s6);
+
+  --mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Consolas, monospace;
+  color-scheme: light;
 }
 
 * {
@@ -20,17 +40,18 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
   font-size: 15px;
-  line-height: 1.5;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
 }
 
 code {
-  font-family: 'Cascadia Code', ui-monospace, 'SF Mono', Menlo, monospace;
+  font-family: var(--mono);
   font-size: 0.9em;
   background: var(--surface-2);
   padding: 0.1em 0.35em;
-  border-radius: 4px;
+  border-radius: 2px;
 }
 
 .app {
@@ -80,7 +101,7 @@ code {
 .live-run {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 2px;
   padding: 16px;
 }
 
@@ -106,7 +127,7 @@ input[type='number'] {
   background: var(--surface-2);
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 2px;
   padding: 6px 8px;
   font-size: 0.9rem;
   min-width: 120px;
@@ -116,7 +137,7 @@ button {
   background: var(--surface-2);
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 2px;
   padding: 6px 12px;
   font-size: 0.9rem;
   cursor: pointer;
@@ -133,7 +154,7 @@ button:disabled {
 
 button.primary {
   background: var(--accent);
-  color: #07101f;
+  color: var(--s0);
   border-color: var(--accent);
   font-weight: 600;
 }
@@ -145,8 +166,8 @@ button.primary {
 
 canvas {
   display: block;
-  border-radius: 8px;
-  background: #05070c;
+  border-radius: 2px;
+  background: var(--s1);
 }
 
 .legend {
@@ -230,7 +251,7 @@ canvas {
   justify-content: space-between;
   gap: 12px;
   padding: 4px 0;
-  border-bottom: 1px dashed rgba(148, 163, 184, 0.12);
+  border-bottom: 1px solid var(--s2);
 }
 
 .kv dt {
@@ -247,7 +268,7 @@ canvas {
 .badge {
   display: inline-block;
   padding: 2px 8px;
-  border-radius: 999px;
+  border-radius: 2px;
   font-size: 0.75rem;
   background: var(--surface-2);
   border: 1px solid var(--border);
@@ -256,18 +277,18 @@ canvas {
 .badge.ok,
 .badge.battery-ok {
   color: var(--ok);
-  border-color: rgba(52, 211, 153, 0.4);
+  border-color: var(--s5);
 }
 
 .badge.battery-low {
   color: var(--warn);
-  border-color: rgba(251, 191, 36, 0.4);
+  border-color: var(--s3);
 }
 
 .badge.fail,
 .badge.battery-critical {
   color: var(--danger);
-  border-color: rgba(244, 63, 94, 0.4);
+  border-color: var(--s6);
 }
 
 .events {
@@ -340,12 +361,30 @@ table {
   font-variant-numeric: tabular-nums;
 }
 
-th,
-td {
+/* Scoped to the results tables. As a bare `th, td` this applied to every table
+   on the site, so the Info tab's prose tables could not wrap and the page
+   scrolled sideways by over a thousand pixels - a pre-existing bug, not a
+   theme one. Numbers should not wrap; explanations must. */
+.results th,
+.results td,
+.result-card th,
+.result-card td,
+.table-scroll th,
+.table-scroll td {
   text-align: right;
   padding: 7px 10px;
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
+}
+
+/* Everything else: a table is for reading, so it wraps. */
+th,
+td {
+  text-align: left;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--border);
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 th:first-child,
@@ -368,11 +407,11 @@ thead th {
 }
 
 .error {
-  background: rgba(244, 63, 94, 0.12);
-  border: 1px solid rgba(244, 63, 94, 0.4);
-  color: #fecdd3;
+  background: var(--s1);
+  border-left: 2px solid var(--s6);
+  color: var(--s6);
   padding: 10px 14px;
-  border-radius: 8px;
+  border-radius: 2px;
   margin: 16px 0 0;
 }
 
@@ -399,7 +438,7 @@ thead th {
   background: transparent;
   border: 1px solid transparent;
   border-bottom: none;
-  border-radius: 8px 8px 0 0;
+  border-radius: 2px 8px 0 0;
   padding: 8px 16px;
   color: var(--muted);
   font-size: 0.9rem;
@@ -474,7 +513,6 @@ thead th {
 .palette-button.selected {
   border-color: var(--accent);
   background: var(--surface-2);
-  box-shadow: 0 0 0 1px var(--accent) inset;
 }
 
 .editor-dims {
@@ -496,21 +534,21 @@ thead th {
 .validation-status {
   margin: 8px 0 0;
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: 2px;
   font-size: 0.85rem;
   border: 1px solid var(--border);
 }
 
 .validation-status.ok {
   color: var(--ok);
-  border-color: rgba(52, 211, 153, 0.35);
-  background: rgba(52, 211, 153, 0.07);
+  border-color: var(--s5);
+  background: var(--s1);
 }
 
 .validation-status.fail {
   color: var(--danger);
-  border-color: rgba(244, 63, 94, 0.35);
-  background: rgba(244, 63, 94, 0.07);
+  border-color: var(--s3);
+  background: var(--s1);
 }
 
 .run-panel .live-controls {
@@ -554,7 +592,7 @@ thead th {
 
 .reward-term {
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 2px;
   padding: 10px 12px;
   background: var(--surface-2);
   opacity: 0.65;
@@ -645,7 +683,7 @@ thead th {
 .info-section {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 2px;
   padding: 18px 20px;
   margin-top: 16px;
 }
@@ -711,4 +749,28 @@ thead th {
   text-align: center;
   color: var(--muted);
   font-size: 0.85rem;
+}
+
+
+/* ------------------------------------------------------------------ fixes */
+
+/* The Info tab's definition table overflowed the page by 1,241px: long
+   explanatory cells do not wrap on their own, so the table grew to 1,331px and
+   the whole page scrolled sideways. A fixed layout plus wrapping keeps the
+   measure inside the column. */
+.info-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.info-table th,
+.info-table td {
+  overflow-wrap: anywhere;
+  vertical-align: top;
+}
+
+/* Long inline code in prose wraps rather than pushing the page wide. */
+.info-page code,
+.info-section code {
+  overflow-wrap: anywhere;
 }

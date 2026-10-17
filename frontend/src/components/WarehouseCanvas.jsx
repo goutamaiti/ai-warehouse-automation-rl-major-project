@@ -9,17 +9,24 @@ import { CellType as CELL, CELL_COLORS } from '../lib/grid';
  * frame. It never simulates anything itself.
  */
 
+/**
+ * One slate ramp, no second hue. State is carried by tint and by whether a
+ * mark is filled or outlined: a carrying robot is a ring, a flat battery is
+ * pale, an obstacle is ink. Battery level is read from the arc's extent, not
+ * from its colour, which is also why the three battery entries are tints of
+ * the same thing rather than a traffic light.
+ */
 const COLORS = {
-  grid: 'rgba(148, 163, 184, 0.07)',
-  trail: 'rgba(125, 211, 252, 0.28)',
-  robot: '#60a5fa',
-  robotCarrying: '#fbbf24',
-  obstacle: '#f43f5e',
-  pickup: '#22d3ee',
-  dropoff: '#34d399',
-  batteryOk: '#34d399',
-  batteryLow: '#fbbf24',
-  batteryCritical: '#f43f5e',
+  grid: 'rgba(28, 32, 36, 0.07)',
+  trail: 'rgba(28, 32, 36, 0.16)',
+  robot: '#1c2024',
+  robotCarrying: '#4a5057',
+  obstacle: '#8b9299',
+  pickup: '#4a5057',
+  dropoff: '#8b9299',
+  batteryOk: '#1c2024',
+  batteryLow: '#8b9299',
+  batteryCritical: '#c3c8cd',
 };
 
 const MAX_CELL_SIZE = 30;

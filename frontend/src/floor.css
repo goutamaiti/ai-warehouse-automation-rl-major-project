@@ -1,43 +1,36 @@
 /*
- * Style for the live floor: technical paper rather than glowing dashboard.
+ * Live floor styling, on the site-wide flat monochrome ramp.
  *
- * Deliberately scoped under .floor so the existing tabs keep their current
- * appearance while this one is being judged. If it is adopted, these tokens
- * move to :root and the rest follows.
+ * Two choices worth stating, because each answers something about this project
+ * rather than being decoration:
  *
- * Three choices worth stating, because each answers something about this
- * project rather than being decoration:
- *
- *  - A warm paper ground with ink-dark text. It survives a projector in a lit
- *    room, where a dark dashboard washes out, and it prints into the report
- *    unchanged.
  *  - Tabular monospace figures for every number. Live values tick several
- *    times a second; proportional digits make columns jitter, and a metric
+ *    times a second; proportional digits make a column jitter, and a metric
  *    that dances is a metric nobody reads.
- *  - The cell colours keep the meanings the simulation already uses - storage
- *    blue, packing green, charging ochre - so the map reads the same here as
- *    in the recorded replays and in the docs.
+ *  - Cell and robot states are told apart by tint and by fill-versus-outline,
+ *    never by hue, so the map reads the same here, in the recorded replays and
+ *    in the editor. There is no second colour anywhere on the site.
  */
 
+/* The fleet page now inherits the site-wide ramp; these aliases only map the
+   old local names onto it so the rules below did not all need rewriting. */
 .floor {
-  --paper: #faf8f4;
-  --paper-raised: #ffffff;
-  --ink: #1b2130;
-  --ink-soft: #5b6475;
-  --ink-faint: #8a93a5;
-  --rule: #e2ddd3;
-  --accent: #1d4ed8;
-  --accent-warm: #b45309;
-  --accent-cool: #0891b2;
-  --danger: #be123c;
-
-  --mono: ui-monospace, 'SF Mono', 'DM Mono', 'Cascadia Mono', Menlo, monospace;
-
+  --paper: var(--s0);
+  --paper-raised: var(--s0);
+  --ink: var(--s6);
+  --ink-soft: var(--s4);
+  --ink-faint: var(--s4);
+  --rule: var(--s2);
+  --accent: var(--s6);
+  --accent-warm: var(--s5);
+  --accent-cool: var(--s5);
+  --danger: var(--s6);
   background: var(--paper);
   color: var(--ink);
-  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
-  margin: -1.5rem -1.5rem 0;
-  padding: 2.5rem clamp(1.25rem, 4vw, 3.5rem) 3rem;
+  /* No negative bleed: it existed to escape the old dark page background, and
+     with one shared background it only overflowed the page by 4px. */
+  margin: 0;
+  padding: 1.5rem 0 3rem;
   min-height: 70vh;
 }
 
