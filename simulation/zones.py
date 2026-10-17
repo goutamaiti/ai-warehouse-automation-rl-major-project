@@ -58,13 +58,22 @@ class Zone:
     def contains(self, position: Position) -> bool:
         return position in self.cells
 
-    def to_dict(self) -> dict:
-        return {
+    def to_dict(self, include_cells: bool = False) -> dict:
+        """Lean by default.
+
+        ``cells`` is 175 coordinate pairs on the default floor, which is fine
+        once in a layout payload and wasteful in every frame of a 10-per-second
+        stream - so the per-frame form leaves it out.
+        """
+        payload = {
             "name": self.name,
             "charger": list(self.charger),
             "n_cells": len(self.cells),
             "waiting_points": [list(p) for p in self.waiting_points],
         }
+        if include_cells:
+            payload["cells"] = [list(c) for c in sorted(self.cells)]
+        return payload
 
 
 def _zone_name(index: int) -> str:

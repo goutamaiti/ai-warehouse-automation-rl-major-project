@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 
 import DashboardPage from './components/DashboardPage';
 import EditorPage from './components/EditorPage';
+import FleetPage from './components/FleetPage';
 import InfoPage from './components/InfoPage';
 import { checkBackend } from './lib/api';
 
 const TABS = [
   { id: 'dashboard', label: 'Dashboard' },
+  { id: 'fleet', label: 'Live floor' },
   { id: 'editor', label: 'Editor' },
   { id: 'info', label: 'Info' },
 ];
@@ -51,6 +53,7 @@ export default function App() {
       </nav>
 
       {tab === 'dashboard' && <DashboardPage health={health} />}
+      {tab === 'fleet' && <FleetPage />}
       {tab === 'editor' && <EditorPage backendHealth={health} />}
       {tab === 'info' && <InfoPage />}
     </div>

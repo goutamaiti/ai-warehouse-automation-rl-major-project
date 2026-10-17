@@ -198,7 +198,7 @@ class FleetSession:
     def layout(self) -> dict[str, Any]:
         """The static map plus the zones, for drawing the floor once."""
         payload = self.sim.layout.to_dict()
-        payload["zones"] = [z.to_dict() for z in self.sim.zones]
+        payload["zones"] = [z.to_dict(include_cells=True) for z in self.sim.zones]
         # Convenient for a UI that offers "pick a storage point" rather than
         # making someone type coordinates.
         payload["pickup_choices"] = [list(p) for p in self.sim.layout.storage_points]
