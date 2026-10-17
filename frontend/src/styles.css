@@ -774,3 +774,170 @@ thead th {
 .info-section code {
   overflow-wrap: anywhere;
 }
+
+/* ------------------------------------------- picker and comparison chart */
+
+/* A segmented pick, used for the controller choice and the metric choice.
+   Active is solid ink, inactive is a hairline - fill carries state, not hue. */
+.pick {
+  font: inherit;
+  font-size: 0.82rem;
+  color: var(--s5);
+  background: var(--s0);
+  border: 1px solid var(--s2);
+  border-radius: 2px;
+  padding: 5px 11px;
+  cursor: pointer;
+}
+
+.pick:hover:not(:disabled) {
+  border-color: var(--s4);
+}
+
+.pick.active {
+  background: var(--s6);
+  border-color: var(--s6);
+  color: var(--s0);
+}
+
+.pick:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.controller-pick {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pick-label {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-right: 2px;
+}
+
+.metric-pick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 14px 0 22px;
+}
+
+.results-head h2 {
+  margin-bottom: 4px;
+}
+
+.compare {
+  display: grid;
+  gap: 2px;
+}
+
+.compare-row {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 24px;
+  align-items: center;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--s2);
+}
+
+.compare-row:last-child {
+  border-bottom: 0;
+}
+
+.compare-row header h3 {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+
+.compare-row header p {
+  margin: 2px 0 0;
+  line-height: 1.4;
+}
+
+.bars {
+  display: grid;
+  gap: 5px;
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 58px;
+  gap: 12px;
+  align-items: center;
+}
+
+.bar-name {
+  font-size: 0.74rem;
+  color: var(--muted);
+}
+
+.bar-track {
+  position: relative;
+  height: 7px;
+  background: var(--s1);
+}
+
+.bar-track i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  display: block;
+}
+
+/* "nothing succeeded" is a result, so it is drawn rather than left blank. */
+.bar-track i.none {
+  width: 100%;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--s3) 0 2px,
+    transparent 2px 6px
+  );
+}
+
+/* The 95% interval, as a bracket over the bar. Where two brackets overlap the
+   difference is not real - which is the thing a bare table could never show. */
+.bar-track u {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  border-left: 1.5px solid var(--s6);
+  border-right: 1.5px solid var(--s6);
+  text-decoration: none;
+}
+
+.bar-value {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.78rem;
+  text-align: right;
+}
+
+.tied {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tied-bar {
+  height: 7px;
+  background: var(--s6);
+  flex-shrink: 0;
+}
+
+.tied b {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8rem;
+}
+
+.tied em {
+  font-style: normal;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.reveal {
+  margin-top: 20px;
+}
