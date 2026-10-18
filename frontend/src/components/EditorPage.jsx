@@ -24,12 +24,33 @@ const CONTROLLER_OPTIONS = [
   { name: 'ppo', backendOnly: true },
 ];
 
+/**
+ * Starting points, in the same complexity order the rest of the site uses.
+ *
+ * The labels were "Default warehouse", "Battery-constrained warehouse",
+ * "Dynamic-obstacles warehouse (layout only)" and so on - five sentences that
+ * wrapped onto three ragged lines and said "warehouse" five times on a page
+ * whose entire subject is a warehouse. The scenario name is the information.
+ *
+ * Deliberately no size on the chip. Typing "21 x 31" here would be one more
+ * hand-written number to go stale the first time a generator changes, and the
+ * Height and Width inputs directly below report the real size the instant a
+ * template loads.
+ */
 const TEMPLATES = [
-  { id: 'default_astar_seed1000', label: 'Default warehouse' },
-  { id: 'battery_constrained_astar_seed1000', label: 'Battery-constrained warehouse' },
-  { id: 'dynamic_obstacles_astar_seed1000', label: 'Dynamic-obstacles warehouse (layout only)' },
-  { id: 'complex_static_astar_seed1000', label: 'Complex static warehouse' },
-  { id: 'simple_static_astar_seed1000', label: 'Simple static warehouse' },
+  { id: 'simple_static_astar_seed1000', label: 'Simple', hint: 'smallest grid, no obstacles' },
+  { id: 'default_astar_seed1000', label: 'Default', hint: 'the baseline floor' },
+  { id: 'complex_static_astar_seed1000', label: 'Complex', hint: 'largest grid, densest racking' },
+  {
+    id: 'dynamic_obstacles_astar_seed1000',
+    label: 'Dynamic',
+    hint: 'the moving-traffic floor - its layout only; the traffic itself needs a backend',
+  },
+  {
+    id: 'battery_constrained_astar_seed1000',
+    label: 'Battery',
+    hint: 'the floor where charging is mandatory',
+  },
 ];
 
 export default function EditorPage({ backendHealth }) {
@@ -109,9 +130,15 @@ export default function EditorPage({ backendHealth }) {
       <section className="panel">
         <h2>Draw a warehouse</h2>
         <div className="template-row">
-          <span className="muted small">Start from:</span>
+          <span className="pick-label">Start from</span>
           {TEMPLATES.map((t) => (
-            <button key={t.id} type="button" onClick={() => loadTemplate(t.id)}>
+            <button
+              key={t.id}
+              type="button"
+              className="pick"
+              title={t.hint}
+              onClick={() => loadTemplate(t.id)}
+            >
               {t.label}
             </button>
           ))}
@@ -150,7 +177,6 @@ export default function EditorPage({ backendHealth }) {
             {running ? 'Running…' : 'Run episode'}
           </button>
         </div>
-        {!validation.valid && <p className="validation-status fail">{validation.error}</p>}
         <p className="muted small">
           {backendReachable
             ? 'Running through the connected backend — real physics and reward, same code as every reported result.'

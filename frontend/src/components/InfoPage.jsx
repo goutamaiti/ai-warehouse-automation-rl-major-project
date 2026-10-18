@@ -232,11 +232,16 @@ export default function InfoPage() {
 
       <Section title="How a warehouse is built">
         <p>
-          A warehouse is a 2D grid of six cell types: <strong>wall</strong> and <strong>shelf</strong>{' '}
-          block movement; <strong>storage points</strong> are where a package can be picked up;{' '}
-          <strong>packing stations</strong> are delivery targets; <strong>charging stations</strong>{' '}
-          are where the robot starts and can recharge. A layout is only accepted if every point of
-          interest is walkable and all of them can reach each other — the same check runs whether
+          A warehouse is a 2D grid of six cell types: <strong>walls</strong> and{' '}
+          <strong>racking</strong> block movement; <strong>pick points</strong> are where a package
+          is collected (<code>storage_points</code> in the simulation code);{' '}
+          <strong>packing stations</strong> are delivery targets; <strong>chargers</strong> are
+          where the robot starts and can recharge. The Editor tab paints with exactly these six, and
+          draws each as its own mark rather than its own shade — a filled square for a pick point, a
+          hollow one for packing, a dashed one for a charger — so a floor looks the same while you
+          are drawing it as it does when a robot runs on it. A layout is only accepted if every
+          point of interest is walkable and all of them can reach each other — the same check runs
+          whether
           the map was generated procedurally (the six measured scenarios), drawn by hand on the
           Editor tab, or generated as the larger robotic-fulfilment floor the Live floor tab offers.
         </p>

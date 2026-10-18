@@ -497,22 +497,38 @@ thead th {
 .palette-button {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
+  gap: 7px;
+  padding: 5px 10px 5px 6px;
   font-size: 0.82rem;
+  color: var(--s5);
+  background: var(--s0);
+  border: 1px solid var(--s2);
+  border-radius: 2px;
+  cursor: pointer;
 }
 
-.palette-button .swatch {
-  width: 12px;
-  height: 12px;
-  border-radius: 3px;
-  background: var(--swatch);
-  display: inline-block;
+.palette-button:hover {
+  border-color: var(--s4);
 }
 
+/* The selected brush is outlined, NOT filled. Every other segmented pick on
+   the site fills with ink when active, but the swatch here is a small white
+   tile carrying the mark - fill it and the tile reads as a hole punched in the
+   button. Outline plus weight carries the state and leaves the brush legible,
+   which is the entire point of drawing it. */
 .palette-button.selected {
-  border-color: var(--accent);
-  background: var(--surface-2);
+  border-color: var(--s6);
+  box-shadow: inset 0 0 0 1px var(--s6);
+  color: var(--s6);
+  font-weight: 600;
+}
+
+/* A drawn swatch: the real mark, rendered by lib/cellArt at swatch size. */
+.swatch-canvas {
+  display: block;
+  flex-shrink: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .editor-dims {
@@ -526,29 +542,40 @@ thead th {
   width: 72px;
 }
 
-.warehouse-editor canvas {
+/* The grid canvas only. The palette's brushes are canvases too now, and they
+   are buttons - a crosshair over them says "paint here", which they are not. */
+.warehouse-editor .canvas-wrapper canvas {
   cursor: crosshair;
   touch-action: none;
 }
 
+/* The reachability verdict, directly under the grid it judges. A left rule
+   rather than a tinted box, because the palette has no red and no green to
+   spend: a valid layout states itself in ink, an invalid one states itself in
+   ink too, and the difference is in the words. */
 .validation-status {
-  margin: 8px 0 0;
-  padding: 8px 12px;
-  border-radius: 2px;
+  margin: 10px 0 0;
+  padding: 2px 0 2px 13px;
+  border-left: 2px solid var(--s3);
   font-size: 0.85rem;
-  border: 1px solid var(--border);
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.validation-status b {
+  color: var(--text);
+  font-weight: 600;
 }
 
 .validation-status.ok {
-  color: var(--ok);
-  border-color: var(--s5);
-  background: var(--s1);
+  border-left-color: var(--s6);
 }
 
+/* Not runnable: the rule is dashed, the same "incomplete" mark the charger
+   cell uses, so the two readings of a dashed line on this page agree. */
 .validation-status.fail {
-  color: var(--danger);
-  border-color: var(--s3);
-  background: var(--s1);
+  border-left-style: dashed;
+  border-left-color: var(--s4);
 }
 
 .run-panel .live-controls {
@@ -914,28 +941,43 @@ thead th {
   text-align: right;
 }
 
+/* A collapsed three-way tie, on the SAME track as the bars it replaces.
+   As a flex row it overflowed the page by 92px: the bar carries an inline
+   percentage width and had flex-shrink: 0, so a tie near the top of the scale
+   claimed the whole row and pushed the figure and its sentence off the right
+   edge. Worse, its length was a fraction of the flex row rather than of the
+   bar track, so a tie and a bar of equal value were drawn different lengths -
+   the one thing a shared scale exists to prevent. Matching .bar-row's columns
+   fixes both: same track, same geometry, and the sentence drops onto its own
+   line instead of fighting for width. */
 .tied {
-  display: flex;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 58px;
+  gap: 5px 12px;
   align-items: center;
-  gap: 12px;
 }
 
 .tied-bar {
+  grid-column: 2;
   height: 7px;
+  max-width: 100%;
   background: var(--s6);
-  flex-shrink: 0;
 }
 
 .tied b {
+  grid-column: 3;
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
+  text-align: right;
 }
 
 .tied em {
+  grid-column: 1 / -1;
   font-style: normal;
   font-size: 0.78rem;
   color: var(--muted);
+  line-height: 1.4;
 }
 
 .reveal {

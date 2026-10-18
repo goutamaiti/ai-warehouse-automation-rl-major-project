@@ -19,33 +19,11 @@ export const CellType = {
   CHARGING: 5,
 };
 
-export const CELL_NAMES = {
-  0: 'Empty',
-  1: 'Wall',
-  2: 'Shelf',
-  3: 'Storage point',
-  4: 'Packing station',
-  5: 'Charging station',
-};
-
-// Shared with the editor's palette so a cell looks the same whether you are
-// painting it or watching a replay drive over it. Aisles stay near-black so
-// the things that matter (shelves, stations, robot) carry the contrast.
-/**
- * Cell colours on the single slate ramp. There is no second hue anywhere on
- * the site, so what a cell IS has to be carried by tint: walls are the darkest
- * thing on the floor, shelving a light fill, and the three station types are
- * distinguished in the canvas painters by fill versus outline versus dashed
- * outline rather than by colour.
- */
-export const CELL_COLORS = {
-  [CellType.EMPTY]: '#ffffff',
-  [CellType.WALL]: '#1c2024',
-  [CellType.SHELF]: '#e8eaec',
-  [CellType.STORAGE]: '#4a5057',
-  [CellType.PACKING]: '#8b9299',
-  [CellType.CHARGING]: '#c3c8cd',
-};
+// CELL_NAMES and CELL_COLORS used to live here. Both are gone: naming and
+// drawing a cell are now one job, done by lib/cellArt, because a colour map
+// could only ever say what tint a cell is - and tint stopped telling these six
+// apart the moment the site went to a single hue. cellArt gives each type a
+// mark instead, and carries the label beside it so the two cannot drift.
 
 const BLOCKING = new Set([CellType.WALL, CellType.SHELF]);
 
@@ -215,27 +193,27 @@ export function pointsOfType(grid, cellType) {
  * must belong to one connected component. Returns { valid, error }.
  */
 export function validateGrid(grid) {
-  if (!grid.length || !grid[0]?.length) return { valid: false, error: 'Grid is empty.' };
+  if (!grid.length || !grid[0]?.length) return { valid: false, error: 'the grid is empty.' };
   const height = grid.length;
   const width = grid[0].length;
   if (grid.some((row) => row.length !== width)) {
-    return { valid: false, error: 'Rows have inconsistent width.' };
+    return { valid: false, error: 'the rows have inconsistent width.' };
   }
   if (height < 5 || width < 5) {
-    return { valid: false, error: 'Grid must be at least 5x5.' };
+    return { valid: false, error: 'the grid must be at least 5x5.' };
   }
 
   const storage = pointsOfType(grid, CellType.STORAGE);
   const packing = pointsOfType(grid, CellType.PACKING);
   const charging = pointsOfType(grid, CellType.CHARGING);
-  if (!storage.length) return { valid: false, error: 'Add at least one storage point.' };
-  if (!packing.length) return { valid: false, error: 'Add at least one packing station.' };
-  if (!charging.length) return { valid: false, error: 'Add at least one charging station.' };
+  if (!storage.length) return { valid: false, error: 'add at least one pick point.' };
+  if (!packing.length) return { valid: false, error: 'add at least one packing station.' };
+  if (!charging.length) return { valid: false, error: 'add at least one charger.' };
 
   const points = [...storage, ...packing, ...charging];
   for (const [r, c] of points) {
     if (!isWalkable(grid, r, c)) {
-      return { valid: false, error: `Point of interest at (${r}, ${c}) is not walkable.` };
+      return { valid: false, error: `the point of interest at (${r}, ${c}) is not walkable.` };
     }
   }
 
@@ -244,7 +222,7 @@ export function validateGrid(grid) {
   if (unreachable.length > 0) {
     return {
       valid: false,
-      error: `${unreachable.length} point(s) are unreachable from the packing station - check for a wall sealing off part of the map.`,
+      error: `${unreachable.length} point(s) cannot be reached from the packing station - look for a wall sealing off part of the floor.`,
     };
   }
   return { valid: true, error: null };

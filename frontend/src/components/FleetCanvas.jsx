@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 import { CellType as CELL } from '../lib/grid';
+import { drawCellMark } from '../lib/cellArt';
 
 /**
  * Canvas view of one live fleet frame.
@@ -14,20 +15,15 @@ import { CellType as CELL } from '../lib/grid';
  * Purely presentational - it simulates nothing and decides nothing.
  */
 
-//: Light-ground palette. The cell meanings are the same ones the simulation
-//: uses; only the values are retuned for a paper background.
+//: Light-ground palette for the things only a LIVE floor has - robots, zone
+//: shading, lane arrows, queued requests. The cell types themselves are drawn
+//: by lib/cellArt, which owns that vocabulary for the whole site.
 const INK = {
   paper: '#ffffff',
   grid: 'rgba(28, 32, 36, 0.07)',
   rule: 'rgba(28, 32, 36, 0.22)',
   ruler: '#8b9299',
-  wall: '#1c2024',
-  shelf: '#e8eaec',
-  shelfSide: '#c3c8cd',
   arrow: 'rgba(28, 32, 36, 0.26)',
-  storage: '#4a5057',
-  packing: '#8b9299',
-  charging: '#c3c8cd',
   robot: '#1c2024',
   robotCarrying: '#4a5057',
   robotDead: '#c3c8cd',
@@ -38,15 +34,6 @@ const INK = {
 };
 
 const MONO = "ui-monospace, 'SF Mono', Menlo, monospace";
-
-const CELL_FILL = {
-  [CELL.EMPTY]: null,
-  [CELL.WALL]: INK.wall,
-  [CELL.SHELF]: INK.shelf,
-  [CELL.STORAGE]: INK.storage,
-  [CELL.PACKING]: INK.packing,
-  [CELL.CHARGING]: INK.charging,
-};
 
 const MAX_CELL = 26;
 //: Below this the ruler labels and robot ids stop being readable.
@@ -115,49 +102,16 @@ export default function FleetCanvas({ layout, frame, highlight }) {
       // 2. the static map. Shelving is drawn with a lit top face and a darker
       //    side so a dense pod field reads as physical racking rather than a
       //    block of colour - without it the realistic floor looks flat.
-      const lift = Math.max(2, Math.round(cell * 0.22));
+      // The cell vocabulary now lives in lib/cellArt, which was extracted from
+      // this block so the editor and the replay canvas could stop disagreeing
+      // with this floor about what a warehouse looks like. Keeping a second
+      // copy of it here is how the three would drift apart again.
       for (let row = 0; row < layout.height; row += 1) {
         for (let col = 0; col < layout.width; col += 1) {
           const type = layout.grid[row][col];
-          const fill = CELL_FILL[type];
-          if (!fill) continue;
-          const x = col * cell;
-          const y = row * cell;
-          if (type === CELL.SHELF) {
-            // Racking: a lit top face and a darker exposed side, so a dense pod
-            // field reads as physical structure.
-            const exposed =
-              row + 1 >= layout.height || layout.grid[row + 1][col] !== CELL.SHELF;
-            if (exposed) {
-              ctx.fillStyle = INK.shelfSide;
-              ctx.fillRect(x, y + cell - lift, cell, lift);
-            }
-            ctx.fillStyle = fill;
-            ctx.fillRect(x, y, cell, cell - (exposed ? lift : 0));
-          } else if (type === CELL.WALL) {
-            ctx.fillStyle = fill;
-            ctx.fillRect(x, y, cell, cell);
-          } else {
-            // Storage, packing and charging are places ON the floor, not
-            // blockages: a robot stands on them. Filling the whole cell made
-            // the realistic floor's 306 pick points read as a dark
-            // checkerboard sealing the aisles, with the actual racking looking
-            // like empty space. They are drawn as markers instead - filled,
-            // outlined and dashed - which also keeps them apart without a
-            // second colour.
-            const inset = cell * 0.22;
-            const size = cell - inset * 2;
-            if (type === CELL.STORAGE) {
-              ctx.fillStyle = fill;
-              ctx.fillRect(x + inset, y + inset, size, size);
-            } else {
-              ctx.strokeStyle = fill;
-              ctx.lineWidth = Math.max(1, cell * 0.08);
-              if (type === CELL.CHARGING) ctx.setLineDash([cell * 0.14, cell * 0.1]);
-              ctx.strokeRect(x + inset, y + inset, size, size);
-              ctx.setLineDash([]);
-            }
-          }
+          const exposed =
+            row + 1 >= layout.height || layout.grid[row + 1][col] !== CELL.SHELF;
+          drawCellMark(ctx, type, col * cell, row * cell, cell, exposed);
         }
       }
 

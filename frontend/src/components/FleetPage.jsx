@@ -266,10 +266,14 @@ export default function FleetPage() {
           <aside className="floor-side">
             <form className="card" onSubmit={onAddProduct}>
               <h3>Add a product</h3>
+              {/* This used to say "blue cells are storage points, green ones
+                  packing stations", which survived the move to a single hue and
+                  then described a map with no blue and no green on it. The marks
+                  are what tells them apart now, so the hint names the marks. */}
               <p className="card-hint">
                 Read a cell off the rulers along the top and left of the map, or
-                click one below. Blue cells are storage points, green ones packing
-                stations.
+                click one below. A pick point is a filled square, a packing
+                station a hollow one.
               </p>
 
               <div className="coord-row">
