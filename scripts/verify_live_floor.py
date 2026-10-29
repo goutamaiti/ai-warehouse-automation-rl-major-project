@@ -88,7 +88,11 @@ def run(name, scenario, floor, n_robots, n_products, max_ticks, schedule, seed=0
             added += 1
 
         # who is idle BEFORE this tick (dispatch happens at the start of step)
-        idle_before = {rid: m.position for rid, m in sim.members.items() if m.alive and m.task is None}
+        # Eligible for work: alive, no task, and above the low-battery threshold
+        # (a robot below it is sent to charge instead of being given work).
+        low = sim.config.battery.low_threshold
+        idle_before = {rid: m.position for rid, m in sim.members.items()
+                       if m.alive and m.task is None and m.robot.battery > low}
 
         frame = session.tick()
         if frame.get("stopped"):

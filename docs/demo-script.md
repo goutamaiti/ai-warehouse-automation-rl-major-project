@@ -62,12 +62,16 @@ policy has seen a second robot; multi-agent RL is future scope.
 **"How do you know the Live floor works?"** `verify_live_floor.py`: 8 scenarios,
 112/112 products delivered, each by the nearest idle robot (checked against an
 independent BFS), each robot standing on its pickup and drop-off, no two robots
-on one cell, no deaths, no deadlocks. It found two real bugs before the demo -
-a false deadlock after an idle spell and a charging loop - both fixed and
-covered by regression tests.
+on one cell, no deaths, no deadlocks. Then `stress_live_floor.py`: 3-8 robots,
+bursts, steady arrivals and idle gaps, four seeds - 60 runs on each floor, all
+passing. Those checks found five real bugs before the demo (a false deadlock
+after an idle spell, a charging loop, parked robots walling off a charger,
+robots bouncing on the charge threshold, and a jammed charger doorway) - all
+fixed and covered by regression tests. Before the fixes, 14 of 60 stress runs
+on the 21x15 floor failed.
 
-**"Do one-way lanes help?"** They cut robot-on-robot blocking about 2.5x
-(15 vs 37.8 over 5 seeds) but deliver about 7% less (45.8 vs 49.2) because of the
+**"Do one-way lanes help?"** They cut robot-on-robot blocking about 5.8x
+(17.6 vs 102.4 over 5 seeds) but deliver about 3% less (50.6 vs 52.4) because of the
 detours. A trade-off. An earlier "hundredfold" figure was measured with the
 charging-loop bug and was withdrawn.
 

@@ -685,10 +685,18 @@ class FleetSimulation:
         """Hand waiting requests to the nearest idle robots."""
         if self.queue is None:
             return []
+        # A robot below the low-battery threshold is not offered new work: it
+        # charges first, and the request goes to someone with charge to spare.
+        # Without this a robot finishing a delivery was handed the next one at
+        # any charge, so under a steady flow no robot ever stopped to top up -
+        # measured: all three robots on the 21x15 floor reached 20% within 15
+        # ticks of each other, converged on one charger, and two died there,
+        # one of them on a packing station that then stayed blocked.
+        low = self.config.battery.low_threshold
         idle = {
             robot_id: member.position
             for robot_id, member in self.members.items()
-            if member.alive and member.task is None
+            if member.alive and member.task is None and member.robot.battery > low
         }
         if not idle:
             return []

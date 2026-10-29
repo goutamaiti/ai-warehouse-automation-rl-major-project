@@ -235,6 +235,9 @@ export default function FleetPage() {
             <button type="button" onClick={onStop} disabled={busy}>
               Stop
             </button>
+            {/* The floor, rules and robot count are fixed while a floor runs.
+                Greyed out with no reason given, that read as a broken page. */}
+            <span className="floor-hint">Stop the floor to change the floor, rules or robots.</span>
           </>
         ) : (
           <button type="button" className="primary" onClick={onStart} disabled={busy}>

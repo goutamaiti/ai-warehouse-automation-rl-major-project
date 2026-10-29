@@ -34,7 +34,7 @@ import numpy as np
 from simulation.engine import Action
 from simulation.fleet import FleetSimulation
 from simulation.navigation import DIRECTIONS, Position
-from simulation.rmfs import astar_directed
+from simulation.rmfs import allows, astar_directed
 
 from .astar import astar
 from .bfs import bfs
@@ -109,6 +109,10 @@ class FleetPlannerController:
         #: robot id -> the task it left a charger full for. A committed robot
         #: does not turn back for a top-up unless its battery goes critical.
         self._committed: dict[int, object] = {}
+        #: robots that have decided to charge. Such a robot keeps heading for
+        #: (or sitting on) a charger until it reaches ``charge_until`` - the
+        #: second threshold of a two-threshold hysteresis.
+        self._charging: set[int] = set()
 
     @property
     def name(self) -> str:
@@ -117,6 +121,7 @@ class FleetPlannerController:
     def reset(self, sim: FleetSimulation) -> None:
         self.nodes_expanded = 0
         self._committed = {}
+        self._charging = set()
 
     # ------------------------------------------------------------------
     def act(self, sim: FleetSimulation) -> dict[int, int]:
@@ -126,6 +131,84 @@ class FleetPlannerController:
             if not member.alive:
                 continue
             actions[robot_id] = self._act_one(sim, robot_id)
+        return self._make_way(sim, actions)
+
+    # ------------------------------------------------------------------
+    def _make_way(self, sim: FleetSimulation, actions: dict[int, int]) -> dict[int, int]:
+        """Idle robots step aside for a robot that needs their cell.
+
+        Without this an idle robot, once parked, never moves for anyone. On the
+        21x15 floor the waiting cells beside a charger form a diagonal that
+        three parked robots can turn into a wall: a robot that needed charge
+        could not get in, a robot delivering to the station next to it could
+        not get past, and the floor stopped as deadlocked with a product in
+        flight. Measured before this rule: 14 of 60 stress runs (3-8 robots,
+        bursts, steady arrivals and long gaps, four seeds) deadlocked or left a
+        product undelivered.
+
+        Only a robot with no task makes way, so a delivery is never delayed to
+        let someone else through, and it moves only when it was not leaving
+        anyway. It steps to a free neighbouring cell nobody else is entering,
+        preferring the one furthest from the robot it is making way for; next
+        tick it heads back to the nearest free waiting cell as usual.
+        """
+        positions = {rid: m.position for rid, m in sim.members.items() if m.alive}
+        at = {pos: rid for rid, pos in positions.items()}
+        intended = {
+            rid: (positions[rid][0] + DIRECTIONS[a][0], positions[rid][1] + DIRECTIONS[a][1])
+            if a != int(Action.WAIT) else positions[rid]
+            for rid, a in actions.items()
+        }
+        obstacles = set(sim.obstacles.positions)
+        claimed = set(intended.values())
+        height, width = sim.walkable.shape
+
+        for rid in sorted(actions):
+            target = intended[rid]
+            if target == positions[rid]:
+                continue
+            blocker = at.get(target)
+            if blocker is None or blocker == rid or blocker not in actions:
+                continue
+            blocker_member = sim.members[blocker]
+            if blocker_member.task is not None:
+                continue
+            # Only a robot with charge to spare makes way. One below the
+            # top-up level is on its way to a charger (or charging on one);
+            # pushing it aside instead was measured to run two robots flat,
+            # one of them on a packing station, which then blocked it for good.
+            #
+            # Except head-on: if the blocker wants the requester's own cell,
+            # neither can ever move, whatever the blocker's charge. That is the
+            # charger doorway - a full robot trying to leave a charger while
+            # the robots queued to enter it occupy both exits. Measured with 8
+            # robots on the 21x15 floor: the queue waited there until six
+            # robots ran flat. The blocker steps aside; it is next in line.
+            capacity = sim.config.battery.capacity
+            head_on = intended[blocker] == positions[rid]
+            if blocker_member.robot.battery < capacity * self.charge_until and not head_on:
+                continue
+            leaving = intended[blocker]
+            if leaving != positions[blocker] and leaving not in at:
+                continue  # it is already moving out of the way
+            origin = positions[blocker]
+            options = []
+            for index, (d_row, d_col) in enumerate(DIRECTIONS):
+                cell = (origin[0] + d_row, origin[1] + d_col)
+                if not (0 <= cell[0] < height and 0 <= cell[1] < width):
+                    continue
+                if not sim.walkable[cell] or cell in at or cell in claimed or cell in obstacles:
+                    continue
+                if self.directions is not None and not allows(self.directions, origin, cell):
+                    continue
+                away = abs(cell[0] - positions[rid][0]) + abs(cell[1] - positions[rid][1])
+                options.append((-away, index, cell))
+            if not options:
+                continue
+            _, _, cell = min(options)
+            actions[blocker] = _action_towards(origin, cell)
+            claimed.add(cell)
+            intended[blocker] = cell
         return actions
 
     # ------------------------------------------------------------------
@@ -218,15 +301,29 @@ class FleetPlannerController:
         # holding the product. Measured on the realistic floor (8 robots, 25
         # products, seeds 0 and 2): two products each still undelivered after
         # 3,000 ticks, with robots shuttling between a charger and a lane.
+        #
+        # The other half of the hysteresis: once it DECIDES to charge, it
+        # charges to ``charge_until`` before going back to work. Without this a
+        # robot sitting just above the reserve line charged for a tick, judged
+        # it had enough, left, judged it had not, and came back - for ever,
+        # while holding the product and occupying the only charger's approach.
+        # Measured on the 21x15 floor (3 robots, steady arrivals, seed 2): two
+        # other robots circled that corner trying to reach the charger until
+        # their batteries ran flat, and the floor deadlocked.
         effectively_full = battery >= battery_cfg.capacity * self.charge_until
         if effectively_full:
+            self._charging.discard(robot_id)
             self._committed[robot_id] = member.task
             return target
+        if robot_id in self._charging:
+            return charger
         if battery <= battery_cfg.critical_threshold:
             self._committed.pop(robot_id, None)
+            self._charging.add(robot_id)
             return charger
         if self._committed.get(robot_id) is member.task:
             return target
         if battery <= needed:
+            self._charging.add(robot_id)
             return charger
         return target

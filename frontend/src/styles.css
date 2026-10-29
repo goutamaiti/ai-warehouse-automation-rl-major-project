@@ -1290,3 +1290,10 @@ thead th {
   color: var(--text);
   font-size: 0.82rem;
 }
+
+/* Why the setup controls are greyed out while a floor runs. */
+.floor-hint {
+  font-size: 0.76rem;
+  color: var(--muted);
+  align-self: center;
+}

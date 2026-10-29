@@ -266,19 +266,19 @@ def test_one_way_routing_reduces_robot_on_robot_blocking():
     """The measured benefit of the one-way field - and its honest size.
 
     Twelve robots and a 200-product backlog, because the effect is a congestion
-    effect. Measured with the corrected fleet controller over seeds 1000-1004:
-    the one-way field averages 15 robot-on-robot refusals against 37.8 on the
-    two-way floor (about 2.5x fewer, on every seed), while delivering slightly
-    LESS - 45.8 against 49.2 products in 400 ticks - because one-way lanes force
+    effect. Measured with the current fleet controller over seeds 1000-1004:
+    the one-way field averages 17.6 robot-on-robot refusals against 102.4 on the
+    two-way floor (about 5.8x fewer, on every seed), while delivering slightly
+    LESS - 50.6 against 52.4 products in 400 ticks - because one-way lanes force
     detours. It is a trade-off, not a free win.
 
     An earlier version of this test claimed a hundredfold gap and required the
     two-way floor to record over 200 refusals. Those thousands of refusals were
     mostly robots caught in a charging loop in the fleet controller (charge to
     90%, leave, dip under 90%, turn back - see baselines/fleet_controller.py).
-    With the loop fixed the two-way floor records tens, not thousands, and the
-    gap is the 2.5x above. The assertion stays loose - 1.5x over three seeds
-    against a measured 2.4x - so it tests the mechanism, not a specific seed.
+    With the loop fixed the two-way floor records tens to about a hundred, not
+    thousands. The assertion stays loose - 1.5x over three seeds against a
+    measured 5-6x - so it tests the mechanism, not a specific seed.
     """
     from baselines.fleet_controller import FleetPlannerController
 

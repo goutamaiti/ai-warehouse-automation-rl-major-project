@@ -271,6 +271,7 @@ anything:
 ```bash
 python scripts/verify_live_floor.py     # ~1 min: 8 Live-floor scenarios, every product checked
 python scripts/verify_single_robot.py   # a few min: every scenario/controller + all 540 episodes
+python scripts/stress_live_floor.py     # ~5 min: 60 stress runs, 3-8 robots (add `rmfs` for the large floor)
 ```
 
 `verify_live_floor.py` drives the fleet API exactly as the browser does and

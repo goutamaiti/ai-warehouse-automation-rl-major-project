@@ -447,3 +447,80 @@ def test_a_long_idle_spell_does_not_cause_a_false_deadlock_when_work_arrives():
             break
         sim.step(controller.act(sim))
     assert queue.stats()["delivered"] == 1
+
+
+# ----------------------------------------------------------------------
+# Regressions from the stress sweep (scripts/stress_live_floor.py)
+# ----------------------------------------------------------------------
+
+
+def _stress(n_robots, pattern, seed, n_products, max_ticks=2500):
+    """The sweep's own scenario, run on the simulation directly."""
+    import numpy as np
+
+    from baselines.fleet_controller import FleetPlannerController
+    from simulation.dispatch import TaskQueue
+
+    config = load_scenario(find_scenario("default"))
+    queue = TaskQueue()
+    sim = FleetSimulation(config, n_robots=n_robots, task_queue=queue)
+    sim.reset(seed=seed)
+    controller = FleetPlannerController()
+    controller.reset(sim)
+    rng = np.random.default_rng(seed + 7)
+    gaps = {"burst": lambda: 0, "steady": lambda: int(rng.integers(0, 10)),
+            "gaps": lambda: int(rng.integers(15, 40))}[pattern]
+    due, t = [], 0
+    for _ in range(n_products):
+        t += gaps()
+        due.append(t)
+    added = 0
+    for tick in range(max_ticks):
+        while added < n_products and due[added] <= tick:
+            queue.add(
+                sim.layout.storage_points[int(rng.integers(len(sim.layout.storage_points)))],
+                sim.layout.packing_stations[int(rng.integers(len(sim.layout.packing_stations)))],
+                step=tick,
+            )
+            added += 1
+        if sim.done or (added == n_products and not sim.has_outstanding_work()):
+            break
+        sim.step(controller.act(sim))
+    return sim, queue
+
+
+@pytest.mark.parametrize(
+    "n_robots,pattern,seed,n_products",
+    [
+        # parked robots walling off the charger and station corner
+        (5, "gaps", 0, 8),
+        # a robot bouncing on the charge threshold, two others ran flat
+        (3, "steady", 2, 15),
+        # the charger doorway: a full robot unable to leave past the queue
+        (8, "steady", 1000, 15),
+    ],
+)
+def test_stress_cases_that_used_to_deadlock_now_deliver_everything(n_robots, pattern, seed, n_products):
+    sim, queue = _stress(n_robots, pattern, seed, n_products)
+    assert not sim.done, "the floor stopped"
+    assert queue.stats()["delivered"] == n_products, queue.stats()
+    assert all(m.alive for m in sim.members.values()), "a robot ran flat"
+
+
+def test_a_robot_below_the_low_threshold_is_not_given_new_work():
+    from baselines.fleet_controller import FleetPlannerController
+    from simulation.dispatch import TaskQueue
+
+    config = load_scenario(find_scenario("default"))
+    queue = TaskQueue()
+    sim = FleetSimulation(config, n_robots=2, task_queue=queue)
+    sim.reset(seed=1000)
+    controller = FleetPlannerController()
+    controller.reset(sim)
+    low = config.battery.low_threshold
+    sim.members[0].robot.battery = low - 1
+    sim.members[1].robot.battery = low - 1
+    queue.add(sim.layout.storage_points[0], sim.layout.packing_stations[0], step=0)
+    sim.step(controller.act(sim))
+    assert all(m.task is None for m in sim.members.values()), "a low robot was dispatched"
+    assert queue.stats()["waiting"] == 1

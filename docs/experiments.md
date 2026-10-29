@@ -230,20 +230,36 @@ that every product is delivered by the nearest idle robot standing on the
 pickup and drop-off cells, with no two robots ever on one cell, no deaths and
 no deadlocks. Current result: 8/8 scenarios, 112/112 products.
 
+A wider stress sweep, `python scripts/stress_live_floor.py` (and `... rmfs`),
+runs 3, 4, 5, 6 and 8 robots against a burst of products, steady arrivals and
+long idle gaps on four seeds - 60 runs per floor. It found that the original
+controller deadlocked or left a product undelivered in **14 of 60** runs on the
+21x15 floor, in three distinct ways: idle robots parked in a wall around the
+charger and station corner and never moved for anyone; a robot bouncing on
+the "enough charge to finish?" threshold occupied the charger while others ran
+flat; and robots queued to enter a charger blocked a full one trying to leave
+it. Three rules fixed them - an idle robot with charge to spare (or one
+head-on with the robot it blocks) steps aside; a robot below the low-battery
+threshold is not given new work; and a robot that decides to charge charges to
+90% before resuming. Now: **60/60 on the 21x15 floor and 60/60 on the 46x30
+floor.**
+
 One-way lanes on the 46x30 floor, 12 robots, 200-product backlog, 400 ticks,
 seeds 1000-1004:
 
 | Floor | Robot-on-robot refusals (mean) | Products delivered (mean) |
 |---|---|---|
-| one-way lanes | **15.0** | 45.8 |
-| two-way | 37.8 | **49.2** |
+| one-way lanes | **17.6** | 50.6 |
+| two-way | 102.4 | **52.4** |
 
-One-way lanes cut robot-on-robot blocking about 2.5x, on every seed, at the
-cost of about 7% throughput from the forced detours. An earlier figure of a
-hundredfold reduction was measured while the fleet controller had a charging
-loop (robots charging to 90%, leaving, dipping under 90% and turning back); the
-thousands of refusals it recorded were mostly looping robots. The loop is
-fixed and the figure above replaces it.
+One-way lanes cut robot-on-robot blocking about 5.8x, on every seed, at the
+cost of about 3% throughput from the forced detours. These figures are for the
+current fleet controller; they replace two earlier ones. A hundredfold reduction
+was measured while the controller had a charging loop, whose thousands of
+refusals were mostly looping robots. A 2.5x reduction (15.0 vs 37.8 refusals,
+45.8 vs 49.2 delivered) was measured after that fix but before the three
+stress-sweep rules above, which changed how robots move around each other.
+Each time the controller changed, the measurement was rerun rather than kept.
 
 ## Summary against the research question
 
