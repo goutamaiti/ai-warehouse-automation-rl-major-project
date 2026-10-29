@@ -81,6 +81,18 @@ trade-off hold on all three. The battery fix holds on all three but varies: 27,
 26 and 19 of 30 (72 of 90, against 6 of 90 under the original reward). Seed 2
 fell into camping on a charger in 10 episodes - say so if asked.
 
+**"Can the battery policy be made reliable?"** Partly. Every seed hit 100% at
+some point in training and then swung, so we keep the best checkpoint (chosen
+on random validation episodes, never the test ones): 72 -> 82 of 90, seed 0 at
+30/30 like A*, no camping. A lower learning rate was tried and was worse
+(36/90 - two seeds learned too slowly), so we report it and did not adopt it.
+
+**"Which reward terms matter?"** We ran an ablation: retrain with one term off,
+3 seeds each, compare on success and collisions. Without progress shaping PPO
+succeeds in 45 of 90 instead of 90; without the collision penalty collisions go
+up 2.3x. Energy, step and waiting terms made no measurable difference on the
+moving-traffic scenario.
+
 **"Where did Random go?"** Removed after Demo 1 to keep the comparison to the
 controllers that matter. It solved almost nothing, so it carried no information.
 

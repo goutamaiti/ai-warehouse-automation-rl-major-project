@@ -1,0 +1,30 @@
+[2026-10-29 20:40:13 UTC] ppo_ablation_no_progress_seed0: training 400,000 steps
+[2026-10-29 20:43:11 UTC] ppo_ablation_no_progress_seed0: 19/30, 178s
+[2026-10-29 20:43:11 UTC] ppo_ablation_no_progress_seed1: training 400,000 steps
+[2026-10-29 20:46:03 UTC] ppo_ablation_no_progress_seed1: 7/30, 172s
+[2026-10-29 20:46:03 UTC] ppo_ablation_no_progress_seed2: training 400,000 steps
+[2026-10-29 20:48:40 UTC] ppo_ablation_no_progress_seed2: 19/30, 157s
+[2026-10-29 20:48:40 UTC] ppo_ablation_no_collision_seed0: training 400,000 steps
+[2026-10-29 20:51:09 UTC] ppo_ablation_no_collision_seed0: 30/30, 148s
+[2026-10-29 20:51:09 UTC] ppo_ablation_no_collision_seed1: training 400,000 steps
+[2026-10-29 20:53:32 UTC] ppo_ablation_no_collision_seed1: 30/30, 144s
+[2026-10-29 20:53:32 UTC] ppo_ablation_no_collision_seed2: training 400,000 steps
+[2026-10-29 20:56:00 UTC] ppo_ablation_no_collision_seed2: 30/30, 147s
+[2026-10-29 20:56:00 UTC] ppo_ablation_no_energy_seed0: training 400,000 steps
+[2026-10-29 20:58:18 UTC] ppo_ablation_no_energy_seed0: 30/30, 139s
+[2026-10-29 20:58:18 UTC] ppo_ablation_no_energy_seed1: training 400,000 steps
+[2026-10-29 21:00:37 UTC] ppo_ablation_no_energy_seed1: 30/30, 139s
+[2026-10-29 21:00:37 UTC] ppo_ablation_no_energy_seed2: training 400,000 steps
+[2026-10-29 21:03:00 UTC] ppo_ablation_no_energy_seed2: 30/30, 143s
+[2026-10-29 21:03:00 UTC] ppo_ablation_no_step_seed0: training 400,000 steps
+[2026-10-29 21:05:22 UTC] ppo_ablation_no_step_seed0: 30/30, 142s
+[2026-10-29 21:05:22 UTC] ppo_ablation_no_step_seed1: training 400,000 steps
+[2026-10-29 21:07:43 UTC] ppo_ablation_no_step_seed1: 30/30, 142s
+[2026-10-29 21:07:43 UTC] ppo_ablation_no_step_seed2: training 400,000 steps
+[2026-10-29 21:10:06 UTC] ppo_ablation_no_step_seed2: 30/30, 142s
+[2026-10-29 21:10:06 UTC] ppo_ablation_no_wait_seed0: training 400,000 steps
+[2026-10-29 21:12:31 UTC] ppo_ablation_no_wait_seed0: 30/30, 146s
+[2026-10-29 21:12:31 UTC] ppo_ablation_no_wait_seed1: training 400,000 steps
+[2026-10-29 21:14:56 UTC] ppo_ablation_no_wait_seed1: 30/30, 145s
+[2026-10-29 21:14:56 UTC] ppo_ablation_no_wait_seed2: training 400,000 steps
+[2026-10-29 21:17:24 UTC] ppo_ablation_no_wait_seed2: 30/30, 148s

@@ -47,3 +47,9 @@ Thumbs.db
 
 # Claude Code local settings
 .claude/
+
+# Study models (reward ablation, learning-rate study): ~5 MB each and fully
+# regenerable with scripts/run_reward_studies.py; their evaluations ARE
+# committed in data/ablation/ and data/stability/.
+rl_agent/models/ppo_ablation_*.zip
+rl_agent/models/ppo_battery_lr1e4_*.zip

@@ -50,7 +50,7 @@ and verified; `[ ]` means not done, with the reason. Numbers come from
 - [x] Six scenarios in complexity order
 - [x] Three training seeds per policy (`data/seeds/summary.md`)
 - [x] All 540 published episodes reproduce exactly with the current code
-- [ ] Reward-weight ablation study - not run
+- [x] Reward-weight ablation: 5 terms x 3 seeds on `dynamic_obstacles` - progress shaping (45/90 without it) and collision penalty (2.3x collisions without it) matter; energy/step/waiting no measurable effect (`data/ablation/`)
 - [ ] Dijkstra - not needed (uniform-cost grid: same paths as BFS)
 
 ## Week 8 - Dashboard
@@ -83,7 +83,8 @@ and verified; `[ ]` means not done, with the reason. Numbers come from
 - [x] Realistic 46x30 robotic-fulfilment floor: 300 pods, 306 pick points, 8 stations, 8 chargers, one-way lanes (5.8x fewer blockings, 3% less throughput)
 - [x] Deployed to Vercel from `main` (static; the Live floor needs the local backend)
 - [ ] Multi-agent RL (MAPPO) on the fleet - future scope
-- [ ] Battery policy reliability across seeds (27 / 26 / 19 of 30; one seed camps on a charger) - future scope
+- [x] Battery policy reliability: best-checkpoint selection 72/90 -> 82/90 (30 / 27 / 25), camping gone; seed 0 matches A* (`data/stability/`)
+- [ ] Battery policy at 90/90 - lower learning rate tried and rejected (36/90); longer runs / more seeds are future scope
 
 ## Explicitly out of scope
 Physical robots, ESP32/Arduino/Raspberry Pi, sensors, ROS/ROS2, 3D simulation,

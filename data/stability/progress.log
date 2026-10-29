@@ -1,0 +1,6 @@
+[2026-10-29 21:17:24 UTC] ppo_battery_lr1e4_s0: training 2,000,000 steps at learning rate 0.0001
+[2026-10-29 21:27:55 UTC] ppo_battery_lr1e4_s0: final 6/30, best checkpoint 5/30, 632s
+[2026-10-29 21:27:55 UTC] ppo_battery_lr1e4_s1: training 2,000,000 steps at learning rate 0.0001
+[2026-10-29 21:39:43 UTC] ppo_battery_lr1e4_s1: final 30/30, best checkpoint 30/30, 708s
+[2026-10-29 21:39:43 UTC] ppo_battery_lr1e4_s2: training 2,000,000 steps at learning rate 0.0001
+[2026-10-29 21:52:51 UTC] ppo_battery_lr1e4_s2: final 0/30, best checkpoint 0/30, 788s

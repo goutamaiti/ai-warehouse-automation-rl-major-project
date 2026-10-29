@@ -23,13 +23,13 @@ in Python plus a React dashboard.
 | A* / BFS planners + battery-aware controller | Implemented, unit tested |
 | PPO training pipeline (Stable-Baselines3) | Implemented, **run** - six policies trained and committed |
 | Evaluation, metrics, reports | Implemented - 6 scenarios x 3 controllers x 30 paired episodes in `data/results/` |
-| Battery-aware RL | **Works after a reward fix** - PPO 0/30 on `battery_constrained` (original reward) -> **27/30** on `battery_tuned` (corrected reward, 2M steps); across 3 training seeds 27, 26 and 19 of 30 (vs 0, 0 and 6 before the fix); still below A*'s 30/30 |
+| Battery-aware RL | **Works after a reward fix** - PPO 0/30 on `battery_constrained` (original reward) -> **27/30** on `battery_tuned` (corrected reward, 2M steps); across 3 training seeds 27, 26 and 19 of 30 (vs 0, 0 and 6 before the fix), **82 of 90 keeping the best checkpoint**; still below A*'s 30/30 |
 | Multi-robot fleet (Live floor) | Implemented with **classical** control - shared task queue with normal/urgent priority (urgent served 3.2x faster under load), nearest-robot dispatch, charger zones, deadlock detection, 46x30 one-way robotic-fulfilment floor. No learned policy drives it. |
 | FastAPI backend | Implemented, tested, accepts a user-drawn custom layout |
 | React dashboard (Dashboard / Live floor / Editor / Info tabs) | Implemented, replays real recordings, live per-step reward breakdown |
 | Multi-agent RL (MAPPO etc.) | **Not implemented** - future scope |
 | Multiple training seeds | **Run** - every PPO policy trained with 3 seeds; see [Across training seeds](#across-training-seeds) |
-| Reward-weight ablation study | **Not run yet** |
+| Reward-weight ablation study | **Run** - 5 terms x 3 seeds; progress shaping and the collision penalty matter, energy/step/waiting showed no measurable effect; see [Reward-weight ablation](#reward-weight-ablation) |
 
 Tests: `276 passed`, including a 50-test frozen-contract tripwire that pins the
 exact single-robot behaviour every result was measured with. Two one-command
@@ -120,6 +120,39 @@ episodes (`python scripts/run_seed_study.py`; results in `data/seeds/`):
   *camping* in 10 episodes, sitting on a charger for all 600 steps without
   delivering. In total the corrected reward delivers in 72 of 90 episodes
   against 6 of 90 under the original one.
+
+### Making the battery policy reliable
+
+Every `battery_tuned` seed reached 100% evaluation success at some point in
+training and then swung, so the run sometimes ended on a bad moment. Keeping
+the **best checkpoint** (chosen on the training run's own random evaluation
+episodes, never the test episodes) instead of the last one:
+
+| Setting, 2M steps | Seeds 0 / 1 / 2 | Total |
+|---|---|---|
+| learning rate 3e-4, final policy (published) | 27 / 26 / 19 | 72/90 |
+| learning rate 3e-4, **best checkpoint** | **30 / 27 / 25** | **82/90** - no camping on any seed |
+| learning rate 1e-4, final policy | 6 / 30 / 0 | 36/90 - slower learning; seed 2 never learned |
+
+Seed 0 now matches A* at 30/30. A lower learning rate was tried as a deeper fix
+and made things worse at this budget, so it is reported, not adopted. Results:
+`data/stability/summary.md`.
+
+### Reward-weight ablation
+
+PPO retrained on `dynamic_obstacles` with one reward term switched off at a
+time, 3 seeds each, compared on task metrics (`data/ablation/summary.md`):
+
+| Switched off | Success (of 90) | Collisions / episode |
+|---|---|---|
+| nothing (full reward) | 90 | 0.59 |
+| progress shaping | **45** (and 3-7x longer paths) | 0.33 |
+| collision penalty | 90 | **1.33** |
+| energy / step / waiting | 90 each | 0.52 / 0.53 / 0.62 |
+
+Progress shaping carries the learning; the collision penalty is what keeps
+collisions down; the other three terms had no measurable effect on this
+scenario.
 
 Full tables, metric definitions and the threats to validity are in
 [docs/experiments.md](docs/experiments.md).
@@ -339,10 +372,10 @@ Known limitations, stated rather than hidden:
 
 Next, in order:
 
-1. Stop the battery policy camping on some seeds (seed 2: 10 of 30 episodes).
-2. Reward-weight ablation: which terms actually matter?
-3. Obstacle-density sweep: at what traffic level does replanning A* degrade?
-4. Multi-agent RL (MAPPO) on the fleet.
+1. Close the remaining battery gap (82 of 90 with the best checkpoint): longer
+   runs and more seeds. A lower learning rate was tried and made it worse.
+2. Obstacle-density sweep: at what traffic level does replanning A* degrade?
+3. Multi-agent RL (MAPPO) on the fleet.
 
 Explicitly out of scope: physical robots, ROS/ROS2, 3D simulation, computer
 vision. Those are future scope, not part of this project.

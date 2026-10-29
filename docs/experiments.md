@@ -217,6 +217,71 @@ What does not:
   episodes against 6 of 90 under the original reward - the fix is real - but
   how well it works depends on the seed.
 
+## Reward-weight ablation
+
+Which reward terms actually matter? Each arm retrains PPO on
+`dynamic_obstacles` - the scenario where every term is active - with exactly
+one term switched off (`configs/ablation/no_*.yaml`; each file differs from the
+scenario in that one weight). Same world, 400k steps, hyper-parameters and
+training seeds 0/1/2; evaluated on episodes 1000-1029. Arms are compared on
+task metrics only, never on reward, because each arm is scored by a different
+reward function. Source: `data/ablation/summary.md`, produced by
+`python scripts/run_reward_studies.py --study ablation`.
+
+| Switched off | Success /30 (seeds 0/1/2) | Mean steps | Collisions / episode |
+|---|---|---|---|
+| nothing (full reward) | 30 / 30 / 30 | 28.93 / 29.37 / 29.07 | 0.47 / 0.77 / 0.53 |
+| progress shaping | **19 / 7 / 19** | 81.42 / 204.43 / 122.42 | 0.33 / 0.00 / 0.67 |
+| collision penalty | 30 / 30 / 30 | 30.07 / 29.03 / 29.03 | **1.93 / 1.10 / 0.97** |
+| energy cost | 30 / 30 / 30 | 29.10 / 29.90 / 29.17 | 0.50 / 0.63 / 0.43 |
+| step cost | 30 / 30 / 30 | 29.00 / 29.07 / 29.33 | 0.53 / 0.60 / 0.47 |
+| waiting penalty | 30 / 30 / 30 | 29.27 / 29.47 / 28.93 | 0.80 / 0.47 / 0.60 |
+
+* **Progress shaping carries the learning.** Without it PPO succeeds in 45 of
+  90 episodes instead of 90 of 90, and the successful ones take 3-7x as many
+  steps (path efficiency 0.19-0.57 against 0.98). The sparse pickup and
+  delivery rewards alone are not enough within 400k steps.
+* **The collision penalty is what keeps collisions down.** Removing it leaves
+  success untouched but raises collisions from 0.59 to 1.33 per episode
+  (averaged over the three seeds), about 2.3x.
+* **Energy, step and waiting terms show no measurable effect here.** Success,
+  steps and collisions stay within the spread between seeds. On this scenario
+  they are redundant with the progress term, which already rewards short
+  paths. This does not show they are useless everywhere: the waiting penalty
+  was raised to stop charger camping on the battery scenario, which this
+  ablation does not test.
+
+## Making the battery policy reliable
+
+The seed study left `battery_tuned` at 27, 26 and 19 of 30. The training logs
+(`data/logs/*/eval/evaluations.npz`) show why: every seed reached **100%
+evaluation success at some checkpoint**, then swung (seed 1: 100% at 1.4M,
+20% at 1.6M, 100% at 1.8M). The policy was learned; the run simply ended on a
+worse moment for some seeds. Two remedies were measured on the same 30 test
+episodes. Source: `data/stability/summary.md`
+(`python scripts/run_reward_studies.py --study battery-lr`).
+
+| Setting (2M steps, seeds 0/1/2) | Success /30 | Total | Outcomes of the failures |
+|---|---|---|---|
+| learning rate 3e-4, final policy (published) | 27 / 26 / 19 | 72/90 | 8 ran flat; 10 camped on a charger until timeout |
+| learning rate 3e-4, **best checkpoint** | **30 / 27 / 25** | **82/90** | 8 ran flat; no camping |
+| learning rate 1e-4, final policy | 6 / 30 / 0 | 36/90 | 24 ran flat; 30 timed out without delivering |
+| learning rate 1e-4, best checkpoint | 5 / 30 / 0 | 35/90 | 25 ran flat; 30 timed out without delivering |
+
+* **Keeping the best checkpoint works.** The checkpoint is chosen by the
+  training run's own evaluation environment, whose episodes are drawn at random
+  and are not the test episodes 1000-1029, so the choice does not peek at the
+  test set. It lifts the total from 72 to 82 of 90, brings seed 0 to 30/30 -
+  equal to A* - and removes camping on every seed.
+* **A lower learning rate made it worse.** At 1e-4 learning is slower, and
+  2M steps is not enough: seed 2 never succeeded in a single evaluation, seed 0
+  peaked at 50%. Seed 1, the one seed that did learn (from about 1.4M steps),
+  then stayed at 95-100% - so a lower rate may be steadier once learned, but
+  at this budget it costs far more than it gains. The hypothesis is rejected
+  for this budget; the recommended setting is 3e-4 with best-checkpoint
+  selection.
+* **Still below the planner.** A* and BFS deliver 30/30 on every seed.
+
 ## Multi-robot Live floor (demonstration, not a measured result)
 
 The Live floor runs several robots on a shared task queue with the classical
@@ -289,7 +354,8 @@ Each time the controller changed, the measurement was rerun rather than kept.
 |---|---|
 | Can PPO match classical planning on static warehouse navigation? | Yes - identical to optimal A* on 30/30 episodes on all three static floors. |
 | Does RL help when the warehouse is dynamic? | It is faster (28.93 vs 30.50 steps) but collides 0.47 times per episode where A* never does. No net reward advantage. |
-| Does RL handle battery constraints? | Not under the original reward (0/30: dying paid; 6 of 90 across three seeds). After correcting the depletion penalty and training for 2M steps, 27/30 - and 72 of 90 across three seeds (27, 26, 19). Learnable, seed-dependent, and still below the planner's 30/30. |
+| Does RL handle battery constraints? | Not under the original reward (0/30: dying paid; 6 of 90 across three seeds). After correcting the depletion penalty and training for 2M steps, 27/30 - and 72 of 90 across three seeds (27, 26, 19). Keeping the best checkpoint raises it to 82 of 90 (30, 27, 25) and removes camping. Learnable, seed-dependent, and still below the planner's 30/30. |
+| Which reward terms matter? | Progress shaping (45 of 90 without it, against 90 of 90) and the collision penalty (2.3x more collisions without it). Energy, step and waiting terms had no measurable effect on `dynamic_obstacles`. |
 | Is the comparison fair? | It is biased *against* RL: the planners get the full map and every obstacle position; PPO gets a 5x5 patch. |
 
 ## Threats to validity
@@ -299,7 +365,9 @@ Each time the controller changed, the measurement was rerun rather than kept.
    robust and which vary, but are too few for formal significance tests.
 2. **Reward weights were not searched.** The weights are reasoned starting
    values; only the battery depletion penalty was changed, and it was derived
-   from the measured reward of the failing policy rather than tuned.
+   from the measured reward of the failing policy rather than tuned. The
+   ablation switches terms off one at a time on one scenario; it does not
+   search values, and it does not test interactions between terms.
 3. **Shaping is policy-invariant only for the undiscounted return.** Progress
    shaping uses gamma 1.0 while PPO optimises a 0.99-discounted return, and the
    potential is not zeroed at a failed terminal state. Ng et al.'s guarantee
