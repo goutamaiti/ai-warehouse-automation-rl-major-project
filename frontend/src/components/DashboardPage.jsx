@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import MetricsPanel from './MetricsPanel';
 import PlaybackControls from './PlaybackControls';
 import ResultsTable from './ResultsTable';
+import TrainingCurves from './TrainingCurves';
 import RewardPanel from './RewardPanel';
 import WarehouseCanvas from './WarehouseCanvas';
 import {
@@ -277,6 +278,8 @@ export default function DashboardPage({ health }) {
       />
 
       <ResultsTable results={results} />
+
+      <TrainingCurves training={index.training} />
 
       <footer className="app-footer">
         <p>

@@ -41,6 +41,9 @@ async function main() {
 
   const episodes = await readJsonFiles(join(sourceDir, 'episodes'));
   const results = await readJsonFiles(join(sourceDir, 'results'));
+  // Learning curves exported from the (git-ignored) training logs by
+  // scripts/export_training_curves.py. Small enough to ship inside the index.
+  const training = await readJsonFiles(join(sourceDir, 'training'));
 
   for (const episode of episodes) {
     await writeFile(join(targetDir, 'episodes', `${episode.id}.json`), episode.text);
@@ -65,11 +68,12 @@ async function main() {
       generatedAt: data.generated_at ?? null,
       summaries: data.summaries ?? [],
     })),
+    training: training.map(({ data }) => data),
   };
   await writeFile(join(targetDir, 'index.json'), JSON.stringify(index, null, 1));
 
   console.log(
-    `[copy-data] ${episodes.length} episode replay(s), ${results.length} result file(s) -> frontend/public/data`
+    `[copy-data] ${episodes.length} episode replay(s), ${results.length} result file(s), ${training.length} learning curve(s) -> frontend/public/data`
   );
   if (episodes.length === 0) {
     console.warn(
