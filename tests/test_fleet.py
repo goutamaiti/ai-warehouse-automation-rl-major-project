@@ -416,3 +416,34 @@ def test_snapshot_is_json_serialisable():
     json.dumps(payload)  # must not raise
     assert len(payload["robots"]) == 2
     assert payload["deadlocked"] is False
+
+
+def test_a_long_idle_spell_does_not_cause_a_false_deadlock_when_work_arrives():
+    """Regression: an idle floor declared a deadlock on the tick a product arrived.
+
+    The idle streak climbed through every tick with nothing to do, so it was
+    already over DEADLOCK_STREAK when the first request came in - and the
+    dispatch tick makes no progress by construction. The floor stopped and the
+    product was never delivered.
+    """
+    from baselines.fleet_controller import FleetPlannerController
+    from simulation.dispatch import TaskQueue
+
+    config = load_scenario(find_scenario("default"))
+    queue = TaskQueue()
+    sim = FleetSimulation(config, n_robots=4, task_queue=queue)
+    sim.reset(seed=1000)
+    controller = FleetPlannerController()
+    controller.reset(sim)
+    for _ in range(DEADLOCK_STREAK * 5):
+        sim.step(controller.act(sim))
+    assert not sim.done
+
+    queue.add(sim.layout.storage_points[0], sim.layout.packing_stations[0], step=0)
+    outcome = sim.step(controller.act(sim))
+    assert not outcome.deadlocked
+    for _ in range(300):
+        if queue.stats()["delivered"]:
+            break
+        sim.step(controller.act(sim))
+    assert queue.stats()["delivered"] == 1

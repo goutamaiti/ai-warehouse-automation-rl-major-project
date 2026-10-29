@@ -106,6 +106,9 @@ class FleetPlannerController:
         #: robots cannot face each other at all.
         self.directions = directions
         self.nodes_expanded = 0
+        #: robot id -> the task it left a charger full for. A committed robot
+        #: does not turn back for a top-up unless its battery goes critical.
+        self._committed: dict[int, object] = {}
 
     @property
     def name(self) -> str:
@@ -113,6 +116,7 @@ class FleetPlannerController:
 
     def reset(self, sim: FleetSimulation) -> None:
         self.nodes_expanded = 0
+        self._committed = {}
 
     # ------------------------------------------------------------------
     def act(self, sim: FleetSimulation) -> dict[int, int]:
@@ -175,6 +179,7 @@ class FleetPlannerController:
             return target
 
         if member.task is None:
+            self._committed.pop(robot_id, None)
             # Idle: top up first, then go and wait. An idle robot is the only
             # one that can afford a charging detour at no cost to a delivery,
             # so this is where a fleet should spend its charging time.
@@ -183,8 +188,12 @@ class FleetPlannerController:
             return target
 
         # Working: can it finish this leg and still reach power afterwards?
+        # "Afterwards" means the charger nearest the TARGET - the one it would
+        # actually use once there. Measuring the return to the charger nearest
+        # the robot's current cell overstated a long trip on the realistic floor
+        # (96 needed against a real 71), which fed the loop described below.
         to_target = sim.path_distance(member.position, target)
-        from_target = sim.path_distance(target, charger)
+        _, from_target = sim.nearest_charger(target)
         if to_target < 0 or from_target < 0:
             return target
         needed = (to_target + from_target) * battery_cfg.move_cost * self.safety_factor
@@ -201,9 +210,23 @@ class FleetPlannerController:
         # So: once effectively full, go. There is nothing better available, and
         # running out en route is a real outcome the metrics should record
         # rather than one the controller hides by refusing to start.
+        #
+        # And once it has left a charger full for this task it is COMMITTED:
+        # it only turns back if the battery goes critical. Without that there
+        # is no hysteresis - it charged to 90%, drove a few cells, dipped under
+        # 90%, re-checked the reserve, turned back, and repeated for ever while
+        # holding the product. Measured on the realistic floor (8 robots, 25
+        # products, seeds 0 and 2): two products each still undelivered after
+        # 3,000 ticks, with robots shuttling between a charger and a lane.
         effectively_full = battery >= battery_cfg.capacity * self.charge_until
         if effectively_full:
+            self._committed[robot_id] = member.task
             return target
-        if battery <= needed or battery <= battery_cfg.critical_threshold:
+        if battery <= battery_cfg.critical_threshold:
+            self._committed.pop(robot_id, None)
+            return charger
+        if self._committed.get(robot_id) is member.task:
+            return target
+        if battery <= needed:
             return charger
         return target

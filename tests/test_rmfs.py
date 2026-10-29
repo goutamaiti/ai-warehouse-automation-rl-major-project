@@ -262,30 +262,38 @@ def test_a_fleet_places_and_runs_on_the_realistic_floor():
     assert counters["moves"] > 0, "nobody moved"
 
 
-def test_one_way_routing_all_but_eliminates_robot_on_robot_blocking():
-    """The measured benefit of the one-way field.
+def test_one_way_routing_reduces_robot_on_robot_blocking():
+    """The measured benefit of the one-way field - and its honest size.
 
-    Twelve robots and a real backlog, because the effect is a congestion
-    effect: at eight robots over two hundred ticks both floors record single
-    digits and the comparison says nothing. At this load the two-way floor
-    records thousands of refusals and the one-way field tens, because two
-    robots cannot face each other in a lane at all.
+    Twelve robots and a 200-product backlog, because the effect is a congestion
+    effect. Measured with the corrected fleet controller over seeds 1000-1004:
+    the one-way field averages 15 robot-on-robot refusals against 37.8 on the
+    two-way floor (about 2.5x fewer, on every seed), while delivering slightly
+    LESS - 45.8 against 49.2 products in 400 ticks - because one-way lanes force
+    detours. It is a trade-off, not a free win.
 
-    The assertion is deliberately loose - a fivefold gap against a measured
-    hundredfold - so it tests the mechanism rather than a specific seed.
+    An earlier version of this test claimed a hundredfold gap and required the
+    two-way floor to record over 200 refusals. Those thousands of refusals were
+    mostly robots caught in a charging loop in the fleet controller (charge to
+    90%, leave, dip under 90%, turn back - see baselines/fleet_controller.py).
+    With the loop fixed the two-way floor records tens, not thousands, and the
+    gap is the 2.5x above. The assertion stays loose - 1.5x over three seeds
+    against a measured 2.4x - so it tests the mechanism, not a specific seed.
     """
     from baselines.fleet_controller import FleetPlannerController
 
     layout, direction = floor()
     config = load_scenario(find_scenario("default"))
 
-    def blocked_events(directions):
+    def blocked_events(directions, seed):
         queue = TaskQueue()
-        sim = FleetSimulation(config, n_robots=12, layout=layout, task_queue=queue)
-        sim.reset(seed=1000)
+        sim = FleetSimulation(
+            config, n_robots=12, layout=layout, task_queue=queue, directions=directions
+        )
+        sim.reset(seed=seed)
         controller = FleetPlannerController(directions=directions)
         controller.reset(sim)
-        rng = np.random.default_rng(1000)
+        rng = np.random.default_rng(seed)
         for _ in range(200):
             queue.add(
                 layout.storage_points[int(rng.integers(len(layout.storage_points)))],
@@ -300,10 +308,11 @@ def test_one_way_routing_all_but_eliminates_robot_on_robot_blocking():
             sim.step(controller.act(sim))
         return sim.fleet_counters()["blocked_by_robot"]
 
-    one_way = blocked_events(direction)
-    two_way = blocked_events(None)
-    assert two_way > 200, f"the load did not produce congestion to compare ({two_way})"
-    assert one_way * 5 < two_way, f"one-way {one_way} vs two-way {two_way}"
+    seeds = (1000, 1001, 1002)
+    one_way = sum(blocked_events(direction, seed) for seed in seeds)
+    two_way = sum(blocked_events(None, seed) for seed in seeds)
+    assert two_way > 0, "the load produced no congestion at all to compare"
+    assert one_way * 1.5 < two_way, f"one-way {one_way} vs two-way {two_way}"
 
 
 def test_a_full_robot_does_not_park_at_a_charger_it_no_longer_needs():
@@ -340,3 +349,68 @@ def test_a_full_robot_does_not_park_at_a_charger_it_no_longer_needs():
 
     assert delivered_at is not None, "the robot never delivered; it is parked again"
     assert delivered_at < 400
+
+
+# ----------------------------------------------------------------------
+# Regressions found by the end-to-end Live floor proof
+# ----------------------------------------------------------------------
+
+
+def _run_backlog(seed, n_robots=8, n_products=25, max_ticks=3000):
+    from baselines.fleet_controller import FleetPlannerController
+
+    layout, direction = floor()
+    config = load_scenario(find_scenario("default"))
+    queue = TaskQueue()
+    sim = FleetSimulation(
+        config, n_robots=n_robots, layout=layout, task_queue=queue, directions=direction
+    )
+    sim.reset(seed=seed)
+    controller = FleetPlannerController(directions=direction)
+    controller.reset(sim)
+    rng = np.random.default_rng(seed + 7)
+    for _ in range(n_products):
+        queue.add(
+            layout.storage_points[int(rng.integers(len(layout.storage_points)))],
+            layout.packing_stations[int(rng.integers(len(layout.packing_stations)))],
+            step=0,
+        )
+    for _ in range(max_ticks):
+        if sim.done or not sim.has_outstanding_work():
+            break
+        sim.step(controller.act(sim))
+    return sim, queue
+
+
+def test_no_waiting_point_on_the_one_way_floor_touches_a_lane():
+    """Parked robots must never sit where they are the only thing in a lane's way.
+
+    Before this, idle robots parked inside the one-way lane leading to a
+    charger; a robot that needed charge could not reach it and the floor
+    wedged with a product in flight.
+    """
+    from simulation.zones import build_zones
+
+    layout, direction = floor()
+    for zone in build_zones(layout, max_waiting_points=12, directions=direction):
+        for cell in zone.waiting_points:
+            assert int(direction[cell]) == FREE, f"{cell} is a one-way lane cell"
+            for d_row, d_col in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+                r, c = cell[0] + d_row, cell[1] + d_col
+                if 0 <= r < direction.shape[0] and 0 <= c < direction.shape[1]:
+                    assert int(direction[r, c]) == FREE, f"{cell} borders lane {(r, c)}"
+
+
+@pytest.mark.parametrize("seed", [0, 2])
+def test_a_backlog_on_the_realistic_floor_is_fully_delivered(seed):
+    """Every product delivered, nobody dead, no deadlock.
+
+    Seeds 0 and 2 are the ones that exposed the two bugs: seed 0 wedged at a
+    charger behind parked robots, and both left products undelivered after
+    3,000 ticks with robots in a charge-leave-turn-back loop.
+    """
+    sim, queue = _run_backlog(seed)
+    stats = queue.stats()
+    assert not sim.done, "the floor stopped (deadlock or every robot dead)"
+    assert stats["delivered"] == 25, stats
+    assert all(m.alive for m in sim.members.values())

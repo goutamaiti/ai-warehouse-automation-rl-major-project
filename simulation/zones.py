@@ -81,13 +81,38 @@ def _zone_name(index: int) -> str:
     return chr(ord("A") + index) if index < 26 else f"Z{index + 1}"
 
 
-def build_zones(layout: WarehouseLayout, max_waiting_points: int = 8) -> tuple[Zone, ...]:
+def _touches_a_lane(cell: Position, directions: np.ndarray) -> bool:
+    """Is this cell a one-way lane, or directly beside one?"""
+    if int(directions[cell]) != 0:
+        return True
+    height, width = directions.shape
+    for d_row, d_col in DIRECTIONS:
+        row, col = cell[0] + d_row, cell[1] + d_col
+        if 0 <= row < height and 0 <= col < width and int(directions[row, col]) != 0:
+            return True
+    return False
+
+
+def build_zones(
+    layout: WarehouseLayout,
+    max_waiting_points: int = 8,
+    directions: np.ndarray | None = None,
+) -> tuple[Zone, ...]:
     """Partition the walkable floor into one zone per charging station.
 
     ``max_waiting_points`` bounds how many idle robots a single zone can park;
     a fleet larger than ``len(zones) * max_waiting_points`` will find zones
     without a free waiting cell, which the fleet layer handles by leaving those
     robots where they stand rather than failing.
+
+    ``directions`` is the one-way lane grid of a directed floor (0 = two-way).
+    When given, waiting cells are drawn only from two-way cells that do not
+    touch a lane. On a one-way floor a parked robot cannot be driven around:
+    measured on the realistic floor with eight robots, idle robots parked on
+    waiting cells inside the single one-way lane leading to a charger, a robot
+    that needed charge could not reach it, and the whole floor wedged with a
+    product in flight. Excluding the charger's four neighbours - which is all
+    the two-way floor needs - does not cover a lane that is several cells long.
     """
     stations = list(layout.charging_stations)
     if not stations:  # pragma: no cover - validate_layout rejects this already
@@ -139,7 +164,12 @@ def build_zones(layout: WarehouseLayout, max_waiting_points: int = 8) -> tuple[Z
         # storage points are excluded because waiting on one blocks a delivery;
         # charger approach cells because waiting on one blocks charging itself.
         candidates = sorted(
-            (cell for cell in cells if cell not in reserved),
+            (
+                cell
+                for cell in cells
+                if cell not in reserved
+                and (directions is None or not _touches_a_lane(cell, directions))
+            ),
             key=lambda cell: (int(field[cell]), cell),
         )
         zones.append(

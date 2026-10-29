@@ -245,6 +245,7 @@ class FleetSimulation:
         layout: WarehouseLayout | None = None,
         task_queue: TaskQueue | None = None,
         yield_after: int = DEFAULT_YIELD_AFTER,
+        directions: np.ndarray | None = None,
     ) -> None:
         if n_robots < 1:
             raise ValueError(f"a fleet needs at least one robot, got {n_robots}")
@@ -261,8 +262,13 @@ class FleetSimulation:
         # they froze wherever they happened to stop, mid-aisle, as permanent
         # obstacles. Measured at twelve robots: three frozen, and throughput
         # below the eight-robot fleet's.
+        # On a one-way floor the lane grid decides where parking is safe; see
+        # build_zones. Movement rules are unchanged - only the controller ever
+        # routes by the directions.
         self.zones: tuple[Zone, ...] = build_zones(
-            self.layout, max_waiting_points=max(8, int(n_robots))
+            self.layout,
+            max_waiting_points=max(8, int(n_robots)),
+            directions=directions,
         )
         #: When set, robots draw work from this shared queue instead of each
         #: generating its own task. This is what stops two robots being routed

@@ -85,7 +85,11 @@ class FleetSession:
         self.queue = TaskQueue()
         try:
             self.sim = FleetSimulation(
-                config, n_robots=n_robots, layout=layout, task_queue=self.queue
+                config,
+                n_robots=n_robots,
+                layout=layout,
+                task_queue=self.queue,
+                directions=self.directions,
             )
         except ValueError as exc:
             # Includes the unplaceable-fleet message, which names how many
