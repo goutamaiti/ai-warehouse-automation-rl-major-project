@@ -105,6 +105,38 @@ explain:
    reached, cancelling the delivery reward. Regression test:
    `tests/test_env.py::test_delivery_step_is_not_punished_by_the_shaping_term`.
 
+### The limit of the invariance guarantee (known, not fixed)
+
+Ng et al.'s result has two conditions this project does not fully meet, and an
+examiner may reasonably ask about both:
+
+1. **The shaping gamma must equal the learner's gamma.** Trap 1 above is
+   avoided by setting `shaping_gamma = 1.0`, but PPO optimises a return
+   discounted at `gamma = 0.99`. The shaping therefore telescopes exactly for
+   the *undiscounted* return only. Under the discounted return it does not
+   cancel out, and it can prefer some trajectories over others with the same
+   start and end. A code audit measured this: three A* trajectories with
+   identical start and end states, differing only in 0, 20 or 60 leading WAIT
+   actions, all collect +38.0 of undiscounted shaping, but 31.6, 25.9 and 17.3
+   discounted at 0.99.
+2. **The potential must be zero at terminal states.** On a successful delivery
+   it is (the robot stands on its target, so `Phi = 0`). On a failed one
+   (battery flat or timeout) the robot is somewhere else, so `Phi != 0` and the
+   episode keeps a shaping total of `d0 - dT` that depends on where it stopped.
+   The same holds for the battery-reserve potential below.
+
+So the honest statement is: **the shaping is policy-invariant for the
+undiscounted objective, and close to it, but not exactly, for the 0.99-discounted
+objective PPO actually optimises.** The trade was deliberate - matching the
+gammas brings back the loitering trap unless the step penalty is raised above
+`max_distance * (1 - gamma)` (0.27 on `default`, 0.45 on `complex_static`, vs
+the 0.05 used) - but it was not quantified when the reward was designed.
+
+Correcting it means changing the reward (shaping gamma 0.99 with a larger step
+penalty, and `Phi = 0` on terminal transitions) and **retraining every policy**,
+so every committed result would change. That has not been done; every number in
+`data/results/` was measured with the reward exactly as described on this page.
+
 ### The second potential: battery reserve
 
 `battery_reserve_weight` is 0 in `configs/default.yaml` and in every scenario
@@ -122,8 +154,9 @@ navigation - measured: on an A* episode of the battery world the term is 0 on al
 64 steps, while on the old failing PPO policy it fires on 12-20 steps out of 30.
 
 It is a function of state alone, so it is a legitimate potential and the Ng,
-Harada & Russell (1999) result applies to it as well: **it cannot change which
-policy is optimal.** What it changes is the credit-assignment distance. Without
+Harada & Russell (1999) result applies to it as well, within the limit set out
+above: for the undiscounted objective **it cannot change which policy is
+optimal.** What it changes is the credit-assignment distance. Without
 it, "drove past the last charger at 12% charge" and "battery flat" are forty
 steps apart; with it, the mistake is charged immediately.
 

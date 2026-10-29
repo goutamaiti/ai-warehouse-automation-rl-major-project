@@ -412,6 +412,18 @@ export default function InfoPage() {
             Fixed by keeping a completed task's target at its last real destination.
           </li>
         </ol>
+        <p>
+          <strong>What is not fixed, and is stated rather than hidden.</strong> The guarantee
+          needs the shaping discount to equal the learner's. Here it is 1.0 (that is the fix for
+          bug 1) while PPO discounts at 0.99, and the potential is not reset to zero when an
+          episode fails. So the shaping is exactly policy-invariant for the undiscounted return,
+          and only approximately for the discounted one PPO optimises: three A* runs with the same
+          start and end, differing only in 0, 20 or 60 waits at the start, all collect +38.0 of
+          shaping undiscounted, but 31.6, 25.9 and 17.3 discounted. Matching the two would bring
+          back bug 1 unless the step penalty rose about fivefold, and would mean retraining every
+          policy, so every number on this site was measured with the reward exactly as described
+          here.
+        </p>
       </Section>
 
       <Section title="Algorithms">
