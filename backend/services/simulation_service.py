@@ -182,9 +182,20 @@ def list_recorded_episodes() -> list[dict[str, Any]]:
 
 
 def load_recorded_episode(episode_id: str) -> dict[str, Any]:
-    path = (EPISODES_DIR / f"{episode_id}.json").resolve()
+    # resolve() is what rejects a crafted id, but it can also raise before the
+    # guard below ever runs: an id containing a NUL byte ("/api/episodes/%00")
+    # made it raise ValueError, which escaped as a 500 rather than the "unknown
+    # episode" the caller should get. An id the filesystem cannot even express
+    # is by definition not an episode we have, so it is answered the same way as
+    # any other id we do not have.
+    try:
+        path = (EPISODES_DIR / f"{episode_id}.json").resolve()
+        inside = EPISODES_DIR.resolve() in path.parents
+        is_file = path.is_file()
+    except (OSError, ValueError) as exc:
+        raise ServiceError(f"unknown episode {episode_id!r}") from exc
     # Guard against path traversal via a crafted episode id.
-    if EPISODES_DIR.resolve() not in path.parents or not path.is_file():
+    if not inside or not is_file:
         raise ServiceError(f"unknown episode {episode_id!r}")
     with path.open("r", encoding="utf-8") as handle:
         return json.load(handle)

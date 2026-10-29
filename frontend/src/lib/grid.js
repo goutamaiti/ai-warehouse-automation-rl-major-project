@@ -25,6 +25,12 @@ export const CellType = {
 // apart the moment the site went to a single hue. cellArt gives each type a
 // mark instead, and carries the label beside it so the two cannot drift.
 
+/** Mirrors simulation/warehouse.py::MIN_CUSTOM_SIZE and MAX_CUSTOM_SIZE.
+ *  Exported so the editor's resize clamp reads them from here rather than
+ *  keeping its own third copy of the same two numbers. */
+export const MIN_GRID_SIZE = 5;
+export const MAX_GRID_SIZE = 40;
+
 const BLOCKING = new Set([CellType.WALL, CellType.SHELF]);
 
 // Up, down, left, right - same order as the discrete action space (0-3),
@@ -199,8 +205,31 @@ export function validateGrid(grid) {
   if (grid.some((row) => row.length !== width)) {
     return { valid: false, error: 'the rows have inconsistent width.' };
   }
-  if (height < 5 || width < 5) {
-    return { valid: false, error: 'the grid must be at least 5x5.' };
+  if (height < MIN_GRID_SIZE || width < MIN_GRID_SIZE) {
+    return { valid: false, error: `the grid must be at least ${MIN_GRID_SIZE}x${MIN_GRID_SIZE}.` };
+  }
+  // The two checks below were missing, so this function said "valid" for grids
+  // layout_from_grid refuses - and it claims above to mirror that function.
+  // Measured: a 41x41 grid and grids containing cell values 99, -1 and 2.5 all
+  // passed here, after which the offline sandbox ran them and reported step
+  // counts, while a connected backend rejected the same grid outright. A
+  // pre-check that green-lights a layout the real engine will not accept is
+  // worse than no pre-check.
+  if (height > MAX_GRID_SIZE || width > MAX_GRID_SIZE) {
+    return { valid: false, error: `the grid must be at most ${MAX_GRID_SIZE}x${MAX_GRID_SIZE}.` };
+  }
+  const known = new Set(Object.values(CellType));
+  const unknown = new Set();
+  for (const row of grid) {
+    for (const value of row) {
+      if (!known.has(value)) unknown.add(value);
+    }
+  }
+  if (unknown.size) {
+    return {
+      valid: false,
+      error: `the grid contains unknown cell values: ${[...unknown].sort().join(', ')}.`,
+    };
   }
 
   const storage = pointsOfType(grid, CellType.STORAGE);

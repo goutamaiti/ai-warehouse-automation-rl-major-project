@@ -129,6 +129,23 @@ class FleetSession:
 
     def _validate_cell(self, cell: Any, label: str) -> Position:
         """Reject anything a robot could not actually use, with a usable message."""
+        # The length is checked before unpacking. Indexing cell[0] and cell[1]
+        # alone catches "too few" through IndexError but accepts "too many" and
+        # silently drops the rest: [1, 2, 3] was taken as [1, 2] and the caller
+        # got a confident 200 for a cell they did not ask for. A coordinate with
+        # a spare element is exactly the kind of thing this method exists to
+        # refuse, so it says so instead of guessing.
+        try:
+            length = len(cell)
+        except TypeError as exc:
+            raise FleetSessionError(
+                f"{label} must be a [row, column] pair, got {cell!r}"
+            ) from exc
+        if length != 2:
+            plural = "value" if length == 1 else "values"
+            raise FleetSessionError(
+                f"{label} must be a [row, column] pair, got {length} {plural}: {cell!r}"
+            )
         try:
             row, col = int(cell[0]), int(cell[1])
         except (TypeError, ValueError, IndexError) as exc:

@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { CellType, validateGrid } from '../lib/grid';
+import { CellType, MAX_GRID_SIZE, MIN_GRID_SIZE, validateGrid } from '../lib/grid';
 import { CELL_LEGEND, drawFloor } from '../lib/cellArt';
 import CellSwatch from './CellSwatch';
 
-const MIN_SIZE = 5;
-const MAX_SIZE = 40; // mirrors simulation/warehouse.py::MAX_CUSTOM_SIZE
+// These were a third copy of simulation/warehouse.py's MIN_/MAX_CUSTOM_SIZE.
+// They now come from lib/grid, which is the module that has to agree with the
+// Python limits anyway because it is what validates against them.
+const MIN_SIZE = MIN_GRID_SIZE;
+const MAX_SIZE = MAX_GRID_SIZE;
 
 function blankGrid(height, width) {
   const grid = Array.from({ length: height }, (_, r) =>

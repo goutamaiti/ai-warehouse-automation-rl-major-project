@@ -487,15 +487,27 @@ class FleetSimulation:
             self._walkable, self.rng, blocked=set(self.positions.values())
         )
 
-        self._idle_streak = 0 if outcome.progressed else self._idle_streak + 1
         # A fleet is only deadlocked if it has work it cannot make progress on.
         # An idle fleet parked at its waiting points with an empty queue makes
         # no moves, pickups, deliveries or charges either - and it is not stuck,
         # it is waiting for the next request. Conflating the two would stop a
         # continuous warehouse the moment it caught up with its queue.
-        outcome.deadlocked = self.has_outstanding_work() and (
-            self._idle_streak >= DEADLOCK_STREAK
+        #
+        # Gating the CHECK on outstanding work was not enough, because the
+        # streak kept climbing through every idle tick. The threshold was then
+        # already satisfied when work finally arrived, and the first tick after
+        # a product is added makes no progress by construction - the dispatcher
+        # assigns it, and the robot only moves on the tick after. Measured
+        # before this fix: a floor left idle for 13 ticks declared a deadlock on
+        # the exact tick a request was added, set done, and never delivered it -
+        # which is the Live floor's whole interaction. So an idle tick resets
+        # the streak instead of accumulating: it counts consecutive ticks of no
+        # progress *while there is work*, which is what it is documented to be.
+        has_work = self.has_outstanding_work()
+        self._idle_streak = (
+            0 if (outcome.progressed or not has_work) else self._idle_streak + 1
         )
+        outcome.deadlocked = has_work and self._idle_streak >= DEADLOCK_STREAK
         outcome.all_dead = all(not m.alive for m in self.members.values())
         self._done = outcome.deadlocked or outcome.all_dead
         return outcome
