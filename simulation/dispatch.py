@@ -39,6 +39,14 @@ from .navigation import Position
 from .tasks import Task, TaskStatus
 
 
+#: Priority levels, most urgent first. Two levels on purpose: "urgent" versus
+#: "normal" is a distinction an operator can actually make on the spot, and the
+#: effect is easy to read off the turnaround numbers. More levels would be the
+#: same rule with a longer list.
+PRIORITIES = ("urgent", "normal")
+PRIORITY_RANK = {name: rank for rank, name in enumerate(PRIORITIES)}
+
+
 class RequestStatus(str, Enum):
     """Life cycle of a delivery request in the queue."""
 
@@ -59,6 +67,7 @@ class DeliveryRequest:
     pickup: Position
     dropoff: Position
     created_step: int = 0
+    priority: str = "normal"
     status: RequestStatus = RequestStatus.WAITING
     robot_id: int | None = None
     assigned_step: int | None = None
@@ -73,6 +82,7 @@ class DeliveryRequest:
             "id": self.request_id,
             "pickup": list(self.pickup),
             "dropoff": list(self.dropoff),
+            "priority": self.priority,
             "status": self.status.value,
             "robot_id": self.robot_id,
             "created_step": self.created_step,
@@ -116,13 +126,18 @@ class TaskQueue:
     _next_id: int = 0
 
     # ------------------------------------------------------------------
-    def add(self, pickup: Position, dropoff: Position, step: int = 0) -> DeliveryRequest:
+    def add(
+        self, pickup: Position, dropoff: Position, step: int = 0, priority: str = "normal"
+    ) -> DeliveryRequest:
         """Queue a product for collection. This is what the dashboard card calls."""
+        if priority not in PRIORITY_RANK:
+            raise ValueError(f"priority must be one of {list(PRIORITIES)}, got {priority!r}")
         request = DeliveryRequest(
             request_id=self._next_id,
             pickup=pickup,
             dropoff=dropoff,
             created_step=step,
+            priority=priority,
         )
         self.requests[request.request_id] = request
         self._next_id += 1
@@ -130,10 +145,18 @@ class TaskQueue:
 
     # ------------------------------------------------------------------
     def waiting(self) -> list[DeliveryRequest]:
-        """Unassigned requests, oldest first - no request is starved."""
+        """Unassigned requests in service order: urgent first, then oldest first.
+
+        Dispatch walks this list, so an urgent request takes the nearest free
+        robot ahead of any normal one, however long the normal one has waited.
+        Within a level it is strictly first come, first served, so no request
+        is starved by a later one of the same priority. Priority affects who is
+        served NEXT; it never takes a package away from a robot already
+        carrying one - that would be worse service, not better.
+        """
         return sorted(
             (r for r in self.requests.values() if r.waiting),
-            key=lambda r: (r.created_step, r.request_id),
+            key=lambda r: (PRIORITY_RANK[r.priority], r.created_step, r.request_id),
         )
 
     def assigned_to(self, robot_id: int) -> DeliveryRequest | None:
@@ -231,16 +254,23 @@ class TaskQueue:
     def stats(self) -> dict:
         counts: dict[str, int] = {status.value: 0 for status in RequestStatus}
         turnarounds: list[int] = []
+        by_priority: dict[str, list[int]] = {name: [] for name in PRIORITIES}
         for request in self.requests.values():
             counts[request.status.value] += 1
             if request.delivered_step is not None:
-                turnarounds.append(request.delivered_step - request.created_step)
+                turnaround = request.delivered_step - request.created_step
+                turnarounds.append(turnaround)
+                by_priority[request.priority].append(turnaround)
+
+        def mean(values: list[int]) -> float | None:
+            return round(sum(values) / len(values), 2) if values else None
+
         return {
             "total": len(self.requests),
             **counts,
-            "mean_turnaround": (
-                round(sum(turnarounds) / len(turnarounds), 2) if turnarounds else None
-            ),
+            "mean_turnaround": mean(turnarounds),
+            # Whether priority does anything is read straight off these two.
+            "mean_turnaround_by_priority": {name: mean(v) for name, v in by_priority.items()},
         }
 
 

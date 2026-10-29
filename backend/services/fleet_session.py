@@ -109,7 +109,7 @@ class FleetSession:
     # requests
     # ------------------------------------------------------------------
     def add_request(
-        self, pickup: Position, dropoff: Position
+        self, pickup: Position, dropoff: Position, priority: str = "normal"
     ) -> dict[str, Any]:
         """Queue a product. The nearest idle robot takes it on the next tick."""
         pending = len(self.queue.waiting())
@@ -128,7 +128,10 @@ class FleetSession:
                 f"no route from pickup {list(pickup)} to dropoff {list(dropoff)}"
             )
 
-        request = self.queue.add(pickup, dropoff, step=self.ticks)
+        try:
+            request = self.queue.add(pickup, dropoff, step=self.ticks, priority=priority)
+        except ValueError as exc:
+            raise FleetSessionError(str(exc)) from exc
         return request.to_dict()
 
     def _validate_cell(self, cell: Any, label: str) -> Position:

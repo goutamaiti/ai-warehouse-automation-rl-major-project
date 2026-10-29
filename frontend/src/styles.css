@@ -1297,3 +1297,8 @@ thead th {
   color: var(--muted);
   align-self: center;
 }
+
+/* Priority choice on the product card: the site's segmented pick. */
+.priority-row {
+  gap: 6px;
+}

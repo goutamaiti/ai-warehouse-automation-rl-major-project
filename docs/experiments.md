@@ -244,6 +244,28 @@ threshold is not given new work; and a robot that decides to charge charges to
 90% before resuming. Now: **60/60 on the 21x15 floor and 60/60 on the 46x30
 floor.**
 
+### Task priorities
+
+A product can be queued as **normal** or **urgent** (`priority` on
+`POST /api/fleet/task`; a Normal/Urgent choice on the Live-floor card). Dispatch
+serves every waiting urgent request before any normal one, first come first
+served within each level. Priority decides who is served next; it never takes a
+package off a robot already carrying one. The card reports mean turnaround per
+priority, and a waiting urgent product is drawn with a ring around its marker.
+
+Measured on the 21x15 floor, 4 robots, a backlog of 20 normal products, then 5
+more products added 10 ticks later - once marked urgent, once marked normal,
+same products, seeds 0-4:
+
+| The 5 late products marked | Their mean turnaround | The 20-product backlog's mean turnaround |
+|---|---|---|
+| urgent | **58.3 ticks** | 123.5 ticks |
+| normal | 187.1 ticks | **87.2 ticks** |
+
+Urgent products arrive about 3.2x faster; the backlog waits about 42% longer
+to pay for it. Priority moves waiting time, it does not create capacity. All 25
+products were delivered on every seed.
+
 One-way lanes on the 46x30 floor, 12 robots, 200-product backlog, 400 ticks,
 seeds 1000-1004:
 

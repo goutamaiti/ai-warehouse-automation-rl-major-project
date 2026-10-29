@@ -33,7 +33,7 @@ anything.
 | 1 | Goutam | **Dashboard** -> scenario *2. Default* -> **PPO**, Play. Then **A\***. | Identical shortest path (31 steps on this seed; 27.87 averaged over 30); 30/30 for all three on every static floor. PPO sees a 5x5 patch, A* the whole map. | Recordings are static files; this works even with no backend. |
 | 2 | Goutam | Scenario *4. Dynamic obstacles*, **PPO** then **A\***. | PPO 28.93 steps vs A* 30.50, but 0.47 collisions vs 0. Total reward tied - the reward prices the trade-off. | Same as 1. |
 | 3 | Goutam / Prerana | **Info** tab -> reward walkthrough -> *5. Battery constrained*, drag the scrubber to the last step; then *5. Battery tuned*. | Before: the robot dies and still has **+21.60** cumulative reward - dying paid. After: penalty 60, it charges and delivers. 0/30 -> 27/30. | Static data; always works. |
-| 4 | Prerana | **Live floor** -> floor *Robotic fulfilment 46x30* -> **Start the floor** -> **Play**. Wait a few seconds. Click a **Pick up** chip and a **Deliver to** chip, then **Add to the queue**. | The nearest free robot by path distance, not straight line, takes it on the next tick. Watch it reach the pickup and the station. Classical control - no RL here. | If the floor shows *stopped*, press **Start the floor** again. If the badge is not *Backend connected*, skip to step 5. |
+| 4 | Prerana | **Live floor** -> floor *Robotic fulfilment 46x30* -> **Start the floor** -> **Play**. Wait a few seconds. Click a **Pick up** chip and a **Deliver to** chip, then **Add to the queue**. Add a few more, then one more with **Urgent** selected. | The nearest free robot by path distance, not straight line, takes it on the next tick. The urgent one jumps the queue - read *Urgent / normal* turnaround on the card. Watch it reach the pickup and the station. Classical control - no RL here. | If the floor shows *stopped*, press **Start the floor** again. If the badge is not *Backend connected*, skip to step 5. |
 | 5 | Srushti | **Dashboard** -> scroll to *Measured results*, then *Learning curves*; hover the battery curve. | Battery stays under 50% success for over a million steps and first reaches 90% at 1.275M. A 600k-step run would have stopped on the plateau. | Static data; always works. |
 
 ## Questions the panel is likely to ask
@@ -87,3 +87,9 @@ controllers that matter. It solved almost nothing, so it carried no information.
 **"Why PPO and not DQN?"** Dense, shaped reward and a small discrete action
 space: PPO's clipped on-policy updates are stable there and need no replay
 buffer. Q-Learning/DQN validation was planned and skipped deliberately.
+
+**"How do priorities work?"** Two levels, normal and urgent. Every waiting
+urgent product is dispatched before any normal one; within a level, first come
+first served. A robot already carrying a package is never reassigned. Measured:
+5 late products took 58.3 ticks marked urgent against 187.1 marked normal, and
+the rest of the backlog waited about 42% longer to pay for it.

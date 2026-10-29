@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import asyncio
 import json
-from typing import Any
+from typing import Literal, Any
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
@@ -70,6 +70,9 @@ class TaskRequest(BaseModel):
 
     pickup: list[int] = Field(description="[row, column] where the product is")
     dropoff: list[int] = Field(description="[row, column] to deliver it to")
+    priority: Literal["normal", "urgent"] = Field(
+        default="normal", description="urgent requests are dispatched before normal ones"
+    )
 
 
 class AdvanceRequest(BaseModel):
@@ -156,7 +159,7 @@ def add_task(request: TaskRequest) -> dict[str, Any]:
     at some later scheduling pass.
     """
     session = _handle(service.current)
-    created = _handle(session.add_request, request.pickup, request.dropoff)
+    created = _handle(session.add_request, request.pickup, request.dropoff, request.priority)
     return {"request": created, "queue": session.queue.stats()}
 
 

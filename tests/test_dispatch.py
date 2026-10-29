@@ -508,3 +508,59 @@ def test_every_robot_has_somewhere_to_wait_however_large_the_fleet():
         sim, _ = queued_fleet(n_robots=n_robots)
         missing = [r for r, m in sim.members.items() if m.waiting_point is None]
         assert not missing, f"n={n_robots}: robots {missing} have nowhere to wait"
+
+
+# ----------------------------------------------------------------------
+# Priorities
+# ----------------------------------------------------------------------
+
+
+def test_urgent_requests_are_served_before_older_normal_ones():
+    from simulation.dispatch import TaskQueue
+
+    queue = TaskQueue()
+    old_normal = queue.add((1, 1), (5, 5), step=0)
+    new_urgent = queue.add((2, 2), (5, 5), step=10, priority="urgent")
+    newer_normal = queue.add((3, 3), (5, 5), step=20)
+    order = [r.request_id for r in queue.waiting()]
+    assert order == [new_urgent.request_id, old_normal.request_id, newer_normal.request_id]
+
+
+def test_within_a_priority_the_oldest_request_goes_first():
+    from simulation.dispatch import TaskQueue
+
+    queue = TaskQueue()
+    a = queue.add((1, 1), (5, 5), step=5, priority="urgent")
+    b = queue.add((2, 2), (5, 5), step=1, priority="urgent")
+    assert [r.request_id for r in queue.waiting()] == [b.request_id, a.request_id]
+
+
+def test_an_unknown_priority_is_refused():
+    from simulation.dispatch import TaskQueue
+
+    with pytest.raises(ValueError, match="priority"):
+        TaskQueue().add((1, 1), (5, 5), priority="high")
+
+
+def test_with_one_free_robot_the_urgent_request_gets_it():
+    """Dispatch, not just ordering: the single idle robot takes the urgent job."""
+    from simulation.dispatch import TaskQueue
+
+    queue = TaskQueue()
+    normal = queue.add((1, 1), (5, 5), step=0)
+    urgent = queue.add((9, 9), (5, 5), step=3, priority="urgent")
+    decisions = queue.dispatch({0: (1, 2)}, lambda a, b: abs(a[0] - b[0]) + abs(a[1] - b[1]), step=4)
+    assert [d.request_id for d in decisions] == [urgent.request_id]
+    assert queue.requests[normal.request_id].waiting
+
+
+def test_turnaround_is_reported_per_priority():
+    from simulation.dispatch import TaskQueue
+
+    queue = TaskQueue()
+    u = queue.add((1, 1), (5, 5), step=0, priority="urgent")
+    n = queue.add((2, 2), (5, 5), step=0)
+    queue.mark_delivered(u.request_id, step=10)
+    queue.mark_delivered(n.request_id, step=40)
+    by = queue.stats()["mean_turnaround_by_priority"]
+    assert by == {"urgent": 10.0, "normal": 40.0}

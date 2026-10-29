@@ -61,9 +61,10 @@ export function fleetState() {
   return request('/state');
 }
 
-/** Queue a product. The nearest idle robot takes it on the next tick. */
-export function addProduct({ pickup, dropoff }) {
-  return request('/task', json({ pickup, dropoff }));
+/** Queue a product. The nearest idle robot takes it on the next tick;
+ *  an urgent one is served before every waiting normal one. */
+export function addProduct({ pickup, dropoff, priority = 'normal' }) {
+  return request('/task', json({ pickup, dropoff, priority }));
 }
 
 /** Step the warehouse on without a live clock - used by the Step button. */

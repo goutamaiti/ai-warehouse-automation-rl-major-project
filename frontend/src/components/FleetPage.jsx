@@ -56,6 +56,7 @@ export default function FleetPage() {
   const [pickup, setPickup] = useState({ row: '', col: '' });
   const [dropoff, setDropoff] = useState({ row: '', col: '' });
   const [lastAdded, setLastAdded] = useState(null);
+  const [priority, setPriority] = useState('normal');
 
   const closeStream = useRef(null);
 
@@ -134,6 +135,7 @@ export default function FleetPage() {
       const result = await addProduct({
         pickup: [Number(pickup.row), Number(pickup.col)],
         dropoff: [Number(dropoff.row), Number(dropoff.col)],
+        priority,
       });
       setLastAdded(result.request);
       // Show it immediately rather than waiting for the next frame, so adding
@@ -307,14 +309,31 @@ export default function FleetPage() {
                 />
               </div>
 
+              {/* Urgent jumps the queue: it takes the nearest free robot ahead
+                  of every waiting normal request. It never takes a package off
+                  a robot already carrying one. */}
+              <div className="coord-row priority-row">
+                <span className="coord-label">Priority</span>
+                {['normal', 'urgent'].map((level) => (
+                  <button
+                    key={level}
+                    type="button"
+                    className={`pick${priority === level ? ' active' : ''}`}
+                    onClick={() => setPriority(level)}
+                  >
+                    {level === 'urgent' ? 'Urgent' : 'Normal'}
+                  </button>
+                ))}
+              </div>
+
               <button type="submit" className="primary" disabled={!coordsFilled || busy}>
                 Add to the queue
               </button>
 
               {lastAdded ? (
                 <p className="card-note">
-                  Request #{lastAdded.id} queued from [{lastAdded.pickup.join(', ')}] to [
-                  {lastAdded.dropoff.join(', ')}].
+                  {lastAdded.priority === 'urgent' ? 'Urgent request' : 'Request'} #{lastAdded.id}{' '}
+                  queued from [{lastAdded.pickup.join(', ')}] to [{lastAdded.dropoff.join(', ')}].
                 </p>
               ) : null}
 
@@ -384,6 +403,11 @@ export default function FleetPage() {
                   label="Turnaround"
                   value={queue?.mean_turnaround ?? '—'}
                   hint="ticks, request to delivery"
+                />
+                <Stat
+                  label="Urgent / normal"
+                  value={`${queue?.mean_turnaround_by_priority?.urgent ?? '—'} / ${queue?.mean_turnaround_by_priority?.normal ?? '—'}`}
+                  hint="mean turnaround by priority"
                 />
                 <Stat
                   label="Blocked"

@@ -280,3 +280,20 @@ def test_the_stream_refuses_an_absurd_tick_rate(client):
 
 def test_streaming_without_a_warehouse_is_a_client_error(client):
     assert client.get("/api/fleet/stream").status_code == 400
+
+
+def test_a_product_can_be_queued_as_urgent_and_bad_priorities_are_refused():
+    from fastapi.testclient import TestClient
+
+    from backend.main import app
+
+    client = TestClient(app)
+    client.post("/api/fleet/start", json={"scenario": "default", "n_robots": 3, "seed": 0})
+    ok = client.post("/api/fleet/task", json={"pickup": [2, 3], "dropoff": [13, 4], "priority": "urgent"})
+    assert ok.status_code == 200
+    assert ok.json()["request"]["priority"] == "urgent"
+    default = client.post("/api/fleet/task", json={"pickup": [2, 7], "dropoff": [13, 4]})
+    assert default.json()["request"]["priority"] == "normal"
+    bad = client.post("/api/fleet/task", json={"pickup": [2, 11], "dropoff": [13, 4], "priority": "high"})
+    assert bad.status_code == 422
+    client.post("/api/fleet/stop")

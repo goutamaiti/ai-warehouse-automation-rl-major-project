@@ -34,7 +34,7 @@ and verified; `[ ]` means not done, with the reason. Numbers come from
 - [x] Pickup and delivery, task generation, task completion
 - [x] Multiple tasks per episode (battery scenarios: 2)
 - [x] Task queue (multi-robot Live floor)
-- [ ] Task priorities - not implemented
+- [x] Task priorities: normal/urgent; urgent dispatched first; per-priority turnaround (urgent 58.3 vs 187.1 ticks under load)
 
 ## Week 6 - Advanced navigation
 - [x] Static obstacles
@@ -63,7 +63,7 @@ and verified; `[ ]` means not done, with the reason. Numbers come from
 
 ## Week 9 - Integration and testing
 - [x] FastAPI backend (16 endpoints), hostile-input hardened (fuzzed: no 5xx, no traceback leaks, no path traversal)
-- [x] 270 automated tests, including a 50-test frozen-contract tripwire
+- [x] 276 automated tests, including a 50-test frozen-contract tripwire
 - [x] `verify_live_floor.py` - 8 scenarios, 112/112 products, nearest robot, correct cells
 - [x] `verify_single_robot.py` - every scenario x controller, same PPO models as published, 540/540 episodes
 - [x] `stress_live_floor.py` - 120 runs (3-8 robots, 3 arrival patterns, 4 seeds, both floors): 120/120

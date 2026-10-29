@@ -169,10 +169,22 @@ export default function FleetCanvas({ layout, frame, highlight }) {
         .filter((request) => request.status === 'waiting')
         .forEach((request) => {
           const [row, col] = request.pickup;
+          const cx = col * cell + cell / 2;
+          const cy = row * cell + cell / 2;
           ctx.fillStyle = INK.pending;
           ctx.beginPath();
-          ctx.arc(col * cell + cell / 2, row * cell + cell / 2, cell * 0.16, 0, Math.PI * 2);
+          ctx.arc(cx, cy, cell * 0.16, 0, Math.PI * 2);
           ctx.fill();
+          if (request.priority === 'urgent') {
+            // Urgent is marked by shape, not colour - a ring around the dot,
+            // the same single-hue rule as every other mark on the floor.
+            ctx.strokeStyle = INK.pending;
+            ctx.lineWidth = Math.max(1.5, cell * 0.08);
+            ctx.beginPath();
+            ctx.arc(cx, cy, cell * 0.34, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.lineWidth = 1;
+          }
         });
 
       // 6. the cell the product card is pointing at

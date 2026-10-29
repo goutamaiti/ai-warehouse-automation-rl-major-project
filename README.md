@@ -24,14 +24,14 @@ in Python plus a React dashboard.
 | PPO training pipeline (Stable-Baselines3) | Implemented, **run** - six policies trained and committed |
 | Evaluation, metrics, reports | Implemented - 6 scenarios x 3 controllers x 30 paired episodes in `data/results/` |
 | Battery-aware RL | **Works after a reward fix** - PPO 0/30 on `battery_constrained` (original reward) -> **27/30** on `battery_tuned` (corrected reward, 2M steps); across 3 training seeds 27, 26 and 19 of 30 (vs 0, 0 and 6 before the fix); still below A*'s 30/30 |
-| Multi-robot fleet (Live floor) | Implemented with **classical** control - shared task queue, nearest-robot dispatch, charger zones, deadlock detection, 46x30 one-way robotic-fulfilment floor. No learned policy drives it. |
+| Multi-robot fleet (Live floor) | Implemented with **classical** control - shared task queue with normal/urgent priority (urgent served 3.2x faster under load), nearest-robot dispatch, charger zones, deadlock detection, 46x30 one-way robotic-fulfilment floor. No learned policy drives it. |
 | FastAPI backend | Implemented, tested, accepts a user-drawn custom layout |
 | React dashboard (Dashboard / Live floor / Editor / Info tabs) | Implemented, replays real recordings, live per-step reward breakdown |
 | Multi-agent RL (MAPPO etc.) | **Not implemented** - future scope |
 | Multiple training seeds | **Run** - every PPO policy trained with 3 seeds; see [Across training seeds](#across-training-seeds) |
 | Reward-weight ablation study | **Not run yet** |
 
-Tests: `266 passed`, including a 50-test frozen-contract tripwire that pins the
+Tests: `276 passed`, including a 50-test frozen-contract tripwire that pins the
 exact single-robot behaviour every result was measured with. Two one-command
 checks prove the demo end to end (`scripts/verify_live_floor.py`,
 `scripts/verify_single_robot.py`; see [Testing](#testing)). Every number in this
@@ -171,7 +171,7 @@ uvicorn backend.main:app --reload
 The dashboard has four tabs:
 
 - **Dashboard** - replays the recorded episodes and the measured comparison; this is where every reported number lives, with a per-step reward breakdown (every term the reward function can pay or charge, and which ones fired on the current step).
-- **Live floor** - a warehouse that keeps running with several robots on a shared queue. Add a product's pickup and drop-off cell and the nearest idle robot (by path distance through the aisles) takes it on the next tick. Robots charge, park at zone waiting points and are checked for deadlock. Runs on the 21x15 floor or a 46x30 robotic-fulfilment floor with one-way lanes. Driven by the classical controller; a demonstration, not a measured result.
+- **Live floor** - a warehouse that keeps running with several robots on a shared queue. Add a product's pickup and drop-off cell - as normal or urgent - and the nearest idle robot (by path distance through the aisles) takes it on the next tick. Robots charge, park at zone waiting points and are checked for deadlock. Runs on the 21x15 floor or a 46x30 robotic-fulfilment floor with one-way lanes. Driven by the classical controller; a demonstration, not a measured result.
 - **Editor** - paint a warehouse by hand, pick a ruleset and a controller, and run it. With the backend this runs the real Python simulation, including PPO; without one, A* and BFS run in an in-browser sandbox whose numbers are never part of the reported results.
 - **Info** - the MDP, the reward function walked step by step on a real recording, the algorithms, the reward-shaping bugs found and fixed, and the measured results read live from `data/results/`.
 
@@ -189,7 +189,7 @@ backend/        FastAPI service (scenarios, replays, live runs)
 frontend/       React + Vite dashboard (deployed to Vercel)
 configs/        scenario YAML files - one file fully defines an experiment
 data/           real experiment output: replays, results, training logs
-tests/          266 tests: simulator, env, planners, fleet, analytics, API, frozen contract
+tests/          276 tests: simulator, env, planners, fleet, analytics, API, frozen contract
 docs/           architecture, RL formulation, experiments, deployment
 scripts/        run_experiments.py (reproduce results), verify_*.py (pre-demo proof)
 ```
