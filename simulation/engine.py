@@ -236,7 +236,14 @@ class WarehouseSimulation:
 
         # --- 4. termination checks ------------------------------------
         self.counters.steps += 1
-        if self.robot.is_depleted():
+        # The `not all_tasks_done` guard mirrors the timeout branch below.
+        # Without it, a robot whose battery reached exactly 0 on the step it
+        # made its FINAL delivery was recorded as delivered AND failed, with the
+        # termination reason overwritten to battery_depleted and a -penalty
+        # charged on a successful run. Checked before fixing: none of the 540
+        # committed evaluation episodes hit this edge, so no reported number
+        # moves.
+        if self.robot.is_depleted() and not outcome.all_tasks_done:
             outcome.battery_depleted = True
             outcome.events.append("battery_depleted")
             self.task.mark_failed()
