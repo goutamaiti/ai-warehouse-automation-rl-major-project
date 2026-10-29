@@ -71,8 +71,11 @@ covered by regression tests.
 detours. A trade-off. An earlier "hundredfold" figure was measured with the
 charging-loop bug and was withdrawn.
 
-**"Why only one training seed?"** Time. It is the first item of future scope;
-treat sub-step differences as noise.
+**"Is this one lucky training run?"** No - every policy was retrained with two
+more seeds (`data/seeds/summary.md`). The static ties with A* and the traffic
+trade-off hold on all three. The battery fix holds on all three but varies: 27,
+26 and 19 of 30 (72 of 90, against 6 of 90 under the original reward). Seed 2
+fell into camping on a charger in 10 episodes - say so if asked.
 
 **"Where did Random go?"** Removed after Demo 1 to keep the comparison to the
 controllers that matter. It solved almost nothing, so it carried no information.

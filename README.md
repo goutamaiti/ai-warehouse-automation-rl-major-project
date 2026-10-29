@@ -23,12 +23,13 @@ in Python plus a React dashboard.
 | A* / BFS planners + battery-aware controller | Implemented, unit tested |
 | PPO training pipeline (Stable-Baselines3) | Implemented, **run** - six policies trained and committed |
 | Evaluation, metrics, reports | Implemented - 6 scenarios x 3 controllers x 30 paired episodes in `data/results/` |
-| Battery-aware RL | **Works after a reward fix** - PPO 0/30 on `battery_constrained` (original reward) -> **27/30** on `battery_tuned` (corrected reward, 2M steps); still below A*'s 30/30 |
+| Battery-aware RL | **Works after a reward fix** - PPO 0/30 on `battery_constrained` (original reward) -> **27/30** on `battery_tuned` (corrected reward, 2M steps); across 3 training seeds 27, 26 and 19 of 30 (vs 0, 0 and 6 before the fix); still below A*'s 30/30 |
 | Multi-robot fleet (Live floor) | Implemented with **classical** control - shared task queue, nearest-robot dispatch, charger zones, deadlock detection, 46x30 one-way robotic-fulfilment floor. No learned policy drives it. |
 | FastAPI backend | Implemented, tested, accepts a user-drawn custom layout |
 | React dashboard (Dashboard / Live floor / Editor / Info tabs) | Implemented, replays real recordings, live per-step reward breakdown |
 | Multi-agent RL (MAPPO etc.) | **Not implemented** - future scope |
-| Reward-weight ablation study, multiple training seeds | **Not run yet** - one training seed per policy |
+| Multiple training seeds | **Run** - every PPO policy trained with 3 seeds; see [Across training seeds](#across-training-seeds) |
+| Reward-weight ablation study | **Not run yet** |
 
 Tests: `266 passed`, including a 50-test frozen-contract tripwire that pins the
 exact single-robot behaviour every result was measured with. Two one-command
@@ -93,6 +94,32 @@ potential-based battery-reserve term and a higher wait price, and trains for
 It is not a clean win: PPO charges more than it needs (15.4 vs 9.2 steps) and
 drives longer routes (path efficiency 0.73 vs 0.91). The claim is that the
 battery task became learnable, not that PPO beats the planner on it.
+
+### Across training seeds
+
+Every table above is one trained policy (training seed 0). Each was retrained
+with seeds 1 and 2 using the identical command and evaluated on the same 30
+episodes (`python scripts/run_seed_study.py`; results in `data/seeds/`):
+
+| Scenario | Seed 0 (published) | Seed 1 | Seed 2 |
+|---|---|---|---|
+| `simple_static` | 30/30, 19.60 steps | 30/30, 19.60 | **28/30**, 27.64 |
+| `default` | 30/30, 27.87 | 30/30, 27.87 | 30/30, 27.87 |
+| `complex_static` | 30/30, 44.37 | 30/30, 44.37 | 30/30, 44.37 |
+| `dynamic_obstacles` | 30/30, 28.93 steps, 0.47 collisions | 30/30, 29.37, 0.77 | 30/30, 29.07, 0.53 |
+| `battery_constrained` (original reward) | 0/30 | 0/30 | 6/30 |
+| `battery_tuned` (corrected reward) | 27/30 | 26/30 | **19/30** |
+
+* **Holds on every seed:** the exact tie with A* on `default` and
+  `complex_static`; on `dynamic_obstacles` PPO is faster than A* (30.50 steps)
+  *and* collides on all three seeds; the original battery reward fails on all
+  three.
+* **Seed-dependent:** on `simple_static` seed 2 is not optimal (28/30, path
+  efficiency 0.78 - two episodes wander until the battery runs out). On
+  `battery_tuned` the fix holds on every seed but varies: seed 2 fell into
+  *camping* in 10 episodes, sitting on a charger for all 600 steps without
+  delivering. In total the corrected reward delivers in 72 of 90 episodes
+  against 6 of 90 under the original one.
 
 Full tables, metric definitions and the threats to validity are in
 [docs/experiments.md](docs/experiments.md).
@@ -297,8 +324,9 @@ and a classically controlled multi-robot Live floor.
 
 Known limitations, stated rather than hidden:
 
-* **One training seed per policy.** Differences between PPO and A* are
-  suggestive, not yet shown to hold across seeds.
+* **Three training seeds per policy, not five.** The main findings hold on all
+  three; `simple_static` and the battery result vary between seeds (see
+  [Across training seeds](#across-training-seeds)).
 * **Shaping is invariant only for the undiscounted return.** The progress term
   uses shaping gamma 1.0 (so that loitering cannot pay) while PPO optimises a
   0.99-discounted return, and the potential is not zeroed at a failed terminal
@@ -310,7 +338,7 @@ Known limitations, stated rather than hidden:
 
 Next, in order:
 
-1. Repeat each training run with 3-5 seeds.
+1. Stop the battery policy camping on some seeds (seed 2: 10 of 30 episodes).
 2. Reward-weight ablation: which terms actually matter?
 3. Obstacle-density sweep: at what traffic level does replanning A* degrade?
 4. Multi-agent RL (MAPPO) on the fleet.

@@ -180,6 +180,43 @@ efficiency) and is slower (87.9 vs 70.5 steps). The claim is that the battery
 task became learnable once the reward stopped paying for death, not that RL
 beats a battery-aware planner on it.
 
+## Across training seeds
+
+Every result above uses one trained policy (training seed 0). Each policy was
+retrained with seeds 1 and 2 - the identical command, only `--seed` changed -
+and evaluated on the same 30 episodes. Source: `data/seeds/summary.md`,
+produced by `python scripts/run_seed_study.py`, which writes only to
+`data/seeds/` and checks that `data/results` and `data/episodes` are unchanged.
+
+| Scenario | Seed 0 (published) | Seed 1 | Seed 2 |
+|---|---|---|---|
+| `simple_static` | 30/30, 19.60 steps | 30/30, 19.60 | **28/30**, 27.64 |
+| `default` | 30/30, 27.87 | 30/30, 27.87 | 30/30, 27.87 |
+| `complex_static` | 30/30, 44.37 | 30/30, 44.37 | 30/30, 44.37 |
+| `dynamic_obstacles` | 30/30, 28.93 steps, 0.47 collisions | 30/30, 29.37, 0.77 | 30/30, 29.07, 0.53 |
+| `battery_constrained` (original reward) | 0/30 | 0/30 | 6/30 |
+| `battery_tuned` (corrected reward) | 27/30 | 26/30 | **19/30** |
+
+What holds on every seed:
+
+* PPO is identical to A* on `default` and `complex_static` (every episode).
+* On `dynamic_obstacles` PPO is faster than A* (28.93 / 29.37 / 29.07 vs 30.50
+  steps) and collides on every seed (0.47 / 0.77 / 0.53 per episode). The
+  trade-off is a property of the method, not of one run.
+* The original battery reward fails: 0, 0 and 6 of 30.
+
+What does not:
+
+* `simple_static` seed 2 delivers 28/30 at path efficiency 0.78; in the two
+  failures the robot wanders for the full 200 steps and runs flat. So "exactly
+  optimal on static floors" is true for 8 of the 9 static runs, not all 9.
+* `battery_tuned` gives 27, 26 and 19 of 30. Seed 1's four failures deliver
+  one package and then run flat. Seed 2's ten failures are the camping local
+  optimum: the robot sits on a charger for all 600 steps (600 charging steps,
+  nothing delivered) and times out. The corrected reward delivers in 72 of 90
+  episodes against 6 of 90 under the original reward - the fix is real - but
+  how well it works depends on the seed.
+
 ## Multi-robot Live floor (demonstration, not a measured result)
 
 The Live floor runs several robots on a shared task queue with the classical
@@ -214,14 +251,14 @@ fixed and the figure above replaces it.
 |---|---|
 | Can PPO match classical planning on static warehouse navigation? | Yes - identical to optimal A* on 30/30 episodes on all three static floors. |
 | Does RL help when the warehouse is dynamic? | It is faster (28.93 vs 30.50 steps) but collides 0.47 times per episode where A* never does. No net reward advantage. |
-| Does RL handle battery constraints? | Not under the original reward (0/30: dying paid). After correcting the depletion penalty and training for 2M steps, 27/30 - learnable, but still below the planner's 30/30. |
+| Does RL handle battery constraints? | Not under the original reward (0/30: dying paid; 6 of 90 across three seeds). After correcting the depletion penalty and training for 2M steps, 27/30 - and 72 of 90 across three seeds (27, 26, 19). Learnable, seed-dependent, and still below the planner's 30/30. |
 | Is the comparison fair? | It is biased *against* RL: the planners get the full map and every obstacle position; PPO gets a 5x5 patch. |
 
 ## Threats to validity
 
-1. **One training seed per scenario.** Each policy was trained once (seed 0).
-   RL results vary between training seeds; a rigorous claim needs 3-5 seeds per
-   configuration. Treat differences of a fraction of a step as noise.
+1. **Three training seeds per scenario.** The headline tables use seed 0;
+   seeds 1 and 2 are reported above. Three seeds show which findings are
+   robust and which vary, but are too few for formal significance tests.
 2. **Reward weights were not searched.** The weights are reasoned starting
    values; only the battery depletion penalty was changed, and it was derived
    from the measured reward of the failing policy rather than tuned.

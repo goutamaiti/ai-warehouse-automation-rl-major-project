@@ -1,0 +1,224 @@
+[
+  {
+    "scenario": "default",
+    "timesteps": 300000,
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "successes_out_of_30": [
+      30,
+      30,
+      30
+    ],
+    "mean_steps": [
+      27.8667,
+      27.8667,
+      27.8667
+    ],
+    "collisions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "charging_steps": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "reward": [
+      50.1947,
+      50.1947,
+      50.1947
+    ],
+    "success_mean": 30.0,
+    "success_min": 30,
+    "success_max": 30
+  },
+  {
+    "scenario": "simple_static",
+    "timesteps": 300000,
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "successes_out_of_30": [
+      30,
+      30,
+      28
+    ],
+    "mean_steps": [
+      19.6,
+      19.6,
+      27.6429
+    ],
+    "collisions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "charging_steps": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "reward": [
+      42.424,
+      42.424,
+      38.1187
+    ],
+    "success_mean": 29.33,
+    "success_min": 28,
+    "success_max": 30
+  },
+  {
+    "scenario": "complex_static",
+    "timesteps": 600000,
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "successes_out_of_30": [
+      30,
+      30,
+      30
+    ],
+    "mean_steps": [
+      44.3667,
+      44.3667,
+      44.3667
+    ],
+    "collisions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "charging_steps": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "reward": [
+      65.7047,
+      65.7047,
+      65.7047
+    ],
+    "success_mean": 30.0,
+    "success_min": 30,
+    "success_max": 30
+  },
+  {
+    "scenario": "dynamic_obstacles",
+    "timesteps": 400000,
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "successes_out_of_30": [
+      30,
+      30,
+      30
+    ],
+    "mean_steps": [
+      28.9333,
+      29.3667,
+      29.0667
+    ],
+    "collisions": [
+      0.4667,
+      0.7667,
+      0.5333
+    ],
+    "charging_steps": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "reward": [
+      49.6682,
+      49.3449,
+      49.5941
+    ],
+    "success_mean": 30.0,
+    "success_min": 30,
+    "success_max": 30
+  },
+  {
+    "scenario": "battery_constrained",
+    "timesteps": 600000,
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "successes_out_of_30": [
+      0,
+      0,
+      6
+    ],
+    "mean_steps": [
+      null,
+      null,
+      69.5
+    ],
+    "collisions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "charging_steps": [
+      0.0,
+      0.0,
+      2.1
+    ],
+    "reward": [
+      33.1333,
+      33.1333,
+      42.6552
+    ],
+    "success_mean": 2.0,
+    "success_min": 0,
+    "success_max": 6
+  },
+  {
+    "scenario": "battery_tuned",
+    "timesteps": 2000000,
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "successes_out_of_30": [
+      27,
+      26,
+      19
+    ],
+    "mean_steps": [
+      87.8889,
+      76.0385,
+      65.9474
+    ],
+    "collisions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "charging_steps": [
+      15.4333,
+      12.2333,
+      206.5333
+    ],
+    "reward": [
+      82.658,
+      81.5167,
+      -54.7375
+    ],
+    "success_mean": 24.0,
+    "success_min": 19,
+    "success_max": 27
+  }
+]
