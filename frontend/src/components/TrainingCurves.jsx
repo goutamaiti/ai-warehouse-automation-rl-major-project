@@ -36,7 +36,7 @@ const NO_LOG = [
 
 function compact(steps) {
   if (steps === 0) return '0';
-  if (steps >= 1_000_000) return `${(steps / 1_000_000).toFixed(steps % 1_000_000 ? 1 : 0)}M`;
+  if (steps >= 1_000_000) return `${parseFloat((steps / 1_000_000).toFixed(3))}M`;
   return `${Math.round(steps / 1000)}k`;
 }
 
