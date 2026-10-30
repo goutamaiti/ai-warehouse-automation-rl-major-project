@@ -47,16 +47,9 @@
   color-scheme: dark;
 }
 
-/* Maps, swatches and the fleet floor are canvases painted from fixed greys.
-   The palette has no hue, so inverting it is an exact dark version of the
-   same map - walls light, aisles dark, marks unchanged in shape - without a
-   second palette in the drawing code that could drift from the first.
-   A full invert(1) turned the shelves (#e8eaec) nearly as black as the
-   aisles; inverting 88% and lifting brightness keeps them apart on a
-   projector. */
-:root[data-theme='dark'] canvas {
-  filter: invert(0.88) hue-rotate(180deg) brightness(1.35);
-}
+/* Maps are not inverted here: they have their own dark palette in
+   lib/mapTheme, because inverting would turn the blue floor orange and the
+   yellow "carrying" robot blue. */
 
 .header-right {
   display: flex;
@@ -229,6 +222,7 @@ canvas {
   height: 12px;
   border-radius: 3px;
   display: inline-block;
+  border: 1px solid transparent;
 }
 
 .swatch.outline {

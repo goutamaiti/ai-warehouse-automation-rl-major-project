@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
 
 import { CellType as CELL } from '../lib/grid';
-import { drawCellMark } from '../lib/cellArt';
+import { drawActivePickup, drawCellMark } from '../lib/cellArt';
+import { useMapTheme } from '../lib/mapTheme';
 
 /**
  * Canvas view of one live fleet frame.
@@ -15,23 +16,9 @@ import { drawCellMark } from '../lib/cellArt';
  * Purely presentational - it simulates nothing and decides nothing.
  */
 
-//: Light-ground palette for the things only a LIVE floor has - robots, zone
-//: shading, lane arrows, queued requests. The cell types themselves are drawn
-//: by lib/cellArt, which owns that vocabulary for the whole site.
-const INK = {
-  paper: '#ffffff',
-  grid: 'rgba(28, 32, 36, 0.07)',
-  rule: 'rgba(28, 32, 36, 0.22)',
-  ruler: '#8b9299',
-  arrow: 'rgba(28, 32, 36, 0.26)',
-  robot: '#1c2024',
-  robotCarrying: '#4a5057',
-  robotDead: '#c3c8cd',
-  obstacle: '#8b9299',
-  zoneA: 'rgba(28, 32, 36, 0.025)',
-  zoneB: 'rgba(28, 32, 36, 0.05)',
-  pending: '#4a5057',
-};
+//: Colours for everything on this floor - cells, robots, zone shading, lane
+//: arrows and queued requests - come from lib/mapTheme, so the live floor, the
+//: replay and the editor share one palette in both site themes.
 
 const MONO = "ui-monospace, 'SF Mono', Menlo, monospace";
 
@@ -47,6 +34,7 @@ const GUTTER = 20;
 export default function FleetCanvas({ layout, frame, highlight }) {
   const canvasRef = useRef(null);
   const wrapperRef = useRef(null);
+  const INK = useMapTheme();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -70,7 +58,7 @@ export default function FleetCanvas({ layout, frame, highlight }) {
 
       const ctx = canvas.getContext('2d');
       ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-      ctx.fillStyle = INK.paper;
+      ctx.fillStyle = INK.page;
       ctx.fillRect(0, 0, width, height);
 
       // Rulers first, in page coordinates, then shift the origin so every
@@ -89,6 +77,9 @@ export default function FleetCanvas({ layout, frame, highlight }) {
       }
       ctx.textAlign = 'center';
       ctx.translate(GUTTER, GUTTER);
+
+      ctx.fillStyle = INK.floor;
+      ctx.fillRect(0, 0, cell * layout.width, cell * layout.height);
 
       const zones = layout.zones ?? [];
       // 1. zone washes, so the sections of the floor are visible at a glance
@@ -111,7 +102,7 @@ export default function FleetCanvas({ layout, frame, highlight }) {
           const type = layout.grid[row][col];
           const exposed =
             row + 1 >= layout.height || layout.grid[row + 1][col] !== CELL.SHELF;
-          drawCellMark(ctx, type, col * cell, row * cell, cell, exposed);
+          drawCellMark(ctx, type, col * cell, row * cell, cell, exposed, INK);
         }
       }
 
@@ -155,7 +146,7 @@ export default function FleetCanvas({ layout, frame, highlight }) {
       }
 
       // 4. waiting cells, marked faintly so an empty-looking floor is explicable
-      ctx.strokeStyle = INK.rule;
+      ctx.strokeStyle = INK.waiting;
       zones.forEach((zone) => {
         (zone.waiting_points ?? []).forEach(([row, col]) => {
           ctx.strokeRect(col * cell + cell * 0.3, row * cell + cell * 0.3, cell * 0.4, cell * 0.4);
@@ -164,33 +155,28 @@ export default function FleetCanvas({ layout, frame, highlight }) {
 
       if (!frame) return;
 
-      // 5. queued requests still waiting for a robot
+      // 5. products still sitting at their pick point - waiting for a robot,
+      //    or assigned to one that has not reached them yet. The pick point's
+      //    own box turns green; once the robot picks it up it goes back to
+      //    normal. An urgent product's box gets a darker edge.
+      const carryingIds = new Set(
+        (frame.robots ?? []).filter((robot) => robot.carrying).map((robot) => robot.id)
+      );
       (frame.requests ?? [])
-        .filter((request) => request.status === 'waiting')
+        .filter(
+          (request) =>
+            request.status === 'waiting' ||
+            (request.status === 'assigned' && !carryingIds.has(request.robot_id))
+        )
         .forEach((request) => {
           const [row, col] = request.pickup;
-          const cx = col * cell + cell / 2;
-          const cy = row * cell + cell / 2;
-          ctx.fillStyle = INK.pending;
-          ctx.beginPath();
-          ctx.arc(cx, cy, cell * 0.16, 0, Math.PI * 2);
-          ctx.fill();
-          if (request.priority === 'urgent') {
-            // Urgent is marked by shape, not colour - a ring around the dot,
-            // the same single-hue rule as every other mark on the floor.
-            ctx.strokeStyle = INK.pending;
-            ctx.lineWidth = Math.max(1.5, cell * 0.08);
-            ctx.beginPath();
-            ctx.arc(cx, cy, cell * 0.34, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.lineWidth = 1;
-          }
+          drawActivePickup(ctx, col * cell, row * cell, cell, INK, request.priority === 'urgent');
         });
 
       // 6. the cell the product card is pointing at
       if (highlight) {
         const [row, col] = highlight;
-        ctx.strokeStyle = INK.pending;
+        ctx.strokeStyle = INK.highlight;
         ctx.lineWidth = 2;
         ctx.strokeRect(col * cell + 1, row * cell + 1, cell - 2, cell - 2);
         ctx.lineWidth = 1;
@@ -220,10 +206,17 @@ export default function FleetCanvas({ layout, frame, highlight }) {
         ctx.beginPath();
         ctx.arc(x, y, radius, 0, Math.PI * 2);
         ctx.fill();
+        if (robot.alive && robot.carrying) {
+          // Yellow needs an edge to hold its shape on the pale floor.
+          ctx.strokeStyle = INK.robotOutline;
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+          ctx.lineWidth = 1;
+        }
 
         if (robot.alive) {
           const level = Math.max(0, Math.min(1, (robot.battery ?? 0) / 100));
-          ctx.strokeStyle = INK.robot;
+          ctx.strokeStyle = INK.battery;
           ctx.lineWidth = 2;
           ctx.beginPath();
           ctx.arc(x, y, radius + 2.5, -Math.PI / 2, -Math.PI / 2 + level * Math.PI * 2);
@@ -232,7 +225,7 @@ export default function FleetCanvas({ layout, frame, highlight }) {
         }
 
         if (cell >= MIN_LABEL_CELL) {
-          ctx.fillStyle = INK.paper;
+          ctx.fillStyle = robot.alive && robot.carrying ? INK.robotCarryingLabel : INK.robotLabel;
           ctx.font = `600 ${Math.round(cell * 0.42)}px ${MONO}`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
@@ -245,7 +238,7 @@ export default function FleetCanvas({ layout, frame, highlight }) {
     const observer = new ResizeObserver(draw);
     observer.observe(wrapper);
     return () => observer.disconnect();
-  }, [layout, frame, highlight]);
+  }, [layout, frame, highlight, INK]);
 
   return (
     <div className="floor-canvas" ref={wrapperRef}>

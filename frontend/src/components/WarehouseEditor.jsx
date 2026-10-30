@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CellType, MAX_GRID_SIZE, MIN_GRID_SIZE, validateGrid } from '../lib/grid';
 import { CELL_LEGEND, drawFloor } from '../lib/cellArt';
+import { useMapTheme } from '../lib/mapTheme';
 import CellSwatch from './CellSwatch';
 
 // These were a third copy of simulation/warehouse.py's MIN_/MAX_CUSTOM_SIZE.
@@ -36,6 +37,7 @@ const CELL_PX = 26;
  * `onChange`.
  */
 export default function WarehouseEditor({ grid, onChange }) {
+  const palette = useMapTheme();
   const [tool, setTool] = useState(CellType.WALL);
   const [dims, setDims] = useState({ height: grid.length, width: grid[0].length });
   const painting = useRef(false);
@@ -81,8 +83,8 @@ export default function WarehouseEditor({ grid, onChange }) {
     ctx.clearRect(0, 0, pxWidth, pxHeight);
     // The same renderer the replay canvas uses, so a warehouse looks the same
     // while you are drawing it as it does when a robot runs on it.
-    drawFloor(ctx, { grid, width, height }, CELL_PX);
-  }, [grid]);
+    drawFloor(ctx, { grid, width, height }, CELL_PX, { palette });
+  }, [grid, palette]);
 
   function cellAt(event) {
     const canvas = canvasRef.current;

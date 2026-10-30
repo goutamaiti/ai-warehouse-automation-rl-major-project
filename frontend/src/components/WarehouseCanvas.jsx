@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { CellType as CELL } from '../lib/grid';
-import { drawFloor } from '../lib/cellArt';
+import { drawActivePickup, drawFloor } from '../lib/cellArt';
+import { useMapTheme } from '../lib/mapTheme';
 import CellSwatch from './CellSwatch';
 
 /**
@@ -11,37 +12,24 @@ import CellSwatch from './CellSwatch';
  * frame. It never simulates anything itself.
  */
 
-/**
- * One slate ramp, no second hue. State is carried by tint and by whether a
- * mark is filled or outlined: a carrying robot is a ring, a flat battery is
- * pale, an obstacle is ink. Battery level is read from the arc's extent, not
- * from its colour, which is also why the three battery entries are tints of
- * the same thing rather than a traffic light.
+/*
+ * Colours come from lib/mapTheme: a blue floor, and a robot that turns yellow
+ * once it is carrying its package. Battery level is read from the arc's
+ * extent, not from its colour, which is why the three battery entries are
+ * tints of the same thing rather than a traffic light.
  */
-const COLORS = {
-  grid: 'rgba(28, 32, 36, 0.07)',
-  trail: 'rgba(28, 32, 36, 0.16)',
-  robot: '#1c2024',
-  robotCarrying: '#4a5057',
-  obstacle: '#8b9299',
-  pickup: '#4a5057',
-  dropoff: '#8b9299',
-  batteryOk: '#1c2024',
-  batteryLow: '#8b9299',
-  batteryCritical: '#c3c8cd',
-};
-
 const MAX_CELL_SIZE = 30;
 
-function batteryColor(state) {
+function batteryColor(state, COLORS) {
   if (state === 'critical') return COLORS.batteryCritical;
   if (state === 'low') return COLORS.batteryLow;
-  return COLORS.batteryOk;
+  return COLORS.battery;
 }
 
 export default function WarehouseCanvas({ layout, frame, trail = [] }) {
   const canvasRef = useRef(null);
   const wrapperRef = useRef(null);
+  const COLORS = useMapTheme();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -71,7 +59,7 @@ export default function WarehouseCanvas({ layout, frame, trail = [] }) {
       //    paints with the same code, so a warehouse drawn by hand plays back
       //    looking exactly like the thing that was drawn - which it did not
       //    when this filled every cell with one of four near-identical greys.
-      drawFloor(ctx, layout, cellSize);
+      drawFloor(ctx, layout, cellSize, { palette: COLORS });
 
       // 2. where the robot has already been
       ctx.fillStyle = COLORS.trail;
@@ -94,7 +82,12 @@ export default function WarehouseCanvas({ layout, frame, trail = [] }) {
 
       // 3. task markers
       if (frame.task) {
-        marker(frame.task.pickup, COLORS.pickup);
+        // The product's own pick point turns green until it is collected -
+        // the box changes colour, nothing is drawn around it.
+        if (frame.task.status === 'pending') {
+          const [row, col] = frame.task.pickup;
+          drawActivePickup(ctx, col * cellSize, row * cellSize, cellSize, COLORS);
+        }
         marker(frame.task.dropoff, COLORS.dropoff);
       }
 
@@ -123,14 +116,14 @@ export default function WarehouseCanvas({ layout, frame, trail = [] }) {
       ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
       ctx.fillStyle = frame.robot.carrying ? COLORS.robotCarrying : COLORS.robot;
       ctx.fill();
-      ctx.strokeStyle = '#04060b';
+      ctx.strokeStyle = COLORS.robotOutline;
       ctx.lineWidth = 1.5;
       ctx.stroke();
 
       const level = Math.max(0, Math.min(1, (frame.robot.battery ?? 0) / 100));
       ctx.beginPath();
       ctx.arc(centerX, centerY, radius + 2.5, -Math.PI / 2, -Math.PI / 2 + level * Math.PI * 2);
-      ctx.strokeStyle = batteryColor(frame.robot.battery_state);
+      ctx.strokeStyle = batteryColor(frame.robot.battery_state, COLORS);
       ctx.lineWidth = 2;
       ctx.stroke();
     };
@@ -139,16 +132,16 @@ export default function WarehouseCanvas({ layout, frame, trail = [] }) {
     const observer = new ResizeObserver(draw);
     observer.observe(wrapper);
     return () => observer.disconnect();
-  }, [layout, frame, trail]);
+  }, [layout, frame, trail, COLORS]);
 
   return (
     <div className="canvas-wrapper" ref={wrapperRef}>
       <canvas ref={canvasRef} />
       <ul className="legend">
         <li><span className="swatch" style={{ background: COLORS.robot }} /> robot</li>
-        <li><span className="swatch" style={{ background: COLORS.robotCarrying }} /> carrying</li>
+        <li><span className="swatch" style={{ background: COLORS.robotCarrying, borderColor: COLORS.robotOutline }} /> carrying</li>
         <li><span className="swatch" style={{ background: COLORS.obstacle }} /> obstacle</li>
-        <li><span className="swatch outline" style={{ borderColor: COLORS.pickup }} /> pickup</li>
+        <li><span className="swatch" style={{ background: COLORS.activePickup, borderColor: COLORS.activePickup }} /> product to pick up</li>
         <li><span className="swatch outline" style={{ borderColor: COLORS.dropoff }} /> drop-off</li>
         <li><CellSwatch type={CELL.SHELF} size={14} /> racking</li>
         <li><CellSwatch type={CELL.STORAGE} size={14} /> pick point</li>

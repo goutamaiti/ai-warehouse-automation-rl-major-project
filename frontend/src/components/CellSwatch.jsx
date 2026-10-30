@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 import { drawSwatch } from '../lib/cellArt';
+import { useMapTheme } from '../lib/mapTheme';
 
 /**
  * One cell type, drawn at swatch size by the renderer that paints the floor.
@@ -16,8 +17,9 @@ import { drawSwatch } from '../lib/cellArt';
  */
 export default function CellSwatch({ type, size = 18 }) {
   const ref = useRef(null);
+  const palette = useMapTheme();
   useEffect(() => {
-    if (ref.current) drawSwatch(ref.current, type, size);
-  }, [type, size]);
+    if (ref.current) drawSwatch(ref.current, type, size, palette);
+  }, [type, size, palette]);
   return <canvas className="swatch-canvas" ref={ref} aria-hidden="true" />;
 }

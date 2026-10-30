@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import FleetCanvas from './FleetCanvas';
+import { useMapTheme } from '../lib/mapTheme';
 import {
   addProduct,
   advanceFleet,
@@ -119,6 +120,7 @@ function Stat({ label, value, hint }) {
 }
 
 export default function FleetPage() {
+  const mapInk = useMapTheme();
   const [layout, setLayout] = useState(null);
   const [frame, setFrame] = useState(null);
   const [running, setRunning] = useState(false);
@@ -341,11 +343,11 @@ export default function FleetPage() {
           <div className="floor-main">
             <FleetCanvas layout={layout} frame={frame} highlight={highlight} />
             <ul className="floor-legend">
-              <li><span className="dot" style={{ background: '#1d4ed8' }} /> robot</li>
-              <li><span className="dot" style={{ background: '#b45309' }} /> carrying</li>
-              <li><span className="dot" style={{ background: '#9ca3af' }} /> out of charge</li>
-              <li><span className="dot" style={{ background: '#0891b2' }} /> product waiting</li>
-              <li><span className="dot" style={{ background: '#be123c' }} /> traffic</li>
+              <li><span className="dot" style={{ background: mapInk.robot, borderColor: mapInk.robotOutline }} /> robot</li>
+              <li><span className="dot" style={{ background: mapInk.robotCarrying, borderColor: mapInk.robotOutline }} /> carrying</li>
+              <li><span className="dot" style={{ background: mapInk.robotDead, borderColor: mapInk.robotDead }} /> out of charge</li>
+              <li><span className="dot square" style={{ background: mapInk.activePickup, borderColor: mapInk.activePickup }} /> product to pick up</li>
+              <li><span className="dot" style={{ background: mapInk.obstacle, borderColor: mapInk.obstacle }} /> traffic</li>
             </ul>
             <QueueTable requests={frame?.requests} robots={frame?.robots ?? []} />
           </div>

@@ -40,33 +40,40 @@
  */
 
 import { CellType as CELL } from './grid';
+import { MAP_THEMES } from './mapTheme';
 
-/** The slate ramp, as canvas needs it (plain strings, not CSS variables). */
-export const INK = {
-  paper: '#ffffff',
-  grid: 'rgba(28, 32, 36, 0.07)',
-  wall: '#1c2024',
-  shelf: '#e8eaec',
-  shelfSide: '#c3c8cd',
-  //: The three station types share one weight on purpose. Weight says what
-  //: CLASS a cell is - near-black is structure you cannot enter, pale is
-  //: racking, mid is a marking painted on the floor you stand on - and the
-  //: mark says which of the three it is. Drawn at full ink instead, the
-  //: realistic floor's 306 pick points turned the whole field black.
-  storage: '#4a5057',
-  packing: '#4a5057',
-  charging: '#4a5057',
-};
+/**
+ * Ink for each type, from the map palette (lib/mapTheme). Null means "draw
+ * nothing" - an aisle is the floor. Each station type has its own colour as
+ * well as its own mark, so a delivery station and a charger can be told apart
+ * by either.
+ */
+function markInk(type, ink) {
+  if (type === CELL.WALL) return ink.wall;
+  if (type === CELL.SHELF) return ink.shelf;
+  if (type === CELL.STORAGE) return ink.storage;
+  if (type === CELL.PACKING) return ink.packing;
+  if (type === CELL.CHARGING) return ink.charging;
+  return null;
+}
 
-/** Ink for each type. Null means "draw nothing" - an aisle is the paper. */
-const MARK_INK = {
-  [CELL.EMPTY]: null,
-  [CELL.WALL]: INK.wall,
-  [CELL.SHELF]: INK.shelf,
-  [CELL.STORAGE]: INK.storage,
-  [CELL.PACKING]: INK.packing,
-  [CELL.CHARGING]: INK.charging,
-};
+/**
+ * A pick point whose product is waiting to be collected: the same inset box
+ * as every pick point, filled green instead. No ring or extra mark - the box
+ * itself changing colour is the highlight. An urgent one gets a darker edge.
+ */
+export function drawActivePickup(ctx, x, y, cell, palette = MAP_THEMES.light, urgent = false) {
+  const inset = cell * 0.22;
+  const size = cell - inset * 2;
+  ctx.fillStyle = palette.activePickup;
+  ctx.fillRect(x + inset, y + inset, size, size);
+  if (urgent) {
+    ctx.strokeStyle = palette.activePickupUrgent;
+    ctx.lineWidth = Math.max(1.5, cell * 0.1);
+    ctx.strokeRect(x + inset, y + inset, size, size);
+    ctx.lineWidth = 1;
+  }
+}
 
 /**
  * The palette, in the order a person builds a warehouse: the structure first,
@@ -90,8 +97,8 @@ export const CELL_LEGEND = [
  * keeps this function ignorant of the grid, so a palette swatch can call it
  * with no layout at all.
  */
-export function drawCellMark(ctx, type, x, y, cell, exposed = true) {
-  const ink = MARK_INK[type];
+export function drawCellMark(ctx, type, x, y, cell, exposed = true, palette = MAP_THEMES.light) {
+  const ink = markInk(type, palette);
   if (!ink) return;
 
   if (type === CELL.WALL) {
@@ -103,7 +110,7 @@ export function drawCellMark(ctx, type, x, y, cell, exposed = true) {
   if (type === CELL.SHELF) {
     const lift = Math.max(2, Math.round(cell * 0.22));
     if (exposed) {
-      ctx.fillStyle = INK.shelfSide;
+      ctx.fillStyle = palette.shelfSide;
       ctx.fillRect(x, y + cell - lift, cell, lift);
     }
     ctx.fillStyle = ink;
@@ -130,15 +137,20 @@ export function drawCellMark(ctx, type, x, y, cell, exposed = true) {
  *
  * `offsetX`/`offsetY` exist for the views that reserve a ruler gutter.
  */
-export function drawFloor(ctx, layout, cell, { offsetX = 0, offsetY = 0, grid = true } = {}) {
+export function drawFloor(
+  ctx,
+  layout,
+  cell,
+  { offsetX = 0, offsetY = 0, grid = true, palette = MAP_THEMES.light } = {}
+) {
   const width = cell * layout.width;
   const height = cell * layout.height;
 
-  ctx.fillStyle = INK.paper;
+  ctx.fillStyle = palette.floor;
   ctx.fillRect(offsetX, offsetY, width, height);
 
   if (grid) {
-    ctx.strokeStyle = INK.grid;
+    ctx.strokeStyle = palette.grid;
     ctx.lineWidth = 1;
     for (let col = 0; col <= layout.width; col += 1) {
       const x = offsetX + col * cell + 0.5;
@@ -161,7 +173,7 @@ export function drawFloor(ctx, layout, cell, { offsetX = 0, offsetY = 0, grid = 
       const type = layout.grid[row][col];
       const exposed =
         row + 1 >= layout.height || layout.grid[row + 1][col] !== CELL.SHELF;
-      drawCellMark(ctx, type, offsetX + col * cell, offsetY + row * cell, cell, exposed);
+      drawCellMark(ctx, type, offsetX + col * cell, offsetY + row * cell, cell, exposed, palette);
     }
   }
 }
@@ -171,7 +183,7 @@ export function drawFloor(ctx, layout, cell, { offsetX = 0, offsetY = 0, grid = 
  * Drawn rather than approximated in CSS, because the whole point is that the
  * button shows exactly what the brush paints.
  */
-export function drawSwatch(canvas, type, size = 18) {
+export function drawSwatch(canvas, type, size = 18, palette = MAP_THEMES.light) {
   const ratio = window.devicePixelRatio || 1;
   canvas.width = size * ratio;
   canvas.height = size * ratio;
@@ -181,10 +193,10 @@ export function drawSwatch(canvas, type, size = 18) {
   const ctx = canvas.getContext('2d');
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
   ctx.clearRect(0, 0, size, size);
-  ctx.fillStyle = INK.paper;
+  ctx.fillStyle = palette.floor;
   ctx.fillRect(0, 0, size, size);
-  ctx.strokeStyle = INK.grid;
+  ctx.strokeStyle = palette.grid;
   ctx.lineWidth = 1;
   ctx.strokeRect(0.5, 0.5, size - 1, size - 1);
-  drawCellMark(ctx, type, 0, 0, size, true);
+  drawCellMark(ctx, type, 0, 0, size, true, palette);
 }
