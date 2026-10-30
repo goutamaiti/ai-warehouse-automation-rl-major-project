@@ -32,6 +32,43 @@
   color-scheme: light;
 }
 
+/* Dark mode, for projectors that wash out a white page. The same ramp run in
+   reverse: every rule reads --s0..--s6, so nothing else needs a dark variant.
+   The steps are spaced wider than a straight inversion because projectors
+   crush the low end - #1c1f23 against #121417 would vanish. */
+:root[data-theme='dark'] {
+  --s0: #121417;   /* page */
+  --s1: #1f2227;   /* fill, inactive, track */
+  --s2: #33383f;   /* hairline */
+  --s3: #555c64;   /* light mark */
+  --s4: #a3aab1;   /* secondary text, mid mark */
+  --s5: #cfd4d9;   /* strong mark */
+  --s6: #f3f5f7;   /* ink, primary mark */
+  color-scheme: dark;
+}
+
+/* Maps, swatches and the fleet floor are canvases painted from fixed greys.
+   The palette has no hue, so inverting it is an exact dark version of the
+   same map - walls light, aisles dark, marks unchanged in shape - without a
+   second palette in the drawing code that could drift from the first.
+   A full invert(1) turned the shelves (#e8eaec) nearly as black as the
+   aisles; inverting 88% and lifting brightness keeps them apart on a
+   projector. */
+:root[data-theme='dark'] canvas {
+  filter: invert(0.88) hue-rotate(180deg) brightness(1.35);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.theme-toggle {
+  font-size: 0.75rem;
+  padding: 2px 10px;
+}
+
 * {
   box-sizing: border-box;
 }

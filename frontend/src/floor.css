@@ -137,6 +137,16 @@
   background: #000;
 }
 
+/* In dark mode the primary button is light, so "darker on hover" would be a
+   near-black hole; brighten instead. */
+:root[data-theme='dark'] .floor button.primary:hover:not(:disabled) {
+  background: #ffffff;
+}
+
+:root[data-theme='dark'] .floor .chip-active {
+  color: var(--paper);
+}
+
 .floor button:disabled {
   opacity: 0.4;
   cursor: not-allowed;
