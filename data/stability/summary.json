@@ -1,0 +1,42 @@
+[
+  {
+    "setting": "lr 3e-4, final policy (published + seed study)",
+    "success": [
+      27,
+      26,
+      19
+    ],
+    "total": 72,
+    "of": 90
+  },
+  {
+    "setting": "lr 3e-4, best checkpoint",
+    "success": [
+      30,
+      27,
+      25
+    ],
+    "total": 82,
+    "of": 90
+  },
+  {
+    "setting": "lr 1e-4, final policy",
+    "success": [
+      6,
+      30,
+      0
+    ],
+    "total": 36,
+    "of": 90
+  },
+  {
+    "setting": "lr 1e-4, best checkpoint",
+    "success": [
+      5,
+      30,
+      0
+    ],
+    "total": 35,
+    "of": 90
+  }
+]

@@ -1,0 +1,63 @@
+[2026-10-29 15:40:40 UTC] seed study starting: 12 runs, seeds [1, 2]
+[2026-10-29 15:40:40 UTC] [1/12] ppo_default_seed1: training default for 300,000 steps (seed 1)
+[2026-10-29 15:42:15 UTC]     done in 95s
+[2026-10-29 15:42:15 UTC] [1/12] ppo_default_seed1: evaluating on seeds 1000-1029
+[2026-10-29 15:42:24 UTC]     done in 9s
+[2026-10-29 15:42:24 UTC] [1/12] ppo_default_seed1: PPO 30/30 successful
+[2026-10-29 15:42:24 UTC] [2/12] ppo_simple_seed1: training simple_static for 300,000 steps (seed 1)
+[2026-10-29 15:43:54 UTC]     done in 91s
+[2026-10-29 15:43:54 UTC] [2/12] ppo_simple_seed1: evaluating on seeds 1000-1029
+[2026-10-29 15:44:02 UTC]     done in 7s
+[2026-10-29 15:44:02 UTC] [2/12] ppo_simple_seed1: PPO 30/30 successful
+[2026-10-29 15:44:02 UTC] [3/12] ppo_complex_seed1: training complex_static for 600,000 steps (seed 1)
+[2026-10-29 15:47:37 UTC]     done in 215s
+[2026-10-29 15:47:37 UTC] [3/12] ppo_complex_seed1: evaluating on seeds 1000-1029
+[2026-10-29 15:47:46 UTC]     done in 9s
+[2026-10-29 15:47:46 UTC] [3/12] ppo_complex_seed1: PPO 30/30 successful
+[2026-10-29 15:47:46 UTC] [4/12] ppo_dynamic_seed1: training dynamic_obstacles for 400,000 steps (seed 1)
+[2026-10-29 15:50:15 UTC]     done in 149s
+[2026-10-29 15:50:15 UTC] [4/12] ppo_dynamic_seed1: evaluating on seeds 1000-1029
+[2026-10-29 15:50:23 UTC]     done in 8s
+[2026-10-29 15:50:23 UTC] [4/12] ppo_dynamic_seed1: PPO 30/30 successful
+[2026-10-29 15:50:23 UTC] [5/12] ppo_battery_seed1: training battery_constrained for 600,000 steps (seed 1)
+[2026-10-29 15:53:37 UTC]     done in 194s
+[2026-10-29 15:53:37 UTC] [5/12] ppo_battery_seed1: evaluating on seeds 1000-1029
+[2026-10-29 15:53:44 UTC]     done in 7s
+[2026-10-29 15:53:45 UTC] [5/12] ppo_battery_seed1: PPO 0/30 successful
+[2026-10-29 15:53:45 UTC] [6/12] ppo_battery_long_s1: training battery_tuned for 2,000,000 steps (seed 1)
+[2026-10-29 16:05:54 UTC]     done in 729s
+[2026-10-29 16:05:54 UTC] [6/12] ppo_battery_long_s1: evaluating on seeds 1000-1029
+[2026-10-29 16:06:01 UTC]     done in 7s
+[2026-10-29 16:06:01 UTC] [6/12] ppo_battery_long_s1: PPO 26/30 successful
+[2026-10-29 16:06:01 UTC] [7/12] ppo_default_seed2: training default for 300,000 steps (seed 2)
+[2026-10-29 16:07:32 UTC]     done in 91s
+[2026-10-29 16:07:32 UTC] [7/12] ppo_default_seed2: evaluating on seeds 1000-1029
+[2026-10-29 16:07:39 UTC]     done in 7s
+[2026-10-29 16:07:39 UTC] [7/12] ppo_default_seed2: PPO 30/30 successful
+[2026-10-29 16:07:39 UTC] [8/12] ppo_simple_seed2: training simple_static for 300,000 steps (seed 2)
+[2026-10-29 16:09:04 UTC]     done in 84s
+[2026-10-29 16:09:04 UTC] [8/12] ppo_simple_seed2: evaluating on seeds 1000-1029
+[2026-10-29 16:09:11 UTC]     done in 7s
+[2026-10-29 16:09:11 UTC] [8/12] ppo_simple_seed2: PPO 28/30 successful
+[2026-10-29 16:09:11 UTC] [9/12] ppo_complex_seed2: training complex_static for 600,000 steps (seed 2)
+[2026-10-29 16:12:13 UTC]     done in 182s
+[2026-10-29 16:12:13 UTC] [9/12] ppo_complex_seed2: evaluating on seeds 1000-1029
+[2026-10-29 16:12:21 UTC]     done in 7s
+[2026-10-29 16:12:21 UTC] [9/12] ppo_complex_seed2: PPO 30/30 successful
+[2026-10-29 16:12:21 UTC] [10/12] ppo_dynamic_seed2: training dynamic_obstacles for 400,000 steps (seed 2)
+[2026-10-29 16:14:36 UTC]     done in 135s
+[2026-10-29 16:14:36 UTC] [10/12] ppo_dynamic_seed2: evaluating on seeds 1000-1029
+[2026-10-29 16:14:43 UTC]     done in 7s
+[2026-10-29 16:14:43 UTC] [10/12] ppo_dynamic_seed2: PPO 30/30 successful
+[2026-10-29 16:14:43 UTC] [11/12] ppo_battery_seed2: training battery_constrained for 600,000 steps (seed 2)
+[2026-10-29 16:17:46 UTC]     done in 183s
+[2026-10-29 16:17:46 UTC] [11/12] ppo_battery_seed2: evaluating on seeds 1000-1029
+[2026-10-29 16:17:53 UTC]     done in 7s
+[2026-10-29 16:17:53 UTC] [11/12] ppo_battery_seed2: PPO 6/30 successful
+[2026-10-29 16:17:53 UTC] [12/12] ppo_battery_long_s2: training battery_tuned for 2,000,000 steps (seed 2)
+[2026-10-29 16:30:17 UTC]     done in 744s
+[2026-10-29 16:30:17 UTC] [12/12] ppo_battery_long_s2: evaluating on seeds 1000-1029
+[2026-10-29 16:30:27 UTC]     done in 10s
+[2026-10-29 16:30:27 UTC] [12/12] ppo_battery_long_s2: PPO 19/30 successful
+[2026-10-29 16:30:27 UTC] summary written: 6 scenarios -> data/seeds/summary.md
+[2026-10-29 16:30:27 UTC] seed study finished: 12/12 runs ok

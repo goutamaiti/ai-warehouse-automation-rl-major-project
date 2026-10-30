@@ -1,0 +1,96 @@
+{
+  "tag": "ppo_simple",
+  "scenario": "simple_static",
+  "total_timesteps": 300000,
+  "eval_freq": 25000,
+  "n_eval_episodes": 20,
+  "training_seed": 0,
+  "wall_clock_seconds": 136.5,
+  "source": "data/logs/ppo_simple/eval/evaluations.npz",
+  "points": [
+    {
+      "timesteps": 25000,
+      "reward_mean": -17.74,
+      "reward_std": 7.261,
+      "length_mean": 200.0,
+      "success_rate": 0.0
+    },
+    {
+      "timesteps": 50000,
+      "reward_mean": -15.564,
+      "reward_std": 4.329,
+      "length_mean": 200.0,
+      "success_rate": 0.0
+    },
+    {
+      "timesteps": 75000,
+      "reward_mean": -12.46,
+      "reward_std": 13.234,
+      "length_mean": 191.0,
+      "success_rate": 0.05
+    },
+    {
+      "timesteps": 100000,
+      "reward_mean": 9.008,
+      "reward_std": 27.936,
+      "length_mean": 128.2,
+      "success_rate": 0.4
+    },
+    {
+      "timesteps": 125000,
+      "reward_mean": 30.688,
+      "reward_std": 22.573,
+      "length_mean": 55.2,
+      "success_rate": 0.8
+    },
+    {
+      "timesteps": 150000,
+      "reward_mean": 41.954,
+      "reward_std": 4.053,
+      "length_mean": 19.1,
+      "success_rate": 1.0
+    },
+    {
+      "timesteps": 175000,
+      "reward_mean": 42.612,
+      "reward_std": 2.585,
+      "length_mean": 19.8,
+      "success_rate": 1.0
+    },
+    {
+      "timesteps": 200000,
+      "reward_mean": 42.424,
+      "reward_std": 5.203,
+      "length_mean": 19.6,
+      "success_rate": 1.0
+    },
+    {
+      "timesteps": 225000,
+      "reward_mean": 41.39,
+      "reward_std": 4.934,
+      "length_mean": 18.5,
+      "success_rate": 1.0
+    },
+    {
+      "timesteps": 250000,
+      "reward_mean": 42.33,
+      "reward_std": 4.562,
+      "length_mean": 19.5,
+      "success_rate": 1.0
+    },
+    {
+      "timesteps": 275000,
+      "reward_mean": 43.928,
+      "reward_std": 4.136,
+      "length_mean": 21.2,
+      "success_rate": 1.0
+    },
+    {
+      "timesteps": 300000,
+      "reward_mean": 37.39,
+      "reward_std": 18.158,
+      "length_mean": 38.5,
+      "success_rate": 0.9
+    }
+  ]
+}

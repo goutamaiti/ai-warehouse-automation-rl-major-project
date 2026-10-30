@@ -489,7 +489,10 @@
   "wait_penalty": 0.1,
   "energy_weight": 0.02,
   "battery_depleted_penalty": 10.0,
-  "timeout_penalty": 5.0
+  "timeout_penalty": 5.0,
+  "battery_reserve_weight": 0.0,
+  "battery_reserve_safety": 2.0,
+  "battery_idle_penalty": 0.0
  },
  "frames": [
   {
@@ -699,10 +702,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -812,10 +817,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -925,10 +932,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -1038,10 +1047,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -1151,10 +1162,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -1264,10 +1277,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -1377,10 +1392,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -1490,10 +1507,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -1603,10 +1622,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -1718,10 +1739,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 0.0,
+    "battery_reserve": 0.0,
     "pickup": 5.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -1831,10 +1854,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -1944,10 +1969,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -2057,10 +2084,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -2170,10 +2199,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -2283,10 +2314,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -2396,10 +2429,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": -1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -2509,10 +2544,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": -1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -2622,10 +2659,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -2735,10 +2774,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -2848,10 +2889,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -2961,10 +3004,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -3074,10 +3119,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -3187,10 +3234,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -3300,10 +3349,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -3413,10 +3464,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -3526,10 +3579,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -3639,10 +3694,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -3752,10 +3809,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -3865,10 +3924,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -3978,10 +4039,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -4091,10 +4154,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -4204,10 +4269,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -4317,10 +4384,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -4430,10 +4499,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 0.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0
@@ -4545,10 +4616,12 @@
    "reward_components": {
     "step_penalty": -0.05,
     "progress": 1.0,
+    "battery_reserve": 0.0,
     "pickup": 0.0,
     "delivery": 20.0,
     "collision": 0.0,
     "wait": 0.0,
+    "battery_idle": 0.0,
     "energy": -0.01,
     "battery_depleted": 0.0,
     "timeout": 0.0

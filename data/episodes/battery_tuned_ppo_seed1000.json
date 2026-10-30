@@ -1,0 +1,4594 @@
+{
+ "controller": "ppo",
+ "scenario": "battery_tuned",
+ "seed": 1000,
+ "layout": {
+  "height": 15,
+  "width": 21,
+  "grid": [
+   [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   [
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1
+   ],
+   [
+    1,
+    0,
+    0,
+    3,
+    0,
+    0,
+    0,
+    3,
+    0,
+    0,
+    0,
+    3,
+    0,
+    0,
+    0,
+    3,
+    0,
+    0,
+    0,
+    0,
+    1
+   ],
+   [
+    1,
+    0,
+    0,
+    2,
+    2,
+    2,
+    0,
+    2,
+    2,
+    2,
+    0,
+    2,
+    2,
+    2,
+    0,
+    2,
+    2,
+    2,
+    0,
+    0,
+    1
+   ],
+   [
+    1,
+    0,
+    0,
+    2,
+    2,
+    2,
+    0,
+    2,
+    2,
+    2,
+    0,
+    2,
+    2,
+    2,
+    0,
+    2,
+    2,
+    2,
+    0,
+    0,
+    1
+   ],
+   [
+    1,
+    0,
+    0,
+    3,
+    0,
+    3,
+    0,
+    3,
+    0,
+    3,
+    0,
+    3,
+    0,
+    3,
+    0,
+    3,
+    0,
+    3,
+    0,
+    0,
+    1
+   ],
+   [
+    1,
+    0,
+    0,
+    2,
+    2,
+    2,
+    0,
+    2,
+    2,
+    2,
+    0,
+    2,
+    2,
+    2,
+    0,
+    2,
+    2,
+    2,
+    0,
+    0,
+    1
+   ],
+   [
+    1,
+    0,
+    0,
+    2,
+    2,
+    2,
+    0,
+    2,
+    2,
+    2,
+    0,
+    2,
+    2,
+    2,
+    0,
+    2,
+    2,
+    2,
+    0,
+    0,
+    1
+   ],
+   [
+    1,
+    0,
+    0,
+    3,
+    0,
+    3,
+    0,
+    3,
+    0,
+    3,
+    0,
+    3,
+    0,
+    3,
+    0,
+    3,
+    0,
+    3,
+    0,
+    0,
+    1
+   ],
+   [
+    1,
+    0,
+    0,
+    2,
+    2,
+    2,
+    0,
+    2,
+    2,
+    2,
+    0,
+    2,
+    2,
+    2,
+    0,
+    2,
+    2,
+    2,
+    0,
+    0,
+    1
+   ],
+   [
+    1,
+    0,
+    0,
+    2,
+    2,
+    2,
+    0,
+    2,
+    2,
+    2,
+    0,
+    2,
+    2,
+    2,
+    0,
+    2,
+    2,
+    2,
+    0,
+    0,
+    1
+   ],
+   [
+    1,
+    0,
+    0,
+    0,
+    0,
+    3,
+    0,
+    0,
+    0,
+    3,
+    0,
+    0,
+    0,
+    3,
+    0,
+    0,
+    0,
+    3,
+    0,
+    0,
+    1
+   ],
+   [
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1
+   ],
+   [
+    1,
+    5,
+    0,
+    0,
+    4,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    4,
+    0,
+    0,
+    5,
+    1
+   ],
+   [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ]
+  ],
+  "legend": {
+   "empty": 0,
+   "wall": 1,
+   "shelf": 2,
+   "storage": 3,
+   "packing": 4,
+   "charging": 5
+  },
+  "storage_points": [
+   [
+    2,
+    3
+   ],
+   [
+    2,
+    7
+   ],
+   [
+    2,
+    11
+   ],
+   [
+    2,
+    15
+   ],
+   [
+    5,
+    3
+   ],
+   [
+    5,
+    5
+   ],
+   [
+    5,
+    7
+   ],
+   [
+    5,
+    9
+   ],
+   [
+    5,
+    11
+   ],
+   [
+    5,
+    13
+   ],
+   [
+    5,
+    15
+   ],
+   [
+    5,
+    17
+   ],
+   [
+    8,
+    3
+   ],
+   [
+    8,
+    5
+   ],
+   [
+    8,
+    7
+   ],
+   [
+    8,
+    9
+   ],
+   [
+    8,
+    11
+   ],
+   [
+    8,
+    13
+   ],
+   [
+    8,
+    15
+   ],
+   [
+    8,
+    17
+   ],
+   [
+    11,
+    5
+   ],
+   [
+    11,
+    9
+   ],
+   [
+    11,
+    13
+   ],
+   [
+    11,
+    17
+   ]
+  ],
+  "packing_stations": [
+   [
+    13,
+    4
+   ],
+   [
+    13,
+    16
+   ]
+  ],
+  "charging_stations": [
+   [
+    13,
+    1
+   ],
+   [
+    13,
+    19
+   ]
+  ]
+ },
+ "reward_config": {
+  "step_penalty": 0.05,
+  "progress_weight": 1.0,
+  "shaping_gamma": 1.0,
+  "pickup_reward": 5.0,
+  "delivery_reward": 20.0,
+  "collision_penalty": 1.0,
+  "wait_penalty": 0.5,
+  "energy_weight": 0.02,
+  "battery_depleted_penalty": 60.0,
+  "timeout_penalty": 5.0,
+  "battery_reserve_weight": 10.0,
+  "battery_reserve_safety": 2.0,
+  "battery_idle_penalty": 0.0
+ },
+ "frames": [
+  {
+   "step": 0,
+   "robot": {
+    "id": 0,
+    "position": [
+     13,
+     1
+    ],
+    "battery": 45.0,
+    "battery_state": "ok",
+    "carrying": false,
+    "energy_consumed": 0.0
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "pending",
+    "target": [
+     5,
+     3
+    ],
+    "created_step": 0,
+    "picked_step": null,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 10,
+   "events": [
+    "start"
+   ]
+  },
+  {
+   "step": 1,
+   "robot": {
+    "id": 0,
+    "position": [
+     13,
+     1
+    ],
+    "battery": 54.9,
+    "battery_state": "ok",
+    "carrying": false,
+    "energy_consumed": 0.1
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "pending",
+    "target": [
+     5,
+     3
+    ],
+    "created_step": 0,
+    "picked_step": null,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 10,
+   "events": [
+    "charging"
+   ],
+   "reward": -0.552,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 0.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": -0.5,
+    "battery_idle": 0.0,
+    "energy": -0.002,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 2,
+   "robot": {
+    "id": 0,
+    "position": [
+     13,
+     1
+    ],
+    "battery": 64.8,
+    "battery_state": "ok",
+    "carrying": false,
+    "energy_consumed": 0.2
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "pending",
+    "target": [
+     5,
+     3
+    ],
+    "created_step": 0,
+    "picked_step": null,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 10,
+   "events": [
+    "charging"
+   ],
+   "reward": -0.552,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 0.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": -0.5,
+    "battery_idle": 0.0,
+    "energy": -0.002,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 3,
+   "robot": {
+    "id": 0,
+    "position": [
+     13,
+     1
+    ],
+    "battery": 74.7,
+    "battery_state": "ok",
+    "carrying": false,
+    "energy_consumed": 0.3
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "pending",
+    "target": [
+     5,
+     3
+    ],
+    "created_step": 0,
+    "picked_step": null,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 10,
+   "events": [
+    "charging"
+   ],
+   "reward": -0.552,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 0.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": -0.5,
+    "battery_idle": 0.0,
+    "energy": -0.002,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 4,
+   "robot": {
+    "id": 0,
+    "position": [
+     13,
+     1
+    ],
+    "battery": 84.6,
+    "battery_state": "ok",
+    "carrying": false,
+    "energy_consumed": 0.4
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "pending",
+    "target": [
+     5,
+     3
+    ],
+    "created_step": 0,
+    "picked_step": null,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 10,
+   "events": [
+    "charging"
+   ],
+   "reward": -0.552,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 0.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": -0.5,
+    "battery_idle": 0.0,
+    "energy": -0.002,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 5,
+   "robot": {
+    "id": 0,
+    "position": [
+     13,
+     1
+    ],
+    "battery": 94.5,
+    "battery_state": "ok",
+    "carrying": false,
+    "energy_consumed": 0.5
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "pending",
+    "target": [
+     5,
+     3
+    ],
+    "created_step": 0,
+    "picked_step": null,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 10,
+   "events": [
+    "charging"
+   ],
+   "reward": -0.552,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 0.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": -0.5,
+    "battery_idle": 0.0,
+    "energy": -0.002,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 6,
+   "robot": {
+    "id": 0,
+    "position": [
+     12,
+     1
+    ],
+    "battery": 93.0,
+    "battery_state": "ok",
+    "carrying": false,
+    "energy_consumed": 2.0
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "pending",
+    "target": [
+     5,
+     3
+    ],
+    "created_step": 0,
+    "picked_step": null,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 9,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 7,
+   "robot": {
+    "id": 0,
+    "position": [
+     11,
+     1
+    ],
+    "battery": 91.5,
+    "battery_state": "ok",
+    "carrying": false,
+    "energy_consumed": 3.5
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "pending",
+    "target": [
+     5,
+     3
+    ],
+    "created_step": 0,
+    "picked_step": null,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 8,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 8,
+   "robot": {
+    "id": 0,
+    "position": [
+     10,
+     1
+    ],
+    "battery": 90.0,
+    "battery_state": "ok",
+    "carrying": false,
+    "energy_consumed": 5.0
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "pending",
+    "target": [
+     5,
+     3
+    ],
+    "created_step": 0,
+    "picked_step": null,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 7,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 9,
+   "robot": {
+    "id": 0,
+    "position": [
+     9,
+     1
+    ],
+    "battery": 88.5,
+    "battery_state": "ok",
+    "carrying": false,
+    "energy_consumed": 6.5
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "pending",
+    "target": [
+     5,
+     3
+    ],
+    "created_step": 0,
+    "picked_step": null,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 6,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 10,
+   "robot": {
+    "id": 0,
+    "position": [
+     8,
+     1
+    ],
+    "battery": 87.0,
+    "battery_state": "ok",
+    "carrying": false,
+    "energy_consumed": 8.0
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "pending",
+    "target": [
+     5,
+     3
+    ],
+    "created_step": 0,
+    "picked_step": null,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 5,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 11,
+   "robot": {
+    "id": 0,
+    "position": [
+     7,
+     1
+    ],
+    "battery": 85.5,
+    "battery_state": "ok",
+    "carrying": false,
+    "energy_consumed": 9.5
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "pending",
+    "target": [
+     5,
+     3
+    ],
+    "created_step": 0,
+    "picked_step": null,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 4,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 12,
+   "robot": {
+    "id": 0,
+    "position": [
+     6,
+     1
+    ],
+    "battery": 84.0,
+    "battery_state": "ok",
+    "carrying": false,
+    "energy_consumed": 11.0
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "pending",
+    "target": [
+     5,
+     3
+    ],
+    "created_step": 0,
+    "picked_step": null,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 3,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 13,
+   "robot": {
+    "id": 0,
+    "position": [
+     5,
+     1
+    ],
+    "battery": 82.5,
+    "battery_state": "ok",
+    "carrying": false,
+    "energy_consumed": 12.5
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "pending",
+    "target": [
+     5,
+     3
+    ],
+    "created_step": 0,
+    "picked_step": null,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 2,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 14,
+   "robot": {
+    "id": 0,
+    "position": [
+     5,
+     2
+    ],
+    "battery": 81.0,
+    "battery_state": "ok",
+    "carrying": false,
+    "energy_consumed": 14.0
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "pending",
+    "target": [
+     5,
+     3
+    ],
+    "created_step": 0,
+    "picked_step": null,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 1,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 15,
+   "robot": {
+    "id": 0,
+    "position": [
+     5,
+     3
+    ],
+    "battery": 79.5,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 15.5
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 21,
+   "events": [
+    "pickup"
+   ],
+   "reward": 4.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 0.0,
+    "battery_reserve": 0.0,
+    "pickup": 5.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 16,
+   "robot": {
+    "id": 0,
+    "position": [
+     5,
+     4
+    ],
+    "battery": 78.0,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 17.0
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 20,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 17,
+   "robot": {
+    "id": 0,
+    "position": [
+     5,
+     5
+    ],
+    "battery": 76.5,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 18.5
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 19,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 18,
+   "robot": {
+    "id": 0,
+    "position": [
+     5,
+     6
+    ],
+    "battery": 75.0,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 20.0
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 18,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 19,
+   "robot": {
+    "id": 0,
+    "position": [
+     5,
+     7
+    ],
+    "battery": 73.5,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 21.5
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 17,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 20,
+   "robot": {
+    "id": 0,
+    "position": [
+     5,
+     8
+    ],
+    "battery": 72.0,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 23.0
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 16,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 21,
+   "robot": {
+    "id": 0,
+    "position": [
+     5,
+     9
+    ],
+    "battery": 70.5,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 24.5
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 15,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 22,
+   "robot": {
+    "id": 0,
+    "position": [
+     5,
+     10
+    ],
+    "battery": 69.0,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 26.0
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 14,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 23,
+   "robot": {
+    "id": 0,
+    "position": [
+     5,
+     11
+    ],
+    "battery": 67.5,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 27.5
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 13,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 24,
+   "robot": {
+    "id": 0,
+    "position": [
+     5,
+     12
+    ],
+    "battery": 66.0,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 29.0
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 12,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 25,
+   "robot": {
+    "id": 0,
+    "position": [
+     5,
+     13
+    ],
+    "battery": 64.5,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 30.5
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 11,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 26,
+   "robot": {
+    "id": 0,
+    "position": [
+     5,
+     14
+    ],
+    "battery": 63.0,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 32.0
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 10,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 27,
+   "robot": {
+    "id": 0,
+    "position": [
+     5,
+     15
+    ],
+    "battery": 61.5,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 33.5
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 11,
+   "events": [],
+   "reward": -1.08,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": -1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 28,
+   "robot": {
+    "id": 0,
+    "position": [
+     5,
+     16
+    ],
+    "battery": 60.0,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 35.0
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 12,
+   "events": [],
+   "reward": -1.08,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": -1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 29,
+   "robot": {
+    "id": 0,
+    "position": [
+     5,
+     17
+    ],
+    "battery": 58.5,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 36.5
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 11,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 30,
+   "robot": {
+    "id": 0,
+    "position": [
+     5,
+     18
+    ],
+    "battery": 57.0,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 38.0
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 10,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 31,
+   "robot": {
+    "id": 0,
+    "position": [
+     6,
+     18
+    ],
+    "battery": 55.5,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 39.5
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 9,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 32,
+   "robot": {
+    "id": 0,
+    "position": [
+     7,
+     18
+    ],
+    "battery": 54.0,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 41.0
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 8,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 33,
+   "robot": {
+    "id": 0,
+    "position": [
+     8,
+     18
+    ],
+    "battery": 52.5,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 42.5
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 7,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 34,
+   "robot": {
+    "id": 0,
+    "position": [
+     9,
+     18
+    ],
+    "battery": 51.0,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 44.0
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 6,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 35,
+   "robot": {
+    "id": 0,
+    "position": [
+     10,
+     18
+    ],
+    "battery": 49.5,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 45.5
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 5,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 36,
+   "robot": {
+    "id": 0,
+    "position": [
+     11,
+     18
+    ],
+    "battery": 48.0,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 47.0
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 4,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 37,
+   "robot": {
+    "id": 0,
+    "position": [
+     12,
+     18
+    ],
+    "battery": 46.5,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 48.5
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 3,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 38,
+   "robot": {
+    "id": 0,
+    "position": [
+     13,
+     18
+    ],
+    "battery": 45.0,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 50.0
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 2,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 39,
+   "robot": {
+    "id": 0,
+    "position": [
+     13,
+     19
+    ],
+    "battery": 53.5,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 51.5
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 3,
+   "events": [
+    "charging"
+   ],
+   "reward": -1.08,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": -1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 40,
+   "robot": {
+    "id": 0,
+    "position": [
+     13,
+     19
+    ],
+    "battery": 63.4,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 51.6
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 3,
+   "events": [
+    "charging"
+   ],
+   "reward": -0.552,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 0.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": -0.5,
+    "battery_idle": 0.0,
+    "energy": -0.002,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 41,
+   "robot": {
+    "id": 0,
+    "position": [
+     13,
+     19
+    ],
+    "battery": 73.3,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 51.7
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 3,
+   "events": [
+    "charging"
+   ],
+   "reward": -0.552,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 0.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": -0.5,
+    "battery_idle": 0.0,
+    "energy": -0.002,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 42,
+   "robot": {
+    "id": 0,
+    "position": [
+     13,
+     19
+    ],
+    "battery": 83.2,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 51.8
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 3,
+   "events": [
+    "charging"
+   ],
+   "reward": -0.552,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 0.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": -0.5,
+    "battery_idle": 0.0,
+    "energy": -0.002,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 43,
+   "robot": {
+    "id": 0,
+    "position": [
+     13,
+     19
+    ],
+    "battery": 93.1,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 51.9
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 3,
+   "events": [
+    "charging"
+   ],
+   "reward": -0.552,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 0.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": -0.5,
+    "battery_idle": 0.0,
+    "energy": -0.002,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 44,
+   "robot": {
+    "id": 0,
+    "position": [
+     12,
+     19
+    ],
+    "battery": 91.6,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 53.4
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 4,
+   "events": [],
+   "reward": -1.08,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": -1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 45,
+   "robot": {
+    "id": 0,
+    "position": [
+     12,
+     18
+    ],
+    "battery": 90.1,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 54.9
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 3,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 46,
+   "robot": {
+    "id": 0,
+    "position": [
+     12,
+     17
+    ],
+    "battery": 88.6,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 56.4
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 2,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 47,
+   "robot": {
+    "id": 0,
+    "position": [
+     12,
+     16
+    ],
+    "battery": 87.1,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 57.9
+   },
+   "task": {
+    "id": 0,
+    "pickup": [
+     5,
+     3
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 0,
+    "picked_step": 14,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 1,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 48,
+   "robot": {
+    "id": 0,
+    "position": [
+     13,
+     16
+    ],
+    "battery": 85.6,
+    "battery_state": "ok",
+    "carrying": false,
+    "energy_consumed": 59.4
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "pending",
+    "target": [
+     5,
+     17
+    ],
+    "created_step": 47,
+    "picked_step": null,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 11,
+   "events": [
+    "delivery",
+    "new_task"
+   ],
+   "reward": 19.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 0.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 20.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 49,
+   "robot": {
+    "id": 0,
+    "position": [
+     12,
+     16
+    ],
+    "battery": 84.1,
+    "battery_state": "ok",
+    "carrying": false,
+    "energy_consumed": 60.9
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "pending",
+    "target": [
+     5,
+     17
+    ],
+    "created_step": 47,
+    "picked_step": null,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 10,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 50,
+   "robot": {
+    "id": 0,
+    "position": [
+     12,
+     15
+    ],
+    "battery": 82.6,
+    "battery_state": "ok",
+    "carrying": false,
+    "energy_consumed": 62.4
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "pending",
+    "target": [
+     5,
+     17
+    ],
+    "created_step": 47,
+    "picked_step": null,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 11,
+   "events": [],
+   "reward": -1.08,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": -1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 51,
+   "robot": {
+    "id": 0,
+    "position": [
+     12,
+     14
+    ],
+    "battery": 81.1,
+    "battery_state": "ok",
+    "carrying": false,
+    "energy_consumed": 63.9
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "pending",
+    "target": [
+     5,
+     17
+    ],
+    "created_step": 47,
+    "picked_step": null,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 10,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 52,
+   "robot": {
+    "id": 0,
+    "position": [
+     11,
+     14
+    ],
+    "battery": 79.6,
+    "battery_state": "ok",
+    "carrying": false,
+    "energy_consumed": 65.4
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "pending",
+    "target": [
+     5,
+     17
+    ],
+    "created_step": 47,
+    "picked_step": null,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 9,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 53,
+   "robot": {
+    "id": 0,
+    "position": [
+     10,
+     14
+    ],
+    "battery": 78.1,
+    "battery_state": "ok",
+    "carrying": false,
+    "energy_consumed": 66.9
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "pending",
+    "target": [
+     5,
+     17
+    ],
+    "created_step": 47,
+    "picked_step": null,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 8,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 54,
+   "robot": {
+    "id": 0,
+    "position": [
+     9,
+     14
+    ],
+    "battery": 76.6,
+    "battery_state": "ok",
+    "carrying": false,
+    "energy_consumed": 68.4
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "pending",
+    "target": [
+     5,
+     17
+    ],
+    "created_step": 47,
+    "picked_step": null,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 7,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 55,
+   "robot": {
+    "id": 0,
+    "position": [
+     8,
+     14
+    ],
+    "battery": 75.1,
+    "battery_state": "ok",
+    "carrying": false,
+    "energy_consumed": 69.9
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "pending",
+    "target": [
+     5,
+     17
+    ],
+    "created_step": 47,
+    "picked_step": null,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 6,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 56,
+   "robot": {
+    "id": 0,
+    "position": [
+     7,
+     14
+    ],
+    "battery": 73.6,
+    "battery_state": "ok",
+    "carrying": false,
+    "energy_consumed": 71.4
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "pending",
+    "target": [
+     5,
+     17
+    ],
+    "created_step": 47,
+    "picked_step": null,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 5,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 57,
+   "robot": {
+    "id": 0,
+    "position": [
+     6,
+     14
+    ],
+    "battery": 72.1,
+    "battery_state": "ok",
+    "carrying": false,
+    "energy_consumed": 72.9
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "pending",
+    "target": [
+     5,
+     17
+    ],
+    "created_step": 47,
+    "picked_step": null,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 4,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 58,
+   "robot": {
+    "id": 0,
+    "position": [
+     5,
+     14
+    ],
+    "battery": 70.6,
+    "battery_state": "ok",
+    "carrying": false,
+    "energy_consumed": 74.4
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "pending",
+    "target": [
+     5,
+     17
+    ],
+    "created_step": 47,
+    "picked_step": null,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 3,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 59,
+   "robot": {
+    "id": 0,
+    "position": [
+     5,
+     15
+    ],
+    "battery": 69.1,
+    "battery_state": "ok",
+    "carrying": false,
+    "energy_consumed": 75.9
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "pending",
+    "target": [
+     5,
+     17
+    ],
+    "created_step": 47,
+    "picked_step": null,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 2,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 60,
+   "robot": {
+    "id": 0,
+    "position": [
+     5,
+     16
+    ],
+    "battery": 67.6,
+    "battery_state": "ok",
+    "carrying": false,
+    "energy_consumed": 77.4
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "pending",
+    "target": [
+     5,
+     17
+    ],
+    "created_step": 47,
+    "picked_step": null,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 1,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 61,
+   "robot": {
+    "id": 0,
+    "position": [
+     5,
+     17
+    ],
+    "battery": 66.1,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 78.9
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 47,
+    "picked_step": 60,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 11,
+   "events": [
+    "pickup"
+   ],
+   "reward": 4.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 0.0,
+    "battery_reserve": 0.0,
+    "pickup": 5.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 62,
+   "robot": {
+    "id": 0,
+    "position": [
+     5,
+     18
+    ],
+    "battery": 64.6,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 80.4
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 47,
+    "picked_step": 60,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 10,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 63,
+   "robot": {
+    "id": 0,
+    "position": [
+     6,
+     18
+    ],
+    "battery": 63.1,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 81.9
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 47,
+    "picked_step": 60,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 9,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 64,
+   "robot": {
+    "id": 0,
+    "position": [
+     7,
+     18
+    ],
+    "battery": 61.6,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 83.4
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 47,
+    "picked_step": 60,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 8,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 65,
+   "robot": {
+    "id": 0,
+    "position": [
+     8,
+     18
+    ],
+    "battery": 60.1,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 84.9
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 47,
+    "picked_step": 60,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 7,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 66,
+   "robot": {
+    "id": 0,
+    "position": [
+     9,
+     18
+    ],
+    "battery": 58.6,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 86.4
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 47,
+    "picked_step": 60,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 6,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 67,
+   "robot": {
+    "id": 0,
+    "position": [
+     10,
+     18
+    ],
+    "battery": 57.1,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 87.9
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 47,
+    "picked_step": 60,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 5,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 68,
+   "robot": {
+    "id": 0,
+    "position": [
+     11,
+     18
+    ],
+    "battery": 55.6,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 89.4
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 47,
+    "picked_step": 60,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 4,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 69,
+   "robot": {
+    "id": 0,
+    "position": [
+     12,
+     18
+    ],
+    "battery": 54.1,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 90.9
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 47,
+    "picked_step": 60,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 3,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 70,
+   "robot": {
+    "id": 0,
+    "position": [
+     13,
+     18
+    ],
+    "battery": 52.6,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 92.4
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 47,
+    "picked_step": 60,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 2,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 71,
+   "robot": {
+    "id": 0,
+    "position": [
+     13,
+     19
+    ],
+    "battery": 61.1,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 93.9
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 47,
+    "picked_step": 60,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 3,
+   "events": [
+    "charging"
+   ],
+   "reward": -1.08,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": -1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 72,
+   "robot": {
+    "id": 0,
+    "position": [
+     13,
+     19
+    ],
+    "battery": 71.0,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 94.0
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 47,
+    "picked_step": 60,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 3,
+   "events": [
+    "charging"
+   ],
+   "reward": -0.552,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 0.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": -0.5,
+    "battery_idle": 0.0,
+    "energy": -0.002,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 73,
+   "robot": {
+    "id": 0,
+    "position": [
+     13,
+     19
+    ],
+    "battery": 80.9,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 94.1
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 47,
+    "picked_step": 60,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 3,
+   "events": [
+    "charging"
+   ],
+   "reward": -0.552,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 0.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": -0.5,
+    "battery_idle": 0.0,
+    "energy": -0.002,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 74,
+   "robot": {
+    "id": 0,
+    "position": [
+     13,
+     19
+    ],
+    "battery": 90.8,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 94.2
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 47,
+    "picked_step": 60,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 3,
+   "events": [
+    "charging"
+   ],
+   "reward": -0.552,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 0.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": -0.5,
+    "battery_idle": 0.0,
+    "energy": -0.002,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 75,
+   "robot": {
+    "id": 0,
+    "position": [
+     13,
+     19
+    ],
+    "battery": 100.0,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 94.3
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 47,
+    "picked_step": 60,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 3,
+   "events": [
+    "charging"
+   ],
+   "reward": -0.552,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 0.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": -0.5,
+    "battery_idle": 0.0,
+    "energy": -0.002,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 76,
+   "robot": {
+    "id": 0,
+    "position": [
+     12,
+     19
+    ],
+    "battery": 98.5,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 95.8
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 47,
+    "picked_step": 60,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 4,
+   "events": [],
+   "reward": -1.08,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": -1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 77,
+   "robot": {
+    "id": 0,
+    "position": [
+     12,
+     18
+    ],
+    "battery": 97.0,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 97.3
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 47,
+    "picked_step": 60,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 3,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 78,
+   "robot": {
+    "id": 0,
+    "position": [
+     12,
+     17
+    ],
+    "battery": 95.5,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 98.8
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 47,
+    "picked_step": 60,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 2,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 79,
+   "robot": {
+    "id": 0,
+    "position": [
+     12,
+     16
+    ],
+    "battery": 94.0,
+    "battery_state": "ok",
+    "carrying": true,
+    "energy_consumed": 100.3
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "picked_up",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 47,
+    "picked_step": 60,
+    "delivered_step": null
+   },
+   "obstacles": [],
+   "distance_to_target": 1,
+   "events": [],
+   "reward": 0.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 0.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  },
+  {
+   "step": 80,
+   "robot": {
+    "id": 0,
+    "position": [
+     13,
+     16
+    ],
+    "battery": 92.5,
+    "battery_state": "ok",
+    "carrying": false,
+    "energy_consumed": 101.8
+   },
+   "task": {
+    "id": 1,
+    "pickup": [
+     5,
+     17
+    ],
+    "dropoff": [
+     13,
+     16
+    ],
+    "status": "delivered",
+    "target": [
+     13,
+     16
+    ],
+    "created_step": 47,
+    "picked_step": 60,
+    "delivered_step": 79
+   },
+   "obstacles": [],
+   "distance_to_target": 0,
+   "events": [
+    "delivery"
+   ],
+   "reward": 20.92,
+   "reward_components": {
+    "step_penalty": -0.05,
+    "progress": 1.0,
+    "battery_reserve": 0.0,
+    "pickup": 0.0,
+    "delivery": 20.0,
+    "collision": 0.0,
+    "wait": 0.0,
+    "battery_idle": 0.0,
+    "energy": -0.03,
+    "battery_depleted": 0.0,
+    "timeout": 0.0
+   }
+  }
+ ],
+ "summary": {
+  "controller": "ppo",
+  "scenario": "battery_tuned",
+  "seed": 1000,
+  "steps": 80,
+  "moves": 67,
+  "collisions": 0,
+  "static_collisions": 0,
+  "dynamic_collisions": 0,
+  "idle_steps": 13,
+  "energy_consumed": 101.8,
+  "charging_events": 15,
+  "tasks_delivered": 2,
+  "tasks_failed": 0,
+  "optimal_path_length": 53,
+  "termination_reason": "all_tasks_delivered",
+  "total_reward": 87.464
+ }
+}

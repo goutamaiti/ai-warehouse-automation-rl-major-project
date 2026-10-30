@@ -106,7 +106,7 @@ def test_run_rejects_an_invalid_custom_layout():
         "/api/run",
         json={"scenario": "default", "controller": "astar", "seed": 0, "layout": grid},
     )
-    assert response.status_code == 404
+    assert response.status_code == 400
     assert "invalid layout" in response.json()["detail"]
 
 

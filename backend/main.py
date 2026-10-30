@@ -17,6 +17,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from backend.api.fleet import router as fleet_router
 from backend.api.routes import router
 
 #: Comma-separated list of allowed browser origins. The default covers local
@@ -46,6 +47,9 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     app.include_router(router)
+    # The live fleet sits on its own router: those routes drive an
+    # interactive floor, not the measured pipeline the others serve.
+    app.include_router(fleet_router)
 
     @app.get("/")
     def index() -> dict[str, str]:
@@ -53,6 +57,7 @@ def create_app() -> FastAPI:
             "service": "warehouse-rl",
             "docs": "/docs",
             "health": "/api/health",
+            "fleet": "/api/fleet/health",
         }
 
     return app
