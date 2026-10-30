@@ -216,6 +216,13 @@
   width: 0.6rem;
   height: 0.6rem;
   border-radius: 50%;
+  /* An edge, so the yellow "carrying" dot holds its shape on a white page. */
+  border: 1px solid transparent;
+}
+
+/* A product waiting at its pick point is a green BOX on the map, so its key is too. */
+.floor-legend .dot.square {
+  border-radius: 2px;
 }
 
 /* ----------------------------------------------------------------- cards */
