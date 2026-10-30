@@ -38,6 +38,10 @@ class ServiceError(Exception):
     """Raised for conditions the API turns into a 4xx response."""
 
 
+class InvalidInputError(ServiceError):
+    """The request named real things but the data it sent is malformed (400, not 404)."""
+
+
 def scenario_files() -> list[Path]:
     """Every scenario YAML that ships with the project."""
     files = sorted(CONFIGS_DIR.glob("*.yaml")) + sorted((CONFIGS_DIR / "scenarios").glob("*.yaml"))
@@ -151,7 +155,7 @@ def run_live_episode(
         try:
             custom_layout = layout_from_grid(layout)
         except ValueError as exc:
-            raise ServiceError(f"invalid layout: {exc}") from exc
+            raise InvalidInputError(f"invalid layout: {exc}") from exc
     env = make_env(config, layout=custom_layout)
     policy = _build_policy(controller, scenario)
     _metrics, recorder = run_episode(env, policy, seed=seed, record=True)

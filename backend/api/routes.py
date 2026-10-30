@@ -42,6 +42,9 @@ def _handle(call, *args, **kwargs):
     """Run a service call, translating service errors into HTTP 404/400."""
     try:
         return call(*args, **kwargs)
+    except service.InvalidInputError as exc:
+        # A badly drawn grid is the caller's data, not a missing resource.
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     except service.ServiceError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 

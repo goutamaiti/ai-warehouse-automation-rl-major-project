@@ -64,6 +64,7 @@ and verified; `[ ]` means not done, with the reason. Numbers come from
 ## Week 9 - Integration and testing
 - [x] FastAPI backend (16 endpoints), hostile-input hardened (fuzzed: no 5xx, no traceback leaks, no path traversal)
 - [x] 276 automated tests, including a 50-test frozen-contract tripwire
+- [x] `run_test_cases.py` - 27 demo test cases (functional, input validation, error handling), expected vs actual, against the live API: 27/27 (`docs/test-cases.md`)
 - [x] `verify_live_floor.py` - 8 scenarios, 112/112 products, nearest robot, correct cells
 - [x] `verify_single_robot.py` - every scenario x controller, same PPO models as published, 540/540 episodes
 - [x] `stress_live_floor.py` - 120 runs (3-8 robots, 3 arrival patterns, 4 seeds, both floors): 120/120
@@ -73,6 +74,7 @@ and verified; `[ ]` means not done, with the reason. Numbers come from
 - [x] README with status, results, limitations
 - [x] `docs/`: architecture, RL formulation, experiments, deployment, demo run sheet, this status
 - [x] Demo-2 deck, 21 slides (`presentation/Second_Project_Demo.pptx`)
+- [x] Final-demo deck, 6 slides per the coordinator's guideline, with real portal screenshots; checklist in `docs/final-demo.md`
 - [x] One-command demo launcher with port checks and `-Verify` (`start_demo.ps1`)
 - [x] Viva question bank with measured answers (`docs/demo-script.md`)
 - [ ] Final project report - not written yet
