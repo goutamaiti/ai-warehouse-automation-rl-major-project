@@ -1,15 +1,72 @@
 :root {
-  --bg: #070b14;
-  --surface: #0f1524;
-  --surface-2: #151d30;
-  --border: #1f2a40;
-  --text: #e2e8f0;
-  --muted: #94a3b8;
-  --accent: #60a5fa;
-  --ok: #34d399;
-  --warn: #fbbf24;
-  --danger: #f43f5e;
+  /* One hue, many tints. Nothing on this site is a second colour: controllers,
+     robot states and results are told apart by how dark they are and whether
+     they are filled or outlined, never by hue.
+
+     Light ground because the demo is a projector in a lit room, where a dark
+     theme washes out - and because it prints into the report unchanged. */
+  --s0: #ffffff;   /* page */
+  --s1: #f6f7f8;   /* fill, inactive, track */
+  --s2: #e8eaec;   /* hairline */
+  --s3: #c3c8cd;   /* light mark */
+  --s4: #8b9299;   /* secondary text, mid mark */
+  --s5: #4a5057;   /* strong mark */
+  --s6: #1c2024;   /* ink, primary mark */
+
+  /* Semantic names kept so the existing rules keep working, now mapped onto
+     the ramp. --ok/--warn/--danger are deliberately NOT colours any more;
+     state is carried by weight and fill, which is what "everything the same
+     colour" has to mean if it is to stay legible. */
+  --bg: var(--s0);
+  --surface: var(--s0);
+  --surface-2: var(--s1);
+  --border: var(--s2);
+  --text: var(--s6);
+  --muted: var(--s4);
+  --accent: var(--s6);
+  --ok: var(--s5);
+  --warn: var(--s4);
+  --danger: var(--s6);
+
+  --mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Consolas, monospace;
+  color-scheme: light;
+}
+
+/* Dark mode, for projectors that wash out a white page. The same ramp run in
+   reverse: every rule reads --s0..--s6, so nothing else needs a dark variant.
+   The steps are spaced wider than a straight inversion because projectors
+   crush the low end - #1c1f23 against #121417 would vanish. */
+:root[data-theme='dark'] {
+  --s0: #121417;   /* page */
+  --s1: #1f2227;   /* fill, inactive, track */
+  --s2: #33383f;   /* hairline */
+  --s3: #555c64;   /* light mark */
+  --s4: #a3aab1;   /* secondary text, mid mark */
+  --s5: #cfd4d9;   /* strong mark */
+  --s6: #f3f5f7;   /* ink, primary mark */
   color-scheme: dark;
+}
+
+/* Maps, swatches and the fleet floor are canvases painted from fixed greys.
+   The palette has no hue, so inverting it is an exact dark version of the
+   same map - walls light, aisles dark, marks unchanged in shape - without a
+   second palette in the drawing code that could drift from the first.
+   A full invert(1) turned the shelves (#e8eaec) nearly as black as the
+   aisles; inverting 88% and lifting brightness keeps them apart on a
+   projector. */
+:root[data-theme='dark'] canvas {
+  filter: invert(0.88) hue-rotate(180deg) brightness(1.35);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.theme-toggle {
+  font-size: 0.75rem;
+  padding: 2px 10px;
 }
 
 * {
@@ -20,21 +77,22 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
   font-size: 15px;
-  line-height: 1.5;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
 }
 
 code {
-  font-family: 'Cascadia Code', ui-monospace, 'SF Mono', Menlo, monospace;
+  font-family: var(--mono);
   font-size: 0.9em;
   background: var(--surface-2);
   padding: 0.1em 0.35em;
-  border-radius: 4px;
+  border-radius: 2px;
 }
 
 .app {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 24px 20px 48px;
 }
@@ -80,7 +138,7 @@ code {
 .live-run {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 2px;
   padding: 16px;
 }
 
@@ -106,7 +164,7 @@ input[type='number'] {
   background: var(--surface-2);
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 2px;
   padding: 6px 8px;
   font-size: 0.9rem;
   min-width: 120px;
@@ -116,7 +174,7 @@ button {
   background: var(--surface-2);
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 2px;
   padding: 6px 12px;
   font-size: 0.9rem;
   cursor: pointer;
@@ -133,7 +191,7 @@ button:disabled {
 
 button.primary {
   background: var(--accent);
-  color: #07101f;
+  color: var(--s0);
   border-color: var(--accent);
   font-weight: 600;
 }
@@ -145,8 +203,8 @@ button.primary {
 
 canvas {
   display: block;
-  border-radius: 8px;
-  background: #05070c;
+  border-radius: 2px;
+  background: var(--s1);
 }
 
 .legend {
@@ -230,7 +288,7 @@ canvas {
   justify-content: space-between;
   gap: 12px;
   padding: 4px 0;
-  border-bottom: 1px dashed rgba(148, 163, 184, 0.12);
+  border-bottom: 1px solid var(--s2);
 }
 
 .kv dt {
@@ -247,7 +305,7 @@ canvas {
 .badge {
   display: inline-block;
   padding: 2px 8px;
-  border-radius: 999px;
+  border-radius: 2px;
   font-size: 0.75rem;
   background: var(--surface-2);
   border: 1px solid var(--border);
@@ -256,18 +314,18 @@ canvas {
 .badge.ok,
 .badge.battery-ok {
   color: var(--ok);
-  border-color: rgba(52, 211, 153, 0.4);
+  border-color: var(--s5);
 }
 
 .badge.battery-low {
   color: var(--warn);
-  border-color: rgba(251, 191, 36, 0.4);
+  border-color: var(--s3);
 }
 
 .badge.fail,
 .badge.battery-critical {
   color: var(--danger);
-  border-color: rgba(244, 63, 94, 0.4);
+  border-color: var(--s6);
 }
 
 .events {
@@ -340,12 +398,30 @@ table {
   font-variant-numeric: tabular-nums;
 }
 
-th,
-td {
+/* Scoped to the results tables. As a bare `th, td` this applied to every table
+   on the site, so the Info tab's prose tables could not wrap and the page
+   scrolled sideways by over a thousand pixels - a pre-existing bug, not a
+   theme one. Numbers should not wrap; explanations must. */
+.results th,
+.results td,
+.result-card th,
+.result-card td,
+.table-scroll th,
+.table-scroll td {
   text-align: right;
   padding: 7px 10px;
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
+}
+
+/* Everything else: a table is for reading, so it wraps. */
+th,
+td {
+  text-align: left;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--border);
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 th:first-child,
@@ -368,11 +444,11 @@ thead th {
 }
 
 .error {
-  background: rgba(244, 63, 94, 0.12);
-  border: 1px solid rgba(244, 63, 94, 0.4);
-  color: #fecdd3;
+  background: var(--s1);
+  border-left: 2px solid var(--s6);
+  color: var(--s6);
   padding: 10px 14px;
-  border-radius: 8px;
+  border-radius: 2px;
   margin: 16px 0 0;
 }
 
@@ -399,7 +475,7 @@ thead th {
   background: transparent;
   border: 1px solid transparent;
   border-bottom: none;
-  border-radius: 8px 8px 0 0;
+  border-radius: 2px 8px 0 0;
   padding: 8px 16px;
   color: var(--muted);
   font-size: 0.9rem;
@@ -458,23 +534,38 @@ thead th {
 .palette-button {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
+  gap: 7px;
+  padding: 5px 10px 5px 6px;
   font-size: 0.82rem;
+  color: var(--s5);
+  background: var(--s0);
+  border: 1px solid var(--s2);
+  border-radius: 2px;
+  cursor: pointer;
 }
 
-.palette-button .swatch {
-  width: 12px;
-  height: 12px;
-  border-radius: 3px;
-  background: var(--swatch);
-  display: inline-block;
+.palette-button:hover {
+  border-color: var(--s4);
 }
 
+/* The selected brush is outlined, NOT filled. Every other segmented pick on
+   the site fills with ink when active, but the swatch here is a small white
+   tile carrying the mark - fill it and the tile reads as a hole punched in the
+   button. Outline plus weight carries the state and leaves the brush legible,
+   which is the entire point of drawing it. */
 .palette-button.selected {
-  border-color: var(--accent);
-  background: var(--surface-2);
-  box-shadow: 0 0 0 1px var(--accent) inset;
+  border-color: var(--s6);
+  box-shadow: inset 0 0 0 1px var(--s6);
+  color: var(--s6);
+  font-weight: 600;
+}
+
+/* A drawn swatch: the real mark, rendered by lib/cellArt at swatch size. */
+.swatch-canvas {
+  display: block;
+  flex-shrink: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .editor-dims {
@@ -488,29 +579,40 @@ thead th {
   width: 72px;
 }
 
-.warehouse-editor canvas {
+/* The grid canvas only. The palette's brushes are canvases too now, and they
+   are buttons - a crosshair over them says "paint here", which they are not. */
+.warehouse-editor .canvas-wrapper canvas {
   cursor: crosshair;
   touch-action: none;
 }
 
+/* The reachability verdict, directly under the grid it judges. A left rule
+   rather than a tinted box, because the palette has no red and no green to
+   spend: a valid layout states itself in ink, an invalid one states itself in
+   ink too, and the difference is in the words. */
 .validation-status {
-  margin: 8px 0 0;
-  padding: 8px 12px;
-  border-radius: 8px;
+  margin: 10px 0 0;
+  padding: 2px 0 2px 13px;
+  border-left: 2px solid var(--s3);
   font-size: 0.85rem;
-  border: 1px solid var(--border);
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.validation-status b {
+  color: var(--text);
+  font-weight: 600;
 }
 
 .validation-status.ok {
-  color: var(--ok);
-  border-color: rgba(52, 211, 153, 0.35);
-  background: rgba(52, 211, 153, 0.07);
+  border-left-color: var(--s6);
 }
 
+/* Not runnable: the rule is dashed, the same "incomplete" mark the charger
+   cell uses, so the two readings of a dashed line on this page agree. */
 .validation-status.fail {
-  color: var(--danger);
-  border-color: rgba(244, 63, 94, 0.35);
-  background: rgba(244, 63, 94, 0.07);
+  border-left-style: dashed;
+  border-left-color: var(--s4);
 }
 
 .run-panel .live-controls {
@@ -554,7 +656,7 @@ thead th {
 
 .reward-term {
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 2px;
   padding: 10px 12px;
   background: var(--surface-2);
   opacity: 0.65;
@@ -645,7 +747,7 @@ thead th {
 .info-section {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 2px;
   padding: 18px 20px;
   margin-top: 16px;
 }
@@ -711,4 +813,529 @@ thead th {
   text-align: center;
   color: var(--muted);
   font-size: 0.85rem;
+}
+
+
+/* ------------------------------------------------------------------ fixes */
+
+/* The Info tab's definition table overflowed the page by 1,241px: long
+   explanatory cells do not wrap on their own, so the table grew to 1,331px and
+   the whole page scrolled sideways. A fixed layout plus wrapping keeps the
+   measure inside the column. */
+.info-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.info-table th,
+.info-table td {
+  overflow-wrap: anywhere;
+  vertical-align: top;
+}
+
+/* Long inline code in prose wraps rather than pushing the page wide. */
+.info-page code,
+.info-section code {
+  overflow-wrap: anywhere;
+}
+
+/* ------------------------------------------- picker and comparison chart */
+
+/* A segmented pick, used for the controller choice and the metric choice.
+   Active is solid ink, inactive is a hairline - fill carries state, not hue. */
+.pick {
+  font: inherit;
+  font-size: 0.82rem;
+  color: var(--s5);
+  background: var(--s0);
+  border: 1px solid var(--s2);
+  border-radius: 2px;
+  padding: 5px 11px;
+  cursor: pointer;
+}
+
+.pick:hover:not(:disabled) {
+  border-color: var(--s4);
+}
+
+.pick.active {
+  background: var(--s6);
+  border-color: var(--s6);
+  color: var(--s0);
+}
+
+.pick:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.controller-pick {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pick-label {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-right: 2px;
+}
+
+.metric-pick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 14px 0 22px;
+}
+
+.results-head h2 {
+  margin-bottom: 4px;
+}
+
+.compare {
+  display: grid;
+  gap: 2px;
+}
+
+.compare-row {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 24px;
+  align-items: center;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--s2);
+}
+
+.compare-row:last-child {
+  border-bottom: 0;
+}
+
+.compare-row header h3 {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+
+.compare-row header p {
+  margin: 2px 0 0;
+  line-height: 1.4;
+}
+
+.bars {
+  display: grid;
+  gap: 5px;
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 58px;
+  gap: 12px;
+  align-items: center;
+}
+
+.bar-name {
+  font-size: 0.74rem;
+  color: var(--muted);
+}
+
+.bar-track {
+  position: relative;
+  height: 7px;
+  background: var(--s1);
+}
+
+.bar-track i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  display: block;
+}
+
+/* "nothing succeeded" is a result, so it is drawn rather than left blank. */
+.bar-track i.none {
+  width: 100%;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--s3) 0 2px,
+    transparent 2px 6px
+  );
+}
+
+/* The 95% interval, as a bracket over the bar. Where two brackets overlap the
+   difference is not real - which is the thing a bare table could never show. */
+.bar-track u {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  border-left: 1.5px solid var(--s6);
+  border-right: 1.5px solid var(--s6);
+  text-decoration: none;
+}
+
+.bar-value {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.78rem;
+  text-align: right;
+}
+
+/* A collapsed three-way tie, on the SAME track as the bars it replaces.
+   As a flex row it overflowed the page by 92px: the bar carries an inline
+   percentage width and had flex-shrink: 0, so a tie near the top of the scale
+   claimed the whole row and pushed the figure and its sentence off the right
+   edge. Worse, its length was a fraction of the flex row rather than of the
+   bar track, so a tie and a bar of equal value were drawn different lengths -
+   the one thing a shared scale exists to prevent. Matching .bar-row's columns
+   fixes both: same track, same geometry, and the sentence drops onto its own
+   line instead of fighting for width. */
+.tied {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 58px;
+  gap: 5px 12px;
+  align-items: center;
+}
+
+.tied-bar {
+  grid-column: 2;
+  height: 7px;
+  max-width: 100%;
+  background: var(--s6);
+}
+
+.tied b {
+  grid-column: 3;
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.78rem;
+  text-align: right;
+}
+
+.tied em {
+  grid-column: 1 / -1;
+  font-style: normal;
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.reveal {
+  margin-top: 20px;
+}
+
+/* What a result block means, set off from the table it reads. A left rule
+   rather than a tinted box: it is commentary on the numbers above, not a
+   warning or an aside, and the palette has no second colour to spend on it. */
+.takeaway {
+  margin: 12px 0 0;
+  padding-left: 13px;
+  border-left: 2px solid var(--s6);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--s5);
+}
+
+/* --------------------------------------------- numbers, anywhere on the site */
+
+/* Both the comparison chart and the Info walkthrough mark their figures with
+   .num, which had no rule - the chart only looked right because .bar-value and
+   .tied b happened to set mono themselves. One utility, so a number reads as a
+   number wherever it appears and columns of them line up. */
+.num {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* -------------------------------------------------- Info reward walkthrough */
+
+/* The reward function used to be a static table of weights: a claim about what
+   the agent is paid. This drives the same terms from a real recording, so the
+   reader sees what each one actually charged on a given step. The prose stays
+   underneath each value - the explanation is the point of the page. */
+
+/* Which recording to walk. The same segmented pick as the results chart, so
+   "choose a thing to look at" looks the same wherever the site offers it. */
+.walk-pick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 14px 0 0;
+}
+
+.walk-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0 0;
+}
+
+.walk-controls input[type='range'] {
+  flex: 1 1 160px;
+  min-width: 0;
+  accent-color: var(--s6);
+}
+
+.walk-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  align-items: baseline;
+  padding: 10px 0;
+  margin-top: 10px;
+  border-top: 1px solid var(--s2);
+  border-bottom: 1px solid var(--s2);
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.walk-head b {
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+/* An event on this step - a pickup, a delivery, a charge - called out rather
+   than left for the reader to infer from which term lit up. */
+.walk-event {
+  margin-left: auto;
+  padding: 1px 8px;
+  border: 1px solid var(--s6);
+  color: var(--text);
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+}
+
+.terms {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(255px, 1fr));
+  gap: 1px;
+  margin-top: 18px;
+  background: var(--s2);
+  border: 1px solid var(--s2);
+}
+
+/* Hairline grid, no card shadows: the cells are separated by the gap showing
+   through, which is why the container carries the line colour. */
+.term {
+  display: flex;
+  flex-direction: column;
+  background: var(--s0);
+  padding: 12px 14px 14px;
+}
+
+/* A term that fired on this step is the only thing emphasised, and it is
+   emphasised by fill - the left edge goes to ink. No second colour. */
+.term.fired {
+  box-shadow: inset 2px 0 0 var(--s6);
+}
+
+.term header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.term header h3 {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.term header b {
+  font-size: 0.9rem;
+  color: var(--s3);
+}
+
+.term.fired header b {
+  color: var(--text);
+}
+
+.term-rule {
+  margin: 6px 0 0;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--s5);
+  line-height: 1.45;
+}
+
+.term-why {
+  margin: 6px 0 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* Pinned to the bottom of its cell: the terms carry different amounts of
+   prose, and strips that each stopped wherever their paragraph ended could not
+   be read down the column as a set. */
+.term-strip {
+  position: relative;
+  display: flex;
+  gap: 1px;
+  height: 13px;
+  margin-top: auto;
+  padding-top: 12px;
+  box-sizing: content-box;
+}
+
+.term-strip i {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.term-strip i.off {
+  background: var(--s1);
+}
+
+.term-strip i.credit {
+  background: var(--s6);
+}
+
+.term-strip i.charge {
+  background: var(--s3);
+}
+
+/* The playhead, same idiom as the confidence bracket on the results chart. */
+.term-strip u {
+  position: absolute;
+  top: 9px;
+  bottom: -3px;
+  width: 0;
+  border-left: 1px solid var(--s6);
+  text-decoration: none;
+}
+
+@media (max-width: 760px) {
+  .walk-event {
+    margin-left: 0;
+  }
+}
+
+/* ------------------------------------------------------- learning curves */
+
+/* Two small charts per run, side by side, never one chart with two y-axes.
+   Same ink as the comparison above it: the line is the darkest mark on the
+   panel, the +-1 SD band a pale tint, grid and ticks recessive. */
+.training {
+  margin-top: 32px;
+}
+
+.curve-row {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--s2);
+}
+
+.curve-row:last-of-type {
+  border-bottom: 0;
+}
+
+.curve-row header h3 {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+
+.curve-row header p {
+  margin: 2px 0 10px;
+}
+
+.curve-pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.curve {
+  margin: 0;
+}
+
+.curve figcaption {
+  font-size: 0.74rem;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.curve-plot {
+  position: relative;
+}
+
+.curve svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  cursor: crosshair;
+}
+
+.curve-grid {
+  stroke: var(--s2);
+  stroke-width: 1;
+}
+
+.curve-tick {
+  fill: var(--s4);
+  font-family: var(--mono);
+  font-size: 9px;
+}
+
+.curve-band {
+  fill: var(--s2);
+  opacity: 0.8;
+}
+
+.curve-line {
+  fill: none;
+  stroke: var(--s6);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.curve-cross {
+  stroke: var(--s4);
+  stroke-width: 1;
+  stroke-dasharray: 2 2;
+}
+
+.curve-dot {
+  fill: var(--s6);
+  stroke: var(--s0);
+  stroke-width: 2;
+}
+
+/* Tooltip in text ink, never the series colour; anchored above the
+   crosshair and kept inside the plot by the transform. */
+.curve-tip {
+  position: absolute;
+  top: -6px;
+  transform: translate(-50%, -100%);
+  background: var(--s0);
+  border: 1px solid var(--s3);
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  color: var(--s5);
+  white-space: nowrap;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  z-index: 2;
+}
+
+.curve-tip b {
+  color: var(--text);
+  font-size: 0.82rem;
+}
+
+/* Why the setup controls are greyed out while a floor runs. */
+.floor-hint {
+  font-size: 0.76rem;
+  color: var(--muted);
+  align-self: center;
+}
+
+/* Priority choice on the product card: the site's segmented pick. */
+.priority-row {
+  gap: 6px;
 }

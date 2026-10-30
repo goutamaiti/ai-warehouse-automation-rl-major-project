@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import MetricsPanel from './MetricsPanel';
 import PlaybackControls from './PlaybackControls';
 import ResultsTable from './ResultsTable';
+import TrainingCurves from './TrainingCurves';
 import RewardPanel from './RewardPanel';
 import WarehouseCanvas from './WarehouseCanvas';
 import {
@@ -13,6 +14,7 @@ import {
   loadScenarios,
   runLiveEpisode,
 } from '../lib/api';
+import { byComplexity, scenarioTier } from '../lib/complexity';
 import { controllerLabel, titleCase } from '../lib/format';
 import { useEpisodePlayer } from '../lib/useEpisodePlayer';
 
@@ -30,6 +32,9 @@ function pickDefaultEpisode(episodes) {
   );
 }
 
+/** Classical first, then the learned policy, so the row reads as a comparison. */
+const CONTROLLER_ORDER = ['astar', 'bfs', 'ppo'];
+
 export default function DashboardPage({ health }) {
   const [index, setIndex] = useState({ episodes: [], results: [] });
   const [results, setResults] = useState([]);
@@ -41,6 +46,26 @@ export default function DashboardPage({ health }) {
   const [running, setRunning] = useState(false);
 
   const player = useEpisodePlayer(episode);
+
+  const episodes = index.episodes ?? [];
+  const selected = episodes.find((e) => e.id === selectedId) ?? null;
+
+  /** Scenarios that actually have a recording, in complexity order. */
+  const scenarioOrder = [...new Set([...episodes].sort(byComplexity).map((e) => e.scenario))];
+
+  /** Jump to the recording for a (scenario, controller) pair.
+   *  Falls back to any recording of that scenario, because not every scenario
+   *  has every controller - the two static floors were never given a PPO run
+   *  until recently, and a missing combination should move the selection
+   *  somewhere sensible rather than blanking the stage. */
+  const pickEpisode = (scenario, controller) => {
+    const exact = episodes.find(
+      (e) => e.scenario === scenario && e.controller === controller
+    );
+    const fallback = episodes.find((e) => e.scenario === scenario);
+    const next = exact ?? fallback;
+    if (next) setSelectedId(next.id);
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -119,17 +144,44 @@ export default function DashboardPage({ health }) {
       <div className="layout">
         <main className="stage">
           <div className="stage-header">
+            {/* An eighteen-item dropdown of near-identical entries hid the
+                experiment's shape. Scenario and controller are separate
+                choices - six plus three, not eighteen - so picking a recording
+                is picking a coordinate on the comparison grid, and switching
+                controller on one scenario is one click instead of a hunt. */}
             <label>
-              Episode
-              <select value={selectedId ?? ''} onChange={(event) => setSelectedId(event.target.value)}>
-                {selectedId === null && <option value="">live run</option>}
-                {(index.episodes ?? []).map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {titleCase(item.scenario)} · {controllerLabel(item.controller)} · seed {item.seed}
+              Scenario
+              <select
+                value={selected?.scenario ?? ''}
+                onChange={(event) => pickEpisode(event.target.value, selected?.controller)}
+              >
+                {scenarioOrder.map((name) => (
+                  <option key={name} value={name}>
+                    {scenarioTier(name) ? `${scenarioTier(name)}. ` : ''}
+                    {titleCase(name)}
                   </option>
                 ))}
               </select>
             </label>
+            <div className="controller-pick">
+              <span className="pick-label">Controller</span>
+              {CONTROLLER_ORDER.map((name) => {
+                const available = (index.episodes ?? []).some(
+                  (e) => e.scenario === selected?.scenario && e.controller === name
+                );
+                return (
+                  <button
+                    key={name}
+                    type="button"
+                    className={`pick${selected?.controller === name ? ' active' : ''}`}
+                    disabled={!available}
+                    onClick={() => pickEpisode(selected?.scenario, name)}
+                  >
+                    {name === 'astar' ? 'A*' : name === 'bfs' ? 'BFS' : 'PPO'}
+                  </button>
+                );
+              })}
+            </div>
             {episode?.summary && (
               <span className="muted small">
                 {episode.summary.steps} steps · {episode.summary.moves} moves ·{' '}
@@ -226,6 +278,8 @@ export default function DashboardPage({ health }) {
       />
 
       <ResultsTable results={results} />
+
+      <TrainingCurves training={index.training} />
 
       <footer className="app-footer">
         <p>

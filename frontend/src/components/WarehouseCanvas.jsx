@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react';
-import { CellType as CELL, CELL_COLORS } from '../lib/grid';
+import { CellType as CELL } from '../lib/grid';
+import { drawFloor } from '../lib/cellArt';
+import CellSwatch from './CellSwatch';
 
 /**
  * Canvas view of one recorded frame.
@@ -9,17 +11,24 @@ import { CellType as CELL, CELL_COLORS } from '../lib/grid';
  * frame. It never simulates anything itself.
  */
 
+/**
+ * One slate ramp, no second hue. State is carried by tint and by whether a
+ * mark is filled or outlined: a carrying robot is a ring, a flat battery is
+ * pale, an obstacle is ink. Battery level is read from the arc's extent, not
+ * from its colour, which is also why the three battery entries are tints of
+ * the same thing rather than a traffic light.
+ */
 const COLORS = {
-  grid: 'rgba(148, 163, 184, 0.07)',
-  trail: 'rgba(125, 211, 252, 0.28)',
-  robot: '#60a5fa',
-  robotCarrying: '#fbbf24',
-  obstacle: '#f43f5e',
-  pickup: '#22d3ee',
-  dropoff: '#34d399',
-  batteryOk: '#34d399',
-  batteryLow: '#fbbf24',
-  batteryCritical: '#f43f5e',
+  grid: 'rgba(28, 32, 36, 0.07)',
+  trail: 'rgba(28, 32, 36, 0.16)',
+  robot: '#1c2024',
+  robotCarrying: '#4a5057',
+  obstacle: '#8b9299',
+  pickup: '#4a5057',
+  dropoff: '#8b9299',
+  batteryOk: '#1c2024',
+  batteryLow: '#8b9299',
+  batteryCritical: '#c3c8cd',
 };
 
 const MAX_CELL_SIZE = 30;
@@ -58,17 +67,11 @@ export default function WarehouseCanvas({ layout, frame, trail = [] }) {
       ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
       ctx.clearRect(0, 0, width, height);
 
-      // 1. static map
-      for (let row = 0; row < layout.height; row += 1) {
-        for (let col = 0; col < layout.width; col += 1) {
-          const value = layout.grid[row][col];
-          ctx.fillStyle = CELL_COLORS[value] ?? CELL_COLORS[CELL.EMPTY];
-          ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
-          ctx.strokeStyle = COLORS.grid;
-          ctx.lineWidth = 1;
-          ctx.strokeRect(col * cellSize + 0.5, row * cellSize + 0.5, cellSize - 1, cellSize - 1);
-        }
-      }
+      // 1. static map, through the shared renderer (lib/cellArt). The editor
+      //    paints with the same code, so a warehouse drawn by hand plays back
+      //    looking exactly like the thing that was drawn - which it did not
+      //    when this filled every cell with one of four near-identical greys.
+      drawFloor(ctx, layout, cellSize);
 
       // 2. where the robot has already been
       ctx.fillStyle = COLORS.trail;
@@ -78,11 +81,15 @@ export default function WarehouseCanvas({ layout, frame, trail = [] }) {
 
       if (!frame) return;
 
+      // A task marker rings the whole cell. It used to be inset by 2px, which
+      // now collides with the cell's own inset mark - a packing station would
+      // be an outlined square inside an outlined square. Ringing the cell
+      // reads as "this is the active target" around whatever the cell is.
       const marker = (position, color) => {
         const [row, col] = position;
         ctx.strokeStyle = color;
         ctx.lineWidth = 2;
-        ctx.strokeRect(col * cellSize + 2, row * cellSize + 2, cellSize - 4, cellSize - 4);
+        ctx.strokeRect(col * cellSize + 1, row * cellSize + 1, cellSize - 2, cellSize - 2);
       };
 
       // 3. task markers
@@ -143,8 +150,10 @@ export default function WarehouseCanvas({ layout, frame, trail = [] }) {
         <li><span className="swatch" style={{ background: COLORS.obstacle }} /> obstacle</li>
         <li><span className="swatch outline" style={{ borderColor: COLORS.pickup }} /> pickup</li>
         <li><span className="swatch outline" style={{ borderColor: COLORS.dropoff }} /> drop-off</li>
-        <li><span className="swatch" style={{ background: CELL_COLORS[CELL.SHELF] }} /> shelf</li>
-        <li><span className="swatch" style={{ background: CELL_COLORS[CELL.CHARGING] }} /> charger</li>
+        <li><CellSwatch type={CELL.SHELF} size={14} /> racking</li>
+        <li><CellSwatch type={CELL.STORAGE} size={14} /> pick point</li>
+        <li><CellSwatch type={CELL.PACKING} size={14} /> packing</li>
+        <li><CellSwatch type={CELL.CHARGING} size={14} /> charger</li>
       </ul>
     </div>
   );

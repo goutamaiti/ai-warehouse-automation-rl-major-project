@@ -19,26 +19,17 @@ export const CellType = {
   CHARGING: 5,
 };
 
-export const CELL_NAMES = {
-  0: 'Empty',
-  1: 'Wall',
-  2: 'Shelf',
-  3: 'Storage point',
-  4: 'Packing station',
-  5: 'Charging station',
-};
+// CELL_NAMES and CELL_COLORS used to live here. Both are gone: naming and
+// drawing a cell are now one job, done by lib/cellArt, because a colour map
+// could only ever say what tint a cell is - and tint stopped telling these six
+// apart the moment the site went to a single hue. cellArt gives each type a
+// mark instead, and carries the label beside it so the two cannot drift.
 
-// Shared with the editor's palette so a cell looks the same whether you are
-// painting it or watching a replay drive over it. Aisles stay near-black so
-// the things that matter (shelves, stations, robot) carry the contrast.
-export const CELL_COLORS = {
-  [CellType.EMPTY]: '#0d1526',
-  [CellType.WALL]: '#04060b',
-  [CellType.SHELF]: '#3a475e',
-  [CellType.STORAGE]: '#1e40af',
-  [CellType.PACKING]: '#15803d',
-  [CellType.CHARGING]: '#b45309',
-};
+/** Mirrors simulation/warehouse.py::MIN_CUSTOM_SIZE and MAX_CUSTOM_SIZE.
+ *  Exported so the editor's resize clamp reads them from here rather than
+ *  keeping its own third copy of the same two numbers. */
+export const MIN_GRID_SIZE = 5;
+export const MAX_GRID_SIZE = 40;
 
 const BLOCKING = new Set([CellType.WALL, CellType.SHELF]);
 
@@ -208,27 +199,50 @@ export function pointsOfType(grid, cellType) {
  * must belong to one connected component. Returns { valid, error }.
  */
 export function validateGrid(grid) {
-  if (!grid.length || !grid[0]?.length) return { valid: false, error: 'Grid is empty.' };
+  if (!grid.length || !grid[0]?.length) return { valid: false, error: 'the grid is empty.' };
   const height = grid.length;
   const width = grid[0].length;
   if (grid.some((row) => row.length !== width)) {
-    return { valid: false, error: 'Rows have inconsistent width.' };
+    return { valid: false, error: 'the rows have inconsistent width.' };
   }
-  if (height < 5 || width < 5) {
-    return { valid: false, error: 'Grid must be at least 5x5.' };
+  if (height < MIN_GRID_SIZE || width < MIN_GRID_SIZE) {
+    return { valid: false, error: `the grid must be at least ${MIN_GRID_SIZE}x${MIN_GRID_SIZE}.` };
+  }
+  // The two checks below were missing, so this function said "valid" for grids
+  // layout_from_grid refuses - and it claims above to mirror that function.
+  // Measured: a 41x41 grid and grids containing cell values 99, -1 and 2.5 all
+  // passed here, after which the offline sandbox ran them and reported step
+  // counts, while a connected backend rejected the same grid outright. A
+  // pre-check that green-lights a layout the real engine will not accept is
+  // worse than no pre-check.
+  if (height > MAX_GRID_SIZE || width > MAX_GRID_SIZE) {
+    return { valid: false, error: `the grid must be at most ${MAX_GRID_SIZE}x${MAX_GRID_SIZE}.` };
+  }
+  const known = new Set(Object.values(CellType));
+  const unknown = new Set();
+  for (const row of grid) {
+    for (const value of row) {
+      if (!known.has(value)) unknown.add(value);
+    }
+  }
+  if (unknown.size) {
+    return {
+      valid: false,
+      error: `the grid contains unknown cell values: ${[...unknown].sort().join(', ')}.`,
+    };
   }
 
   const storage = pointsOfType(grid, CellType.STORAGE);
   const packing = pointsOfType(grid, CellType.PACKING);
   const charging = pointsOfType(grid, CellType.CHARGING);
-  if (!storage.length) return { valid: false, error: 'Add at least one storage point.' };
-  if (!packing.length) return { valid: false, error: 'Add at least one packing station.' };
-  if (!charging.length) return { valid: false, error: 'Add at least one charging station.' };
+  if (!storage.length) return { valid: false, error: 'add at least one pick point.' };
+  if (!packing.length) return { valid: false, error: 'add at least one packing station.' };
+  if (!charging.length) return { valid: false, error: 'add at least one charger.' };
 
   const points = [...storage, ...packing, ...charging];
   for (const [r, c] of points) {
     if (!isWalkable(grid, r, c)) {
-      return { valid: false, error: `Point of interest at (${r}, ${c}) is not walkable.` };
+      return { valid: false, error: `the point of interest at (${r}, ${c}) is not walkable.` };
     }
   }
 
@@ -237,7 +251,7 @@ export function validateGrid(grid) {
   if (unreachable.length > 0) {
     return {
       valid: false,
-      error: `${unreachable.length} point(s) are unreachable from the packing station - check for a wall sealing off part of the map.`,
+      error: `${unreachable.length} point(s) cannot be reached from the packing station - look for a wall sealing off part of the floor.`,
     };
   }
   return { valid: true, error: null };

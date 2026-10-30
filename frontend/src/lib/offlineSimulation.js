@@ -273,7 +273,9 @@ function step(state, action) {
   }
 
   state.counters.steps += 1;
-  if (state.robot.battery <= 0) {
+  // Same guard as simulation/engine.py: a final delivery made on the step the
+  // battery hits 0 is a success, not a depletion failure.
+  if (state.robot.battery <= 0 && !outcome.allTasksDone) {
     outcome.batteryDepleted = true;
     outcome.events.push('battery_depleted');
     if (state.task.status === 'pending' || state.task.status === 'picked_up') {

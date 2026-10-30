@@ -50,79 +50,72 @@ Metrics restricted to successful episodes report `n/a` when nothing succeeded.
 
 | Scenario | Model | Timesteps | Wall clock |
 |---|---|---|---|
+| `simple_static` | `ppo_simple` | 300,000 | 136.5 s |
 | `default` | `ppo_default` | 300,000 | ~113 s |
+| `complex_static` | `ppo_complex` | 600,000 | 265.8 s |
 | `dynamic_obstacles` | `ppo_dynamic` | 400,000 | ~150 s |
 | `battery_constrained` | `ppo_battery` | 600,000 | ~230 s |
+| `battery_tuned` | `ppo_battery_long_s0` | 2,000,000 | 915.7 s |
 
 PPO hyper-parameters are in `rl_agent/config.py` (8 parallel environments,
 rollout 512 steps each, batch 1024, 10 epochs, lr 3e-4, gamma 0.99, GAE lambda
 0.95, clip 0.2, entropy bonus 0.01, MLP 128x128). They are Stable-Baselines3
 defaults for discrete actions apart from the rollout length and the entropy
-bonus; **no hyper-parameter search was run.**
+bonus; **no hyper-parameter search was run.** Every policy uses training seed 0.
 
 ## Results
 
-All tables: 30 episodes per controller, seeds 1000-1029, `mean ± 95% CI`.
-Source files are named in each heading.
+All tables: 30 episodes per controller, seeds 1000-1029, `mean ± 95% CI`,
+read from the named file in `data/results/`. Steps and path efficiency are
+averaged over successful episodes only. Every committed episode reproduces
+exactly with the current code (`python scripts/verify_single_robot.py`).
 
-### 1. `simple_static` — sanity check
+### 1. `simple_static` - sanity check
 
-`data/results/simple_static_baselines.md`
+`data/results/simple_static_ppo_vs_baselines.md`
 
-| Controller | Episodes | Success | Steps | Path efficiency | Collisions | Reward |
-|---|---|---|---|---|---|---|
-| astar | 30/30 | 1.00 | 19.60 ± 1.84 | 1.00 ± 0.00 | 0.00 | 42.42 ± 1.73 |
-| bfs | 30/30 | 1.00 | 19.60 ± 1.84 | 1.00 ± 0.00 | 0.00 | 42.42 ± 1.73 |
-| random | 2/30 | 0.07 | 114.00 ± 154.84 | 0.25 ± 0.32 | 43.53 ± 5.13 | -55.33 ± 7.54 |
+| Controller | Success | Steps | Path efficiency | Collisions | Reward |
+|---|---|---|---|---|---|
+| ppo | 30/30 | 19.60 ± 1.84 | 1.00 ± 0.00 | 0.00 | 42.42 ± 1.73 |
+| astar | 30/30 | 19.60 ± 1.84 | 1.00 ± 0.00 | 0.00 | 42.42 ± 1.73 |
+| bfs | 30/30 | 19.60 ± 1.84 | 1.00 ± 0.00 | 0.00 | 42.42 ± 1.73 |
 
-Both planners drive shortest paths. A random policy solves 7% of episodes, so
-the task is not trivially solvable by chance — the metric has room to
-discriminate.
-
-### 2. `complex_static` — longer paths
-
-`data/results/complex_static_baselines.md`
-
-| Controller | Episodes | Success | Steps | Path efficiency | Collisions | Reward |
-|---|---|---|---|---|---|---|
-| astar | 30/30 | 1.00 | 44.37 ± 3.18 | 1.00 ± 0.00 | 0.00 | 65.70 ± 2.99 |
-| bfs | 30/30 | 1.00 | 44.37 ± 3.18 | 1.00 ± 0.00 | 0.00 | 65.70 ± 2.99 |
-| random | 0/30 | 0.00 | n/a | n/a | 97.57 ± 14.37 | -127.03 ± 16.29 |
-
-In a 31x21 warehouse random search never succeeds within the step budget.
-
-### 3. `default` — PPO vs classical planning, static
+### 2. `default` - PPO vs classical planning, static
 
 `data/results/default_ppo_vs_baselines.md`
 
-| Controller | Episodes | Success | Steps | Path efficiency | Collisions | Reward |
-|---|---|---|---|---|---|---|
-| ppo | 30/30 | 1.00 | 27.87 ± 2.43 | 1.00 ± 0.00 | 0.00 | 50.19 ± 2.28 |
-| astar | 30/30 | 1.00 | 27.87 ± 2.43 | 1.00 ± 0.00 | 0.00 | 50.19 ± 2.28 |
-| bfs | 30/30 | 1.00 | 27.87 ± 2.43 | 1.00 ± 0.00 | 0.00 | 50.19 ± 2.28 |
-| random | 1/30 | 0.03 | 242.00 | 0.13 | 74.73 ± 6.86 | -99.92 ± 9.08 |
+| Controller | Success | Steps | Path efficiency | Collisions | Reward |
+|---|---|---|---|---|---|
+| ppo | 30/30 | 27.87 ± 2.43 | 1.00 ± 0.00 | 0.00 | 50.19 ± 2.28 |
+| astar | 30/30 | 27.87 ± 2.43 | 1.00 ± 0.00 | 0.00 | 50.19 ± 2.28 |
+| bfs | 30/30 | 27.87 ± 2.43 | 1.00 ± 0.00 | 0.00 | 50.19 ± 2.28 |
 
-**PPO is exactly optimal on all 30 episodes.** Every row for the three
-controllers is identical because all three drove a shortest path in every
-episode.
+### 3. `complex_static` - longer paths, denser shelving
 
-This is the expected ceiling, and it answers the first research question: a
-policy trained from a 5x5 local view plus task/battery scalars can reproduce
-full-information shortest-path planning on a static warehouse. It cannot do
-better, because A* is already optimal here.
+`data/results/complex_static_ppo_vs_baselines.md`
 
-### 4. `dynamic_obstacles` — where the approaches diverge
+| Controller | Success | Steps | Path efficiency | Collisions | Reward |
+|---|---|---|---|---|---|
+| ppo | 30/30 | 44.37 ± 3.18 | 1.00 ± 0.00 | 0.00 | 65.70 ± 2.99 |
+| astar | 30/30 | 44.37 ± 3.18 | 1.00 ± 0.00 | 0.00 | 65.70 ± 2.99 |
+| bfs | 30/30 | 44.37 ± 3.18 | 1.00 ± 0.00 | 0.00 | 65.70 ± 2.99 |
+
+**On all three static floors PPO is exactly optimal on all 30 episodes.** The
+three rows are identical to the last digit because all three controllers drove
+a shortest path in every episode. This is the expected ceiling and answers the
+first research question: a policy trained from a 5x5 local view plus
+task/battery scalars reproduces full-information shortest-path planning on a
+static warehouse. It cannot do better, because A* is already optimal there.
+
+### 4. `dynamic_obstacles` - where the approaches diverge
 
 `data/results/dynamic_obstacles_ppo_vs_baselines.md`
 
-| Controller | Episodes | Success | Steps | Path length | Path efficiency | Collisions | Reward |
-|---|---|---|---|---|---|---|---|
-| ppo | 30/30 | 1.00 | **28.93 ± 2.55** | 28.47 ± 2.45 | 0.98 ± 0.01 | **0.47 ± 0.34** | 49.67 ± 2.22 |
-| astar | 30/30 | 1.00 | 30.50 ± 3.12 | 30.33 ± 3.11 | 0.93 ± 0.03 | 0.00 ± 0.00 | 50.02 ± 2.26 |
-| bfs | 30/30 | 1.00 | 31.57 ± 3.59 | 31.33 ± 3.58 | 0.91 ± 0.03 | 0.00 ± 0.00 | 49.95 ± 2.23 |
-| random | 3/30 | 0.10 | 404.67 ± 101.59 | 226.33 ± 52.32 | 0.11 ± 0.01 | 85.17 ± 6.64 | -110.01 ± 8.70 |
-
-The interesting result of the project:
+| Controller | Success | Steps | Path efficiency | Collisions | Reward |
+|---|---|---|---|---|---|
+| ppo | 30/30 | **28.93 ± 2.55** | **0.98 ± 0.01** | 0.47 ± 0.34 | 49.67 ± 2.22 |
+| astar | 30/30 | 30.50 ± 3.12 | 0.93 ± 0.03 | **0.00** | 50.02 ± 2.26 |
+| bfs | 30/30 | 31.57 ± 3.59 | 0.91 ± 0.03 | **0.00** | 49.95 ± 2.23 |
 
 * PPO completes deliveries in **1.6 fewer steps** than A* (28.93 vs 30.50) and
   stays closer to the shortest possible path (efficiency 0.98 vs 0.93).
@@ -133,72 +126,259 @@ The interesting result of the project:
   occasionally bumps into an obstacle that moved into its path.
 * Total reward is statistically indistinguishable (49.67 vs 50.02): the time
   PPO saves is almost exactly cancelled by the collision penalty. That is the
-  reward function working as designed, not a coincidence.
+  reward function pricing the trade-off as designed.
 
-Note that A* also beats BFS here (30.50 vs 31.57 steps) even though both return
-shortest paths: they break ties differently, and under replanning a different
-tie-break leads into a different amount of traffic.
+A* also beats BFS here (30.50 vs 31.57 steps) even though both return shortest
+paths: they break ties differently, and under replanning a different tie-break
+leads into a different amount of traffic.
 
-### 5. `battery_constrained` — the limitation
+### 5. `battery_constrained` - the failure
 
 `data/results/battery_constrained_ppo_vs_baselines.md`
 
-| Controller | Episodes | Success | Steps | Charging events | Energy used | Reward |
-|---|---|---|---|---|---|---|
-| ppo | **0/30** | 0.00 | n/a | 0.00 ± 0.00 | 45.00 ± 0.00 | 33.13 ± 3.44 |
-| astar | 30/30 | 1.00 | 70.50 ± 4.63 | 9.17 ± 0.94 | 94.22 ± 6.02 | 97.50 ± 3.07 |
-| bfs | 30/30 | 1.00 | 70.50 ± 4.63 | 9.17 ± 0.94 | 94.22 ± 6.02 | 97.50 ± 3.07 |
-| random | 0/30 | 0.00 | n/a | 6.27 ± 2.54 | 90.96 ± 14.50 | -30.68 ± 5.20 |
+| Controller | Success | Steps | Charging steps | Energy used | Reward |
+|---|---|---|---|---|---|
+| ppo | **0/30** | n/a | 0.00 ± 0.00 | 45.00 ± 0.00 | 33.13 ± 3.44 |
+| astar | 30/30 | 70.50 ± 4.63 | 9.17 ± 0.94 | 94.22 ± 6.02 | 97.50 ± 3.07 |
+| bfs | 30/30 | 70.50 ± 4.63 | 9.17 ± 0.94 | 94.22 ± 6.02 | 97.50 ± 3.07 |
 
-PPO trained for 600,000 steps on this scenario and **never learned to charge**:
-zero charging events, and an energy consumption of exactly 45.00 ± 0.00 - its
-entire starting charge - in every single episode. It delivers the first package
-(hence the positive reward of 33.13) and then runs the battery flat before
-finishing the second.
+Two tasks, 45% starting charge, 1.5% per move. PPO trained for 600,000 steps
+**never charged**: zero charging steps, and exactly 45.00 ± 0.00 energy used -
+its entire starting charge - in every episode. Every episode ended in
+`battery_depleted`.
 
-The battery-aware A* controller succeeds 30/30 with an average of 9.17 charging
-steps per episode.
+The diagnosis is in the reward, not the learner. Every one of those failing
+episodes still scored **+33** on average: the -10 depletion penalty was cheaper
+than the credit a policy could bank first (one pickup +5, one delivery +20, and
+roughly 27 of accumulated progress shaping). Under that reward, delivering one
+package and dying is a correct maximisation, not a failure to learn.
 
-Why this is being reported rather than tuned away: it is a real, reproducible
-limitation, and it identifies the next piece of work precisely. Plausible
-causes, in the order worth testing:
+### 6. `battery_tuned` - the fix
 
-1. **No positive signal for charging.** Charging currently earns nothing; it is
-   only worth doing because it avoids a later penalty ~40 steps away. That is a
-   long credit-assignment gap for a 10-value discount horizon of gamma = 0.99.
-2. **The depletion penalty is too cheap.** At -10 it is smaller than the
-   delivery reward of +20, so a policy that delivers one package and dies still
-   scores positively - which is exactly the behaviour observed.
-3. **Two tasks per episode** double the horizon compared to every scenario PPO
-   solved.
-4. Single training seed, no hyper-parameter search, 600k steps.
+`data/results/battery_tuned_ppo_vs_baselines.md`
 
-A reward-shaping term based on "reachable charge margin", or simply raising
-`battery_depleted_penalty` above `delivery_reward`, is the first experiment to
-run. **No such experiment has been run yet, so no claim is made about whether it
-would work.**
+The same world as `battery_constrained`; only the reward and training budget
+change:
+
+| Change | Value | Reason |
+|---|---|---|
+| `battery_depleted_penalty` | 10 -> **60** | above everything an episode can bank before dying, so dying never pays |
+| `battery_reserve_weight` | 0 -> 10 (safety 2.0) | potential-based term: zero while a charger is comfortably in reach, negative as the margin runs out |
+| `wait_penalty` | 0.1 -> 0.5 | stops camping on a charger from being the safe option |
+| training budget | 600k -> **2M** steps | the corrected reward was given a longer training run |
+
+| Controller | Success | Steps | Path efficiency | Charging steps | Reward |
+|---|---|---|---|---|---|
+| ppo | **27/30** | 87.89 ± 4.90 | 0.73 ± 0.02 | 15.43 ± 0.90 | 82.66 ± 9.88 |
+| astar | 30/30 | 70.50 ± 4.63 | 0.91 ± 0.01 | 9.17 ± 0.94 | 94.21 ± 2.87 |
+| bfs | 30/30 | 70.50 ± 4.63 | 0.91 ± 0.01 | 9.17 ± 0.94 | 94.21 ± 2.87 |
+
+PPO now charges and delivers both packages in 27/30 episodes (3 still end in
+`battery_depleted`). It is **not** a win over the planner: it charges more than
+it needs (15.4 vs 9.2 steps), drives longer routes (0.73 vs 0.91 path
+efficiency) and is slower (87.9 vs 70.5 steps). The claim is that the battery
+task became learnable once the reward stopped paying for death, not that RL
+beats a battery-aware planner on it.
+
+## Across training seeds
+
+Every result above uses one trained policy (training seed 0). Each policy was
+retrained with seeds 1 and 2 - the identical command, only `--seed` changed -
+and evaluated on the same 30 episodes. Source: `data/seeds/summary.md`,
+produced by `python scripts/run_seed_study.py`, which writes only to
+`data/seeds/` and checks that `data/results` and `data/episodes` are unchanged.
+
+| Scenario | Seed 0 (published) | Seed 1 | Seed 2 |
+|---|---|---|---|
+| `simple_static` | 30/30, 19.60 steps | 30/30, 19.60 | **28/30**, 27.64 |
+| `default` | 30/30, 27.87 | 30/30, 27.87 | 30/30, 27.87 |
+| `complex_static` | 30/30, 44.37 | 30/30, 44.37 | 30/30, 44.37 |
+| `dynamic_obstacles` | 30/30, 28.93 steps, 0.47 collisions | 30/30, 29.37, 0.77 | 30/30, 29.07, 0.53 |
+| `battery_constrained` (original reward) | 0/30 | 0/30 | 6/30 |
+| `battery_tuned` (corrected reward) | 27/30 | 26/30 | **19/30** |
+
+What holds on every seed:
+
+* PPO is identical to A* on `default` and `complex_static` (every episode).
+* On `dynamic_obstacles` PPO is faster than A* (28.93 / 29.37 / 29.07 vs 30.50
+  steps) and collides on every seed (0.47 / 0.77 / 0.53 per episode). The
+  trade-off is a property of the method, not of one run.
+* The original battery reward fails: 0, 0 and 6 of 30.
+
+What does not:
+
+* `simple_static` seed 2 delivers 28/30 at path efficiency 0.78; in the two
+  failures the robot wanders for the full 200 steps and runs flat. So "exactly
+  optimal on static floors" is true for 8 of the 9 static runs, not all 9.
+* `battery_tuned` gives 27, 26 and 19 of 30. Seed 1's four failures deliver
+  one package and then run flat. Seed 2's ten failures are the camping local
+  optimum: the robot sits on a charger for all 600 steps (600 charging steps,
+  nothing delivered) and times out. The corrected reward delivers in 72 of 90
+  episodes against 6 of 90 under the original reward - the fix is real - but
+  how well it works depends on the seed.
+
+## Reward-weight ablation
+
+Which reward terms actually matter? Each arm retrains PPO on
+`dynamic_obstacles` - the scenario where every term is active - with exactly
+one term switched off (`configs/ablation/no_*.yaml`; each file differs from the
+scenario in that one weight). Same world, 400k steps, hyper-parameters and
+training seeds 0/1/2; evaluated on episodes 1000-1029. Arms are compared on
+task metrics only, never on reward, because each arm is scored by a different
+reward function. Source: `data/ablation/summary.md`, produced by
+`python scripts/run_reward_studies.py --study ablation`.
+
+| Switched off | Success /30 (seeds 0/1/2) | Mean steps | Collisions / episode |
+|---|---|---|---|
+| nothing (full reward) | 30 / 30 / 30 | 28.93 / 29.37 / 29.07 | 0.47 / 0.77 / 0.53 |
+| progress shaping | **19 / 7 / 19** | 81.42 / 204.43 / 122.42 | 0.33 / 0.00 / 0.67 |
+| collision penalty | 30 / 30 / 30 | 30.07 / 29.03 / 29.03 | **1.93 / 1.10 / 0.97** |
+| energy cost | 30 / 30 / 30 | 29.10 / 29.90 / 29.17 | 0.50 / 0.63 / 0.43 |
+| step cost | 30 / 30 / 30 | 29.00 / 29.07 / 29.33 | 0.53 / 0.60 / 0.47 |
+| waiting penalty | 30 / 30 / 30 | 29.27 / 29.47 / 28.93 | 0.80 / 0.47 / 0.60 |
+
+* **Progress shaping carries the learning.** Without it PPO succeeds in 45 of
+  90 episodes instead of 90 of 90, and the successful ones take 3-7x as many
+  steps (path efficiency 0.19-0.57 against 0.98). The sparse pickup and
+  delivery rewards alone are not enough within 400k steps.
+* **The collision penalty is what keeps collisions down.** Removing it leaves
+  success untouched but raises collisions from 0.59 to 1.33 per episode
+  (averaged over the three seeds), about 2.3x.
+* **Energy, step and waiting terms show no measurable effect here.** Success,
+  steps and collisions stay within the spread between seeds. On this scenario
+  they are redundant with the progress term, which already rewards short
+  paths. This does not show they are useless everywhere: the waiting penalty
+  was raised to stop charger camping on the battery scenario, which this
+  ablation does not test.
+
+## Making the battery policy reliable
+
+The seed study left `battery_tuned` at 27, 26 and 19 of 30. The training logs
+(`data/logs/*/eval/evaluations.npz`) show why: every seed reached **100%
+evaluation success at some checkpoint**, then swung (seed 1: 100% at 1.4M,
+20% at 1.6M, 100% at 1.8M). The policy was learned; the run simply ended on a
+worse moment for some seeds. Two remedies were measured on the same 30 test
+episodes. Source: `data/stability/summary.md`
+(`python scripts/run_reward_studies.py --study battery-lr`).
+
+| Setting (2M steps, seeds 0/1/2) | Success /30 | Total | Outcomes of the failures |
+|---|---|---|---|
+| learning rate 3e-4, final policy (published) | 27 / 26 / 19 | 72/90 | 8 ran flat; 10 camped on a charger until timeout |
+| learning rate 3e-4, **best checkpoint** | **30 / 27 / 25** | **82/90** | 8 ran flat; no camping |
+| learning rate 1e-4, final policy | 6 / 30 / 0 | 36/90 | 24 ran flat; 30 timed out without delivering |
+| learning rate 1e-4, best checkpoint | 5 / 30 / 0 | 35/90 | 25 ran flat; 30 timed out without delivering |
+
+* **Keeping the best checkpoint works.** The checkpoint is chosen by the
+  training run's own evaluation environment, whose episodes are drawn at random
+  and are not the test episodes 1000-1029, so the choice does not peek at the
+  test set. It lifts the total from 72 to 82 of 90, brings seed 0 to 30/30 -
+  equal to A* - and removes camping on every seed.
+* **A lower learning rate made it worse.** At 1e-4 learning is slower, and
+  2M steps is not enough: seed 2 never succeeded in a single evaluation, seed 0
+  peaked at 50%. Seed 1, the one seed that did learn (from about 1.4M steps),
+  then stayed at 95-100% - so a lower rate may be steadier once learned, but
+  at this budget it costs far more than it gains. The hypothesis is rejected
+  for this budget; the recommended setting is 3e-4 with best-checkpoint
+  selection.
+* **Still below the planner.** A* and BFS deliver 30/30 on every seed.
+
+## Multi-robot Live floor (demonstration, not a measured result)
+
+The Live floor runs several robots on a shared task queue with the classical
+battery-aware controller. No learned policy drives it, and its numbers depend
+on how long a page is left running, so it is not part of the comparison above.
+Its correctness is checked instead: `python scripts/verify_live_floor.py`
+drives the fleet API exactly as the browser does across 8 scenarios (21x15
+floor with idle gaps and bursts, the 46x30 robotic-fulfilment floor on four
+seeds, battery rules, moving traffic) and proves, against an independent BFS,
+that every product is delivered by the nearest idle robot standing on the
+pickup and drop-off cells, with no two robots ever on one cell, no deaths and
+no deadlocks. Current result: 8/8 scenarios, 112/112 products.
+
+A wider stress sweep, `python scripts/stress_live_floor.py` (and `... rmfs`),
+runs 3, 4, 5, 6 and 8 robots against a burst of products, steady arrivals and
+long idle gaps on four seeds - 60 runs per floor. It found that the original
+controller deadlocked or left a product undelivered in **14 of 60** runs on the
+21x15 floor, in three distinct ways: idle robots parked in a wall around the
+charger and station corner and never moved for anyone; a robot bouncing on
+the "enough charge to finish?" threshold occupied the charger while others ran
+flat; and robots queued to enter a charger blocked a full one trying to leave
+it. Three rules fixed them - an idle robot with charge to spare (or one
+head-on with the robot it blocks) steps aside; a robot below the low-battery
+threshold is not given new work; and a robot that decides to charge charges to
+90% before resuming. Now: **60/60 on the 21x15 floor and 60/60 on the 46x30
+floor.**
+
+### Task priorities
+
+A product can be queued as **normal** or **urgent** (`priority` on
+`POST /api/fleet/task`; a Normal/Urgent choice on the Live-floor card). Dispatch
+serves every waiting urgent request before any normal one, first come first
+served within each level. Priority decides who is served next; it never takes a
+package off a robot already carrying one. The card reports mean turnaround per
+priority, and a waiting urgent product is drawn with a ring around its marker.
+
+Measured on the 21x15 floor, 4 robots, a backlog of 20 normal products, then 5
+more products added 10 ticks later - once marked urgent, once marked normal,
+same products, seeds 0-4:
+
+| The 5 late products marked | Their mean turnaround | The 20-product backlog's mean turnaround |
+|---|---|---|
+| urgent | **58.3 ticks** | 123.5 ticks |
+| normal | 187.1 ticks | **87.2 ticks** |
+
+Urgent products arrive about 3.2x faster; the backlog waits about 42% longer
+to pay for it. Priority moves waiting time, it does not create capacity. All 25
+products were delivered on every seed.
+
+One-way lanes on the 46x30 floor, 12 robots, 200-product backlog, 400 ticks,
+seeds 1000-1004:
+
+| Floor | Robot-on-robot refusals (mean) | Products delivered (mean) |
+|---|---|---|
+| one-way lanes | **17.6** | 50.6 |
+| two-way | 102.4 | **52.4** |
+
+One-way lanes cut robot-on-robot blocking about 5.8x, on every seed, at the
+cost of about 3% throughput from the forced detours. These figures are for the
+current fleet controller; they replace two earlier ones. A hundredfold reduction
+was measured while the controller had a charging loop, whose thousands of
+refusals were mostly looping robots. A 2.5x reduction (15.0 vs 37.8 refusals,
+45.8 vs 49.2 delivered) was measured after that fix but before the three
+stress-sweep rules above, which changed how robots move around each other.
+Each time the controller changed, the measurement was rerun rather than kept.
 
 ## Summary against the research question
 
 | Question | Evidence |
 |---|---|
-| Can PPO match classical planning on static warehouse navigation? | Yes - identical to optimal A* on 30/30 episodes (`default`). |
+| Can PPO match classical planning on static warehouse navigation? | Yes - identical to optimal A* on 30/30 episodes on all three static floors. |
 | Does RL help when the warehouse is dynamic? | It is faster (28.93 vs 30.50 steps) but collides 0.47 times per episode where A* never does. No net reward advantage. |
-| Does RL handle battery constraints? | Not with the current reward and budget: 0/30 vs 30/30 for A*. |
+| Does RL handle battery constraints? | Not under the original reward (0/30: dying paid; 6 of 90 across three seeds). After correcting the depletion penalty and training for 2M steps, 27/30 - and 72 of 90 across three seeds (27, 26, 19). Keeping the best checkpoint raises it to 82 of 90 (30, 27, 25) and removes camping. Learnable, seed-dependent, and still below the planner's 30/30. |
+| Which reward terms matter? | Progress shaping (45 of 90 without it, against 90 of 90) and the collision penalty (2.3x more collisions without it). Energy, step and waiting terms had no measurable effect on `dynamic_obstacles`. |
 | Is the comparison fair? | It is biased *against* RL: the planners get the full map and every obstacle position; PPO gets a 5x5 patch. |
 
 ## Threats to validity
 
-1. **One training seed per scenario.** Each policy was trained once (seed 0).
-   RL results vary between training seeds; a rigorous claim needs 3-5 seeds per
-   configuration. Treat differences of a fraction of a step as noise.
-2. **Reward weights were not tuned.** The weights are reasoned starting values.
-   A different weighting could change PPO's behaviour substantially.
-3. **The obstacle model is benign.** Obstacles never step onto the robot, so
-   collisions can only be caused by the controller. A harsher model (obstacles
-   that do not yield) would change the collision metric for every controller.
-4. **A* is given an advantage.** Full map, full obstacle visibility, replanning
+1. **Three training seeds per scenario.** The headline tables use seed 0;
+   seeds 1 and 2 are reported above. Three seeds show which findings are
+   robust and which vary, but are too few for formal significance tests.
+2. **Reward weights were not searched.** The weights are reasoned starting
+   values; only the battery depletion penalty was changed, and it was derived
+   from the measured reward of the failing policy rather than tuned. The
+   ablation switches terms off one at a time on one scenario; it does not
+   search values, and it does not test interactions between terms.
+3. **Shaping is policy-invariant only for the undiscounted return.** Progress
+   shaping uses gamma 1.0 while PPO optimises a 0.99-discounted return, and the
+   potential is not zeroed at a failed terminal state. Ng et al.'s guarantee
+   therefore holds exactly only for the undiscounted objective; under the
+   discounted one the shaping can favour some trajectories over others.
+   Correcting it requires retraining every policy.
+4. **The obstacle model is benign.** Obstacles never step onto the robot, so
+   collisions can only be caused by the controller. A harsher model would
+   change the collision metric for every controller.
+5. **A* is given an advantage.** Full map, full obstacle visibility, replanning
    every single step. This is the strongest reasonable classical baseline, so
    the comparison is conservative with respect to the RL side.
-5. **Single robot.** Nothing here says anything about congestion or deadlocks
-   between multiple robots.
+6. **The multi-robot floor is classical and unmeasured as a comparison.** It
+   says nothing about multi-agent RL.

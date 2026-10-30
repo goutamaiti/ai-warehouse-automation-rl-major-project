@@ -2,18 +2,41 @@ import { useEffect, useState } from 'react';
 
 import DashboardPage from './components/DashboardPage';
 import EditorPage from './components/EditorPage';
+import FleetPage from './components/FleetPage';
 import InfoPage from './components/InfoPage';
 import { checkBackend } from './lib/api';
 
 const TABS = [
   { id: 'dashboard', label: 'Dashboard' },
+  { id: 'fleet', label: 'Live floor' },
   { id: 'editor', label: 'Editor' },
   { id: 'info', label: 'Info' },
 ];
 
+const THEME_KEY = 'warehouse-rl-theme';
+
+function savedTheme() {
+  try {
+    return localStorage.getItem(THEME_KEY) === 'dark' ? 'dark' : 'light';
+  } catch {
+    return 'light';
+  }
+}
+
 export default function App() {
   const [tab, setTab] = useState('dashboard');
   const [health, setHealth] = useState(null);
+  // Light stays the default; dark is one click for a projector that washes out.
+  const [theme, setTheme] = useState(savedTheme);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    try {
+      localStorage.setItem(THEME_KEY, theme);
+    } catch {
+      // Private window or blocked storage: the toggle still works this visit.
+    }
+  }, [theme]);
 
   useEffect(() => {
     let cancelled = false;
@@ -32,9 +55,19 @@ export default function App() {
             AI-based warehouse automation: reinforcement learning for intelligent robot navigation
           </p>
         </div>
-        <span className={`badge ${health ? 'ok' : 'neutral'}`}>
-          {health ? 'Backend connected' : 'Replaying recorded episodes'}
-        </span>
+        <div className="header-right">
+          <button
+            type="button"
+            className="theme-toggle"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            aria-pressed={theme === 'dark'}
+          >
+            {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+          </button>
+          <span className={`badge ${health ? 'ok' : 'neutral'}`}>
+            {health ? 'Backend connected' : 'Replaying recorded episodes'}
+          </span>
+        </div>
       </header>
 
       <nav className="tab-bar">
@@ -51,6 +84,7 @@ export default function App() {
       </nav>
 
       {tab === 'dashboard' && <DashboardPage health={health} />}
+      {tab === 'fleet' && <FleetPage />}
       {tab === 'editor' && <EditorPage backendHealth={health} />}
       {tab === 'info' && <InfoPage />}
     </div>

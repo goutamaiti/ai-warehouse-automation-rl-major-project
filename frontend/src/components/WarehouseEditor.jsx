@@ -1,17 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { CELL_COLORS, CELL_NAMES, CellType, validateGrid } from '../lib/grid';
+import { CellType, MAX_GRID_SIZE, MIN_GRID_SIZE, validateGrid } from '../lib/grid';
+import { CELL_LEGEND, drawFloor } from '../lib/cellArt';
+import CellSwatch from './CellSwatch';
 
-const MIN_SIZE = 5;
-const MAX_SIZE = 40; // mirrors simulation/warehouse.py::MAX_CUSTOM_SIZE
-
-const PALETTE = [
-  { type: CellType.EMPTY, label: 'Empty', hint: 'walkable aisle' },
-  { type: CellType.WALL, label: 'Wall', hint: 'blocks movement' },
-  { type: CellType.SHELF, label: 'Shelf', hint: 'blocks movement' },
-  { type: CellType.STORAGE, label: 'Storage', hint: 'package pickup point' },
-  { type: CellType.PACKING, label: 'Packing', hint: 'delivery station' },
-  { type: CellType.CHARGING, label: 'Charging', hint: 'robot starts here' },
-];
+// These were a third copy of simulation/warehouse.py's MIN_/MAX_CUSTOM_SIZE.
+// They now come from lib/grid, which is the module that has to agree with the
+// Python limits anyway because it is what validates against them.
+const MIN_SIZE = MIN_GRID_SIZE;
+const MAX_SIZE = MAX_GRID_SIZE;
 
 function blankGrid(height, width) {
   const grid = Array.from({ length: height }, (_, r) =>
@@ -48,6 +44,21 @@ export default function WarehouseEditor({ grid, onChange }) {
 
   const validation = useMemo(() => validateGrid(grid), [grid]);
 
+  /** What has actually been painted. A layout can be invalid simply because
+   *  one of the three required kinds of cell is missing, and the count says so
+   *  before the reader has to read an error message. */
+  const counts = useMemo(() => {
+    const tally = { storage: 0, packing: 0, charging: 0 };
+    grid.forEach((row) =>
+      row.forEach((value) => {
+        if (value === CellType.STORAGE) tally.storage += 1;
+        else if (value === CellType.PACKING) tally.packing += 1;
+        else if (value === CellType.CHARGING) tally.charging += 1;
+      })
+    );
+    return tally;
+  }, [grid]);
+
   useEffect(() => {
     setDims({ height: grid.length, width: grid[0].length });
   }, [grid]);
@@ -68,14 +79,9 @@ export default function WarehouseEditor({ grid, onChange }) {
     const ctx = canvas.getContext('2d');
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
     ctx.clearRect(0, 0, pxWidth, pxHeight);
-    for (let r = 0; r < height; r += 1) {
-      for (let c = 0; c < width; c += 1) {
-        ctx.fillStyle = CELL_COLORS[grid[r][c]] ?? CELL_COLORS[CellType.EMPTY];
-        ctx.fillRect(c * CELL_PX, r * CELL_PX, CELL_PX, CELL_PX);
-        ctx.strokeStyle = 'rgba(148, 163, 184, 0.10)';
-        ctx.strokeRect(c * CELL_PX + 0.5, r * CELL_PX + 0.5, CELL_PX - 1, CELL_PX - 1);
-      }
-    }
+    // The same renderer the replay canvas uses, so a warehouse looks the same
+    // while you are drawing it as it does when a robot runs on it.
+    drawFloor(ctx, { grid, width, height }, CELL_PX);
   }, [grid]);
 
   function cellAt(event) {
@@ -124,16 +130,15 @@ export default function WarehouseEditor({ grid, onChange }) {
     <div className="warehouse-editor">
       <div className="editor-toolbar">
         <div className="palette">
-          {PALETTE.map((item) => (
+          {CELL_LEGEND.map((item) => (
             <button
               key={item.type}
               type="button"
               className={`palette-button ${tool === item.type ? 'selected' : ''}`}
-              style={{ '--swatch': CELL_COLORS[item.type] }}
               onClick={() => setTool(item.type)}
               title={item.hint}
             >
-              <span className="swatch" />
+              <CellSwatch type={item.type} />
               {item.label}
             </button>
           ))}
@@ -175,15 +180,19 @@ export default function WarehouseEditor({ grid, onChange }) {
         />
       </div>
 
+      {/* The verdict sits directly under the grid, not under the run controls:
+          it is feedback on the thing you are currently touching, and it is the
+          only reason the Run button is ever disabled. */}
       <p className={`validation-status ${validation.valid ? 'ok' : 'fail'}`}>
+        <b>{validation.valid ? 'Valid layout' : 'Not runnable yet'}</b>
         {validation.valid
-          ? 'Layout is valid: every storage point, packing station and charging station can reach each other.'
-          : validation.error}
+          ? ' — every pick point, packing station and charger can reach each other.'
+          : ` — ${validation.error}`}
       </p>
       <p className="muted small">
-        {Object.entries(CELL_NAMES).map(([value, name]) => `${name}`).join(' · ')} — click a
-        palette tool, then click or drag on the grid to paint. The robot always starts on the
-        charging station nearest the top-left corner.
+        Pick a brush, then click or drag on the grid. {counts.storage} pick{' '}
+        {counts.storage === 1 ? 'point' : 'points'}, {counts.packing} packing, {counts.charging}{' '}
+        charging. The robot always starts on the charger nearest the top-left corner.
       </p>
     </div>
   );

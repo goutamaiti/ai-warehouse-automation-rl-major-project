@@ -1,0 +1,562 @@
+/*
+ * Live floor styling, on the site-wide flat monochrome ramp.
+ *
+ * Two choices worth stating, because each answers something about this project
+ * rather than being decoration:
+ *
+ *  - Tabular monospace figures for every number. Live values tick several
+ *    times a second; proportional digits make a column jitter, and a metric
+ *    that dances is a metric nobody reads.
+ *  - Cell and robot states are told apart by tint and by fill-versus-outline,
+ *    never by hue, so the map reads the same here, in the recorded replays and
+ *    in the editor. There is no second colour anywhere on the site.
+ */
+
+/* The fleet page now inherits the site-wide ramp; these aliases only map the
+   old local names onto it so the rules below did not all need rewriting. */
+.floor {
+  --paper: var(--s0);
+  --paper-raised: var(--s0);
+  --ink: var(--s6);
+  --ink-soft: var(--s4);
+  --ink-faint: var(--s4);
+  --rule: var(--s2);
+  --accent: var(--s6);
+  --accent-warm: var(--s5);
+  --accent-cool: var(--s5);
+  --danger: var(--s6);
+  background: var(--paper);
+  color: var(--ink);
+  /* No negative bleed: it existed to escape the old dark page background, and
+     with one shared background it only overflowed the page by 4px. */
+  margin: 0;
+  padding: 1.5rem 0 3rem;
+  min-height: 70vh;
+}
+
+/* ---------------------------------------------------------------- header */
+
+.floor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
+}
+
+.floor-header h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.floor-sub {
+  margin: 0;
+  color: var(--ink-soft);
+  max-width: 46ch;
+  line-height: 1.5;
+}
+
+/* The honesty label. Quiet, but never absent. */
+.floor-badge {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent-warm);
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  padding: 0.3rem 0.55rem;
+  white-space: nowrap;
+}
+
+/* -------------------------------------------------------------- controls */
+
+.floor-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.floor-controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+
+.floor select,
+.floor input[type='number'] {
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  color: var(--ink);
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 0.45rem 0.6rem;
+  min-width: 5.5rem;
+}
+
+.floor select:focus-visible,
+.floor input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.floor button {
+  font-family: inherit;
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: var(--ink);
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 0.5rem 0.9rem;
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.floor button:hover:not(:disabled) {
+  border-color: var(--ink-faint);
+}
+
+.floor button.primary {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.floor button.primary:hover:not(:disabled) {
+  background: #000;
+}
+
+/* In dark mode the primary button is light, so "darker on hover" would be a
+   near-black hole; brighten instead. */
+:root[data-theme='dark'] .floor button.primary:hover:not(:disabled) {
+  background: #ffffff;
+}
+
+:root[data-theme='dark'] .floor .chip-active {
+  color: var(--paper);
+}
+
+.floor button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.floor-error {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  color: var(--danger);
+  background: rgba(190, 18, 60, 0.06);
+  border-left: 2px solid var(--danger);
+  padding: 0.65rem 0.85rem;
+  margin: 0 0 1.25rem;
+}
+
+/* ------------------------------------------------------------------ body */
+
+.floor-body {
+  display: grid;
+  /* The realistic floor is 46 cells wide. At the old fixed 21rem side column
+     the canvas got about 525px, which is 11px per cell - below the 15px the
+     ruler labels and robot ids need to stay readable on a projector. The side
+     column now yields first. */
+  grid-template-columns: minmax(0, 1fr) clamp(15rem, 22vw, 19rem);
+  gap: 1.75rem;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .floor-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.floor-canvas {
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 0.75rem;
+  display: flex;
+  justify-content: center;
+}
+
+.floor-canvas canvas {
+  display: block;
+  image-rendering: crisp-edges;
+}
+
+.floor-legend {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 0.85rem 0 0;
+  padding: 0;
+  font-size: 0.76rem;
+  color: var(--ink-soft);
+}
+
+.floor-legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.floor-legend .dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+}
+
+/* ----------------------------------------------------------------- cards */
+
+.floor-side {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.floor .card {
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 1.15rem 1.25rem 1.25rem;
+}
+
+.floor .card h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.card-hint {
+  margin: 0 0 0.9rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.card-note {
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  color: var(--ink-soft);
+  margin: 0.85rem 0 0;
+  line-height: 1.5;
+}
+
+.coord-row {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr 1fr;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.6rem;
+}
+
+.coord-label {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+
+.coord-row input {
+  min-width: 0;
+  width: 100%;
+}
+
+.floor .card .primary {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.card-choices {
+  margin-top: 0.9rem;
+  border-top: 1px solid var(--rule);
+  padding-top: 0.75rem;
+}
+
+.card-choices summary {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.mono-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  align-items: center;
+  margin: 0.6rem 0 0;
+  font-size: 0.74rem;
+}
+
+.mono-list strong {
+  width: 100%;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.chip {
+  font-family: var(--mono);
+  font-size: 0.72rem !important;
+  padding: 0.2rem 0.4rem !important;
+}
+
+/* ----------------------------------------------------------------- stats */
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem 1rem;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.stat-value {
+  /* Tabular figures: live numbers tick several times a second, and
+     proportional digits would make the column jitter. */
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.3rem;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.stat-hint {
+  font-size: 0.7rem;
+  color: var(--ink-faint);
+}
+
+.assign-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  line-height: 1.7;
+}
+
+.assign-list .muted {
+  color: var(--ink-faint);
+}
+
+/* ----------------------------------------------------------------- queue */
+
+.queue {
+  margin-top: 1.25rem;
+}
+
+.queue h3 {
+  margin: 0 0 0.6rem;
+  font-size: 0.95rem;
+}
+
+.queue-count {
+  margin-left: 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  font-weight: 400;
+  color: var(--ink-soft);
+}
+
+.queue-empty {
+  margin: 1.25rem 0 0;
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+}
+
+/* A long session queues dozens of products; the list scrolls inside its own
+   box so the map above never moves. */
+.queue-scroll {
+  max-height: 320px;
+  overflow: auto;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+}
+
+.queue-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.queue-table th {
+  position: sticky;
+  top: 0;
+  background: var(--paper-raised);
+  text-align: left;
+  font-weight: 600;
+  color: var(--ink-soft);
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.queue-table td {
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.queue-table td.queue-status {
+  white-space: normal;
+}
+
+.queue-mark {
+  width: 1.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.queue-table tr.is-done td {
+  color: var(--ink-faint);
+}
+
+.queue-table tr.is-done .queue-mark {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.queue-urgent {
+  margin-left: 0.4rem;
+  padding: 0 0.3rem;
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ----------------------------------------------------------------- empty */
+
+.floor-empty {
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 2.5rem;
+  text-align: center;
+}
+
+.floor-empty h2 {
+  margin: 0 0 0.6rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.floor-empty p {
+  margin: 0 auto;
+  max-width: 52ch;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+
+.floor-empty code {
+  font-family: var(--mono);
+  font-size: 0.85em;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 0.1rem 0.3rem;
+}
+
+/* --------------------------------------------- coordinate choice chips */
+
+/* These were behind a <details>. The coordinates are the one thing a person
+   cannot guess from the screen, so hiding them made the card unusable - the
+   valid cells are now always on show, and clicking one fills the inputs. */
+.card-choices {
+  margin-top: 1rem;
+  border-top: 1px solid var(--rule);
+  padding-top: 0.85rem;
+}
+
+.choice-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  align-items: center;
+  margin: 0 0 0.75rem;
+}
+
+.choice-group:last-child {
+  margin-bottom: 0;
+}
+
+.choice-group strong {
+  width: 100%;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.15rem;
+}
+
+.floor .chip {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.72rem;
+  padding: 0.22rem 0.45rem;
+  line-height: 1.2;
+}
+
+.floor .chip-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* ------------------------------------------------------- width behaviour */
+
+/* The coordinate inputs carried a 5.5rem min-width from the shared control
+   rule, which stopped the product card shrinking with its column and pushed
+   the page 41px wide. In a three-column grid they must be allowed to shrink. */
+.coord-row input[type='number'] {
+  min-width: 0;
+  width: 100%;
+}
+
+/* The realistic floor is 46 cells wide and needs about 710px to keep 15px
+   cells, which is what the ruler labels and robot ids need to stay readable on
+   a projector. Below a point where that cannot coexist with a side column,
+   the cards go under the canvas and the floor takes the full width - at a
+   1024px viewport that is 21px cells instead of 14. */
+@media (max-width: 1200px) {
+  .floor-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .floor-side {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1rem;
+    align-items: start;
+  }
+}
