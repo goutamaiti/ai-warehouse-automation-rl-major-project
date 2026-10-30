@@ -57,6 +57,8 @@ and verified; `[ ]` means not done, with the reason. Numbers come from
 - [x] React portal, four tabs, flat monochrome design
 - [x] Dashboard: replays, per-step reward breakdown, results chart (one metric at a time, 95% CI brackets), learning curves
 - [x] Live floor: multiple robots, add a product, nearest-robot dispatch, live stream
+- [x] Live-floor queue table: every product in order with pickup, station, robot and status, ticked when delivered
+- [x] Battery-constrained rules refused on the 46x30 floor (battery too small: median cycle 66 moves vs 67 on a full charge; measured 5 robots flat by tick 133)
 - [x] Editor: paint a warehouse, run it (backend or in-browser sandbox)
 - [x] Info: method explained, reward walked step by step on a real recording, results read live
 - [x] One shared cell vocabulary (marks, not shades) across every map

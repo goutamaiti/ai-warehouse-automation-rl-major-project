@@ -47,6 +47,11 @@ MAX_PENDING_REQUESTS = 500
 #: the server for an unbounded time.
 MAX_TICKS_PER_CALL = 200
 
+#: Rulesets whose battery cannot serve the realistic floor. Measured, not
+#: guessed: with 45% start, 1.5% per move and 8 chargers along one edge, a
+#: 5-robot fleet ran flat by tick 133 having delivered 2 of 5 products.
+BATTERY_RULES_TOO_SMALL_FOR_RMFS = frozenset({"battery_constrained", "battery_tuned"})
+
 
 class FleetSessionError(Exception):
     """Raised for conditions the API turns into a 4xx response."""
@@ -76,6 +81,14 @@ class FleetSession:
                 raise FleetSessionError(
                     "the realistic floor generates its own layout; it cannot be "
                     "combined with a hand-drawn one"
+                )
+            if config.name in BATTERY_RULES_TOO_SMALL_FOR_RMFS:
+                raise FleetSessionError(
+                    f"the {config.name!r} rules are sized for the 21x15 floor: a "
+                    "full battery covers 67 moves, but on the 46x30 floor the "
+                    "median charger-pickup-station-charger cycle is 66 moves and "
+                    "only 160 of 306 pick points fit at all; use them on the "
+                    "default floor"
                 )
             layout, self.directions = build_rmfs_layout(RmfsConfig())
         elif floor != "default":

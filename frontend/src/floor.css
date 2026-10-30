@@ -355,6 +355,95 @@
   color: var(--ink-faint);
 }
 
+/* ----------------------------------------------------------------- queue */
+
+.queue {
+  margin-top: 1.25rem;
+}
+
+.queue h3 {
+  margin: 0 0 0.6rem;
+  font-size: 0.95rem;
+}
+
+.queue-count {
+  margin-left: 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  font-weight: 400;
+  color: var(--ink-soft);
+}
+
+.queue-empty {
+  margin: 1.25rem 0 0;
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+}
+
+/* A long session queues dozens of products; the list scrolls inside its own
+   box so the map above never moves. */
+.queue-scroll {
+  max-height: 320px;
+  overflow: auto;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+}
+
+.queue-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.queue-table th {
+  position: sticky;
+  top: 0;
+  background: var(--paper-raised);
+  text-align: left;
+  font-weight: 600;
+  color: var(--ink-soft);
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.queue-table td {
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.queue-table td.queue-status {
+  white-space: normal;
+}
+
+.queue-mark {
+  width: 1.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.queue-table tr.is-done td {
+  color: var(--ink-faint);
+}
+
+.queue-table tr.is-done .queue-mark {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.queue-urgent {
+  margin-left: 0.4rem;
+  padding: 0 0.3rem;
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 /* ----------------------------------------------------------------- empty */
 
 .floor-empty {

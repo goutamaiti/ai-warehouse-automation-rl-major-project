@@ -78,6 +78,19 @@ def test_an_unplaceable_fleet_is_refused_with_a_usable_message(client):
     assert "cannot place" in response.json()["detail"]
 
 
+def test_battery_rules_are_refused_on_the_realistic_floor(client):
+    # Measured: on the 46x30 floor these rules run every robot flat (5 robots,
+    # 2 of 5 products delivered by tick 133), so the combination is refused.
+    for scenario in ("battery_tuned", "battery_constrained"):
+        response = client.post(
+            "/api/fleet/start", json={"scenario": scenario, "n_robots": 5, "floor": "rmfs"}
+        )
+        assert response.status_code == 400
+        assert "21x15" in response.json()["detail"]
+    # ...while the same rules on the floor they were sized for still start.
+    start(client, scenario="battery_tuned")
+
+
 def test_an_unknown_scenario_is_a_404(client):
     assert client.post("/api/fleet/start", json={"scenario": "nope"}).status_code == 404
 

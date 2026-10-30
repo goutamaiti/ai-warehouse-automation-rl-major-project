@@ -32,6 +32,82 @@ const SCENARIOS = [
   { id: 'battery_tuned', label: 'Battery constrained' },
 ];
 
+/** Rules a floor cannot run. The battery rules were sized for the 21×15 floor:
+ *  30 moves on the starting charge, 67 on a full one. On the 46×30 floor the
+ *  median charger → pickup → station → charger cycle is 66 moves and only 160
+ *  of 306 pick points fit a full battery, so every robot runs flat. */
+const UNSUPPORTED = { rmfs: ['battery_tuned'] };
+
+const supports = (floorId, scenarioId) => !(UNSUPPORTED[floorId] ?? []).includes(scenarioId);
+
+/** What a request is doing right now, in words, from the frame alone. */
+function requestStatus(request, robots) {
+  if (request.status === 'delivered') {
+    return `delivered by robot ${request.robot_id} at tick ${request.delivered_step}`;
+  }
+  if (request.status === 'failed') return 'failed';
+  if (request.status === 'waiting') return 'waiting for a robot';
+  const robot = robots.find((r) => r.id === request.robot_id);
+  if (robot && robot.alive === false) return `robot ${request.robot_id} ran out of charge`;
+  return robot?.task?.status === 'picked_up'
+    ? `robot ${request.robot_id} carrying it to the station`
+    : `robot ${request.robot_id} on its way to the pickup`;
+}
+
+/** Every product ever queued, in the order it was added, ticked off once delivered. */
+function QueueTable({ requests, robots }) {
+  if (!requests?.length) {
+    return (
+      <p className="queue-empty">
+        No products queued yet. Add one on the card to the right.
+      </p>
+    );
+  }
+  const ordered = [...requests].sort((a, b) => a.id - b.id);
+  const done = ordered.filter((r) => r.status === 'delivered').length;
+  return (
+    <div className="queue">
+      <h3>
+        Queue <span className="queue-count">{done} of {ordered.length} delivered</span>
+      </h3>
+      <div className="queue-scroll">
+        <table className="queue-table">
+          <thead>
+            <tr>
+              <th aria-label="delivered" />
+              <th>#</th>
+              <th>Pick up</th>
+              <th>Deliver to</th>
+              <th>Robot</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ordered.map((request) => {
+              const delivered = request.status === 'delivered';
+              return (
+                <tr key={request.id} className={delivered ? 'is-done' : ''}>
+                  <td className="queue-mark" aria-label={delivered ? 'delivered' : 'not yet delivered'}>
+                    {delivered ? '✓' : request.status === 'waiting' ? '○' : '◐'}
+                  </td>
+                  <td>
+                    {request.id}
+                    {request.priority === 'urgent' ? <span className="queue-urgent">urgent</span> : null}
+                  </td>
+                  <td>[{request.pickup.join(', ')}]</td>
+                  <td>[{request.dropoff.join(', ')}]</td>
+                  <td>{request.robot_id ?? '—'}</td>
+                  <td className="queue-status">{requestStatus(request, robots)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 function Stat({ label, value, hint }) {
   return (
     <div className="stat">
@@ -189,7 +265,11 @@ export default function FleetPage() {
           Floor
           <select
             value={floor}
-            onChange={(event) => setFloor(event.target.value)}
+            onChange={(event) => {
+              const next = event.target.value;
+              setFloor(next);
+              if (!supports(next, scenario)) setScenario('default');
+            }}
             disabled={running}
           >
             {FLOORS.map((option) => (
@@ -207,8 +287,9 @@ export default function FleetPage() {
             disabled={running}
           >
             {SCENARIOS.map((option) => (
-              <option key={option.id} value={option.id}>
+              <option key={option.id} value={option.id} disabled={!supports(floor, option.id)}>
                 {option.label}
+                {supports(floor, option.id) ? '' : ' (21×15 floor only)'}
               </option>
             ))}
           </select>
@@ -266,6 +347,7 @@ export default function FleetPage() {
               <li><span className="dot" style={{ background: '#0891b2' }} /> product waiting</li>
               <li><span className="dot" style={{ background: '#be123c' }} /> traffic</li>
             </ul>
+            <QueueTable requests={frame?.requests} robots={frame?.robots ?? []} />
           </div>
 
           <aside className="floor-side">
