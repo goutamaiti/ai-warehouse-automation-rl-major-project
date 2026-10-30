@@ -116,8 +116,12 @@ class WarehouseEnv(gym.Env):
     def step(
         self, action: int
     ) -> tuple[np.ndarray, float, bool, bool, dict[str, Any]]:
+        # The battery-reserve potential is a function of the robot's position
+        # and charge, neither of which the StepOutcome carries, so it has to be
+        # sampled on both sides of the step.
+        reserve_before = self._reserve_potential()
         outcome = self.sim.step(int(action))
-        reward, components = self._reward(outcome)
+        reward, components = self._reward(outcome, reserve_before)
 
         info: dict[str, Any] = {
             "events": outcome.events,
@@ -147,7 +151,39 @@ class WarehouseEnv(gym.Env):
     # ------------------------------------------------------------------
     # reward
     # ------------------------------------------------------------------
-    def _reward(self, outcome) -> tuple[float, dict[str, float]]:
+    def _reserve_potential(self) -> float:
+        """Potential measuring the robot's *charge deficit*, in [-1, 0].
+
+        ``Phi_b(s) = -max(0, safety * distance_to_charger(s) * move_cost
+        - battery(s)) / capacity``
+
+        In words: how much charge the robot is *short* of what it needs to
+        still reach a charging station, as a fraction of a full battery. It is
+        exactly 0 whenever the robot can comfortably reach a charger, so the
+        term stays silent during ordinary navigation and only speaks up once
+        the robot is cutting it fine.
+
+        It depends on nothing but the current state - position and charge - so
+        it is a valid potential, and with ``shaping_gamma == 1`` the resulting
+        shaping telescopes: any loop that returns the robot to the same cell
+        with the same charge pays exactly 0. That is what stops the agent from
+        farming it by hopping on and off a charger, the failure mode a naive
+        "+reward per charging event" bonus would have.
+        """
+        cfg = self.config.reward
+        if cfg.battery_reserve_weight == 0.0:
+            return 0.0
+        battery_cfg = self.config.battery
+        if battery_cfg.capacity <= 0:
+            return 0.0
+        _station, distance = self._nearest_charger()
+        if distance < 0:  # no charger reachable; the deficit is undefined
+            return 0.0
+        needed = cfg.battery_reserve_safety * distance * battery_cfg.move_cost
+        deficit = max(0.0, needed - self.sim.robot.battery)
+        return -cfg.battery_reserve_weight * deficit / battery_cfg.capacity
+
+    def _reward(self, outcome, reserve_before: float = 0.0) -> tuple[float, dict[str, float]]:
         """Turn a :class:`~simulation.engine.StepOutcome` into a scalar reward.
 
         The progress term is *potential-based* shaping (Ng, Harada & Russell,
@@ -160,6 +196,13 @@ class WarehouseEnv(gym.Env):
         The term is skipped on steps where the target itself changes (pickup or
         a new task), because the potential of the old and the new goal are not
         comparable.
+
+        The ``battery_reserve`` term is a second potential of the same form
+        (see :meth:`_reserve_potential`). Being potential-based, it cannot
+        change which policy is optimal - it only shortens the credit-assignment
+        gap between "drove past a charger on a low battery" and "died forty
+        steps later". The term that actually changes the optimum is
+        ``battery_depleted_penalty``.
         """
         cfg = self.config.reward
         target_changed = outcome.picked_up or "new_task" in outcome.events
@@ -170,9 +213,15 @@ class WarehouseEnv(gym.Env):
             phi_after = -float(outcome.distance_after)
             shaping = cfg.progress_weight * (cfg.shaping_gamma * phi_after - phi_before)
 
+        reserve_shaping = 0.0
+        if cfg.battery_reserve_weight != 0.0:
+            reserve_after = self._reserve_potential()
+            reserve_shaping = cfg.shaping_gamma * reserve_after - reserve_before
+
         components = {
             "step_penalty": -cfg.step_penalty,
             "progress": shaping,
+            "battery_reserve": reserve_shaping,
             "pickup": cfg.pickup_reward if outcome.picked_up else 0.0,
             "delivery": cfg.delivery_reward if outcome.delivered else 0.0,
             "collision": -cfg.collision_penalty if outcome.collided else 0.0,

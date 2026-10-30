@@ -69,6 +69,79 @@ class PPOPolicy:
         return int(action)
 
 
+class PPOChargerPolicy:
+    """Hybrid: PPO drives, a classical rule picks the charging station.
+
+    **This is not the PPO result.** It is a separate controller, and it must be
+    reported under its own name. Every step it asks the classical battery logic
+    (:meth:`baselines.controller.PlannerPolicy._select_goal`, the same code A*
+    uses) whether the robot should be heading for a charger. If so, the move is
+    planned by A* to the *nearest reachable* station; otherwise the trained
+    policy chooses the action.
+
+    Why it exists
+    -------------
+    The trained policy charges at the station it starts on and never at the
+    other one, because every episode starts on the same charger - so "the
+    charger is to the left" held for the first charge of every episode it saw
+    (see docs/experiments.md). That costs a mean 7.6 cells per episode. The
+    learning-side fix is to randomise the start via
+    ``ScenarioConfig.random_start_charger``; this controller is the
+    engineering-side alternative: keep the learned navigation and hand the
+    station choice to a rule that cannot get it wrong.
+
+    Why it is kept separate
+    -----------------------
+    The project's research question is whether a *learned* policy can match
+    classical planning. A policy whose charger choice is made by A* is a hybrid
+    of both, so folding these numbers into the "ppo" row would mean reporting
+    A* under another name. Scoring it as its own controller keeps that honest -
+    and the hybrid is a legitimate result in its own right, since real systems
+    routinely pair learned local control with classical high-level decisions.
+    """
+
+    name = "ppo_charger"
+
+    def __init__(self, model, deterministic: bool = True) -> None:
+        from baselines.controller import PlannerPolicy
+
+        self._ppo = PPOPolicy(model, deterministic=deterministic)
+        self._planner = PlannerPolicy(planner="astar")
+        #: Steps on which the classical rule overrode the learned policy.
+        self.overrides = 0
+
+    @classmethod
+    def load(cls, path: str | Path, deterministic: bool = True) -> "PPOChargerPolicy":
+        return cls(PPOPolicy.load(path, deterministic).model, deterministic=deterministic)
+
+    def reset(self, env: WarehouseEnv, seed: int) -> None:
+        self._ppo.reset(env, seed)
+        self._planner.reset(env, seed)
+        self.overrides = 0
+
+    def act(self, observation: np.ndarray, env: WarehouseEnv) -> int:
+        sim = env.sim
+        goal = self._planner._select_goal(sim)
+        if goal == sim.task.target:
+            # Not a charging detour - let the learned policy drive.
+            return self._ppo.act(observation, env)
+
+        self.overrides += 1
+        position = sim.robot.position
+        if position == goal:
+            from simulation.engine import Action
+
+            return int(Action.WAIT)  # already on the charger: keep charging
+        blocked = sim.occupancy_grid().copy()
+        blocked[position] = False
+        plan = self._planner._plan(blocked, position, goal)
+        if not plan.found or plan.length == 0:
+            return self._ppo.act(observation, env)
+        from baselines.controller import _action_towards
+
+        return _action_towards(position, plan.path[1])
+
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Evaluate a trained PPO policy")
     parser.add_argument("--model", default="rl_agent/models/ppo_warehouse.zip")

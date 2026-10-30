@@ -1,0 +1,4568 @@
+{
+  "_comment": "Golden record of single-robot behaviour. Regenerate ONLY via `python scripts/freeze_contract.py --write`, and only when a change to this behaviour was intended. See the module docstring.",
+  "actions": [
+    0,
+    0,
+    0,
+    3,
+    3,
+    3,
+    1,
+    1,
+    2,
+    2,
+    4,
+    0,
+    0,
+    3,
+    3,
+    1,
+    2,
+    4,
+    4
+  ],
+  "pipeline": {
+    "mean_std_probe": {
+      "ci95": 1.3859,
+      "mean": 3.0,
+      "n": 5,
+      "std": 1.5811
+    },
+    "planner_charge_until": 0.9,
+    "planner_safety_factor": 1.2,
+    "success_only_metrics": [
+      "steps",
+      "path_length",
+      "path_efficiency",
+      "delivery_time"
+    ]
+  },
+  "precision": 6,
+  "scenarios": {
+    "battery_constrained": {
+      "astar_episode": {
+        "counters": {
+          "charging_events": 8,
+          "collisions": 0,
+          "dynamic_collisions": 0,
+          "energy_consumed": 86.2,
+          "idle_steps": 7,
+          "moves": 57,
+          "optimal_path_length": 53,
+          "static_collisions": 0,
+          "steps": 64,
+          "tasks_delivered": 2,
+          "tasks_failed": 0,
+          "termination_reason": "all_tasks_delivered"
+        },
+        "events_sha256": "dab8afbf8c4d545619d5d2cca3b36be6d6783f1a775b6f77510a9968341e74ca",
+        "final_battery": 38.8,
+        "n_events": 13,
+        "terminated": true,
+        "total_reward": 94.376,
+        "truncated": false
+      },
+      "config": {
+        "battery": {
+          "capacity": 100.0,
+          "charge_rate": 10.0,
+          "critical_threshold": 15.0,
+          "idle_cost": 0.1,
+          "low_threshold": 35.0,
+          "move_cost": 1.5,
+          "start_level": 45.0
+        },
+        "description": "21x15 warehouse, two delivery tasks per episode, small starting charge and expensive movement. Tests whether a controller detours to a charger before the battery runs out.\n",
+        "layout": {
+          "aisle_width": 1,
+          "height": 15,
+          "n_charging_stations": 2,
+          "n_packing_stations": 2,
+          "shelf_block_height": 2,
+          "shelf_block_width": 3,
+          "station_rows": 2,
+          "top_aisle": 1,
+          "width": 21
+        },
+        "max_steps": 600,
+        "name": "battery_constrained",
+        "observation_window": 5,
+        "obstacles": {
+          "behaviour": "random_walk",
+          "move_probability": 0.6,
+          "n_dynamic": 0
+        },
+        "random_start_charger": false,
+        "reward": {
+          "battery_depleted_penalty": 10.0,
+          "battery_reserve_safety": 2.0,
+          "battery_reserve_weight": 0.0,
+          "collision_penalty": 1.0,
+          "delivery_reward": 20.0,
+          "energy_weight": 0.02,
+          "pickup_reward": 5.0,
+          "progress_weight": 1.0,
+          "shaping_gamma": 1.0,
+          "step_penalty": 0.05,
+          "timeout_penalty": 5.0,
+          "wait_penalty": 0.1
+        },
+        "seed": 0,
+        "tasks": {
+          "min_separation": 6,
+          "tasks_per_episode": 2
+        }
+      },
+      "layout": {
+        "charging_stations": [
+          [
+            13,
+            1
+          ],
+          [
+            13,
+            19
+          ]
+        ],
+        "grid_sha256": "2a741ec5cd0bbca0f20cf3e12b8e5876b2f325257cf921d33e648bb07e8c19e3",
+        "height": 15,
+        "packing_stations": [
+          [
+            13,
+            4
+          ],
+          [
+            13,
+            16
+          ]
+        ],
+        "storage_points": [
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            7
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            2,
+            15
+          ],
+          [
+            5,
+            3
+          ],
+          [
+            5,
+            5
+          ],
+          [
+            5,
+            7
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            5,
+            13
+          ],
+          [
+            5,
+            15
+          ],
+          [
+            5,
+            17
+          ],
+          [
+            8,
+            3
+          ],
+          [
+            8,
+            5
+          ],
+          [
+            8,
+            7
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            8,
+            11
+          ],
+          [
+            8,
+            13
+          ],
+          [
+            8,
+            15
+          ],
+          [
+            8,
+            17
+          ],
+          [
+            11,
+            5
+          ],
+          [
+            11,
+            9
+          ],
+          [
+            11,
+            13
+          ],
+          [
+            11,
+            17
+          ]
+        ],
+        "width": 21
+      },
+      "observation_labels": [
+        "robot_row",
+        "robot_col",
+        "target_row",
+        "target_col",
+        "target_offset_row",
+        "target_offset_col",
+        "distance_to_target",
+        "battery_fraction",
+        "carrying",
+        "charger_offset_row",
+        "charger_offset_col",
+        "distance_to_charger",
+        "patch[-2,-2]",
+        "patch[-2,-1]",
+        "patch[-2,+0]",
+        "patch[-2,+1]",
+        "patch[-2,+2]",
+        "patch[-1,-2]",
+        "patch[-1,-1]",
+        "patch[-1,+0]",
+        "patch[-1,+1]",
+        "patch[-1,+2]",
+        "patch[+0,-2]",
+        "patch[+0,-1]",
+        "patch[+0,+0]",
+        "patch[+0,+1]",
+        "patch[+0,+2]",
+        "patch[+1,-2]",
+        "patch[+1,-1]",
+        "patch[+1,+0]",
+        "patch[+1,+1]",
+        "patch[+1,+2]",
+        "patch[+2,-2]",
+        "patch[+2,-1]",
+        "patch[+2,+0]",
+        "patch[+2,+1]",
+        "patch[+2,+2]"
+      ],
+      "reset": {
+        "observation": [
+          0.928571,
+          0.05,
+          0.357143,
+          0.15,
+          -0.571429,
+          0.1,
+          0.333333,
+          0.45,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "optimal_path_length": 31,
+        "task": {
+          "dropoff": [
+            13,
+            16
+          ],
+          "pickup": [
+            5,
+            3
+          ]
+        }
+      },
+      "reward_component_keys": [
+        "battery_depleted",
+        "battery_reserve",
+        "collision",
+        "delivery",
+        "energy",
+        "pickup",
+        "progress",
+        "step_penalty",
+        "timeout",
+        "wait"
+      ],
+      "scenario_file": "configs/scenarios/battery_constrained.yaml",
+      "spaces": {
+        "n_actions": 5,
+        "observation_high": 1.0,
+        "observation_low": -1.0,
+        "observation_shape": [
+          37
+        ]
+      },
+      "steps": [
+        {
+          "action": 0,
+          "battery": 43.5,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.03,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 9,
+          "events": [],
+          "i": 0,
+          "reward": 0.92,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 0,
+          "battery": 42.0,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.03,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 8,
+          "events": [],
+          "i": 1,
+          "reward": 0.92,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 0,
+          "battery": 40.5,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.03,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 7,
+          "events": [],
+          "i": 2,
+          "reward": 0.92,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 3,
+          "battery": 39.0,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.03,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 6,
+          "events": [],
+          "i": 3,
+          "reward": 0.92,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 3,
+          "battery": 38.9,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.002,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 6,
+          "events": [
+            "collision_static"
+          ],
+          "i": 4,
+          "reward": -1.052,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 3,
+          "battery": 38.8,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.002,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 6,
+          "events": [
+            "collision_static"
+          ],
+          "i": 5,
+          "reward": -1.052,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 1,
+          "battery": 37.3,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.03,
+            "pickup": 0.0,
+            "progress": -1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 7,
+          "events": [],
+          "i": 6,
+          "reward": -1.08,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 1,
+          "battery": 35.8,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.03,
+            "pickup": 0.0,
+            "progress": -1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 8,
+          "events": [],
+          "i": 7,
+          "reward": -1.08,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 2,
+          "battery": 34.3,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.03,
+            "pickup": 0.0,
+            "progress": -1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 9,
+          "events": [],
+          "i": 8,
+          "reward": -1.08,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 2,
+          "battery": 34.2,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.002,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 9,
+          "events": [
+            "collision_static"
+          ],
+          "i": 9,
+          "reward": -1.052,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 4,
+          "battery": 34.1,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.002,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": -0.1
+          },
+          "distance_to_target": 9,
+          "events": [],
+          "i": 10,
+          "reward": -0.152,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 0,
+          "battery": 32.6,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.03,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 8,
+          "events": [],
+          "i": 11,
+          "reward": 0.92,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 0,
+          "battery": 31.1,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.03,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 7,
+          "events": [],
+          "i": 12,
+          "reward": 0.92,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 3,
+          "battery": 29.6,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.03,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 6,
+          "events": [],
+          "i": 13,
+          "reward": 0.92,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 3,
+          "battery": 29.5,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.002,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 6,
+          "events": [
+            "collision_static"
+          ],
+          "i": 14,
+          "reward": -1.052,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 1,
+          "battery": 28.0,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.03,
+            "pickup": 0.0,
+            "progress": -1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 7,
+          "events": [],
+          "i": 15,
+          "reward": -1.08,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 2,
+          "battery": 26.5,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.03,
+            "pickup": 0.0,
+            "progress": -1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 8,
+          "events": [],
+          "i": 16,
+          "reward": -1.08,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 4,
+          "battery": 26.4,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.002,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": -0.1
+          },
+          "distance_to_target": 8,
+          "events": [],
+          "i": 17,
+          "reward": -0.152,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 4,
+          "battery": 26.3,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.002,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": -0.1
+          },
+          "distance_to_target": 8,
+          "events": [],
+          "i": 18,
+          "reward": -0.152,
+          "terminated": false,
+          "truncated": false
+        }
+      ]
+    },
+    "battery_tuned": {
+      "astar_episode": {
+        "counters": {
+          "charging_events": 8,
+          "collisions": 0,
+          "dynamic_collisions": 0,
+          "energy_consumed": 86.2,
+          "idle_steps": 7,
+          "moves": 57,
+          "optimal_path_length": 53,
+          "static_collisions": 0,
+          "steps": 64,
+          "tasks_delivered": 2,
+          "tasks_failed": 0,
+          "termination_reason": "all_tasks_delivered"
+        },
+        "events_sha256": "dab8afbf8c4d545619d5d2cca3b36be6d6783f1a775b6f77510a9968341e74ca",
+        "final_battery": 38.8,
+        "n_events": 13,
+        "terminated": true,
+        "total_reward": 91.576,
+        "truncated": false
+      },
+      "config": {
+        "battery": {
+          "capacity": 100.0,
+          "charge_rate": 10.0,
+          "critical_threshold": 15.0,
+          "idle_cost": 0.1,
+          "low_threshold": 35.0,
+          "move_cost": 1.5,
+          "start_level": 45.0
+        },
+        "description": "battery_constrained with a corrected reward: a depletion penalty that exceeds anything an episode can bank, a potential-based battery-reserve term, and a waiting penalty that stops camping on a charger being the cheapest way to avoid dying.\n",
+        "layout": {
+          "aisle_width": 1,
+          "height": 15,
+          "n_charging_stations": 2,
+          "n_packing_stations": 2,
+          "shelf_block_height": 2,
+          "shelf_block_width": 3,
+          "station_rows": 2,
+          "top_aisle": 1,
+          "width": 21
+        },
+        "max_steps": 600,
+        "name": "battery_tuned",
+        "observation_window": 5,
+        "obstacles": {
+          "behaviour": "random_walk",
+          "move_probability": 0.6,
+          "n_dynamic": 0
+        },
+        "random_start_charger": false,
+        "reward": {
+          "battery_depleted_penalty": 60.0,
+          "battery_reserve_safety": 2.0,
+          "battery_reserve_weight": 10.0,
+          "collision_penalty": 1.0,
+          "delivery_reward": 20.0,
+          "energy_weight": 0.02,
+          "pickup_reward": 5.0,
+          "progress_weight": 1.0,
+          "shaping_gamma": 1.0,
+          "step_penalty": 0.05,
+          "timeout_penalty": 5.0,
+          "wait_penalty": 0.5
+        },
+        "seed": 0,
+        "tasks": {
+          "min_separation": 6,
+          "tasks_per_episode": 2
+        }
+      },
+      "layout": {
+        "charging_stations": [
+          [
+            13,
+            1
+          ],
+          [
+            13,
+            19
+          ]
+        ],
+        "grid_sha256": "2a741ec5cd0bbca0f20cf3e12b8e5876b2f325257cf921d33e648bb07e8c19e3",
+        "height": 15,
+        "packing_stations": [
+          [
+            13,
+            4
+          ],
+          [
+            13,
+            16
+          ]
+        ],
+        "storage_points": [
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            7
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            2,
+            15
+          ],
+          [
+            5,
+            3
+          ],
+          [
+            5,
+            5
+          ],
+          [
+            5,
+            7
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            5,
+            13
+          ],
+          [
+            5,
+            15
+          ],
+          [
+            5,
+            17
+          ],
+          [
+            8,
+            3
+          ],
+          [
+            8,
+            5
+          ],
+          [
+            8,
+            7
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            8,
+            11
+          ],
+          [
+            8,
+            13
+          ],
+          [
+            8,
+            15
+          ],
+          [
+            8,
+            17
+          ],
+          [
+            11,
+            5
+          ],
+          [
+            11,
+            9
+          ],
+          [
+            11,
+            13
+          ],
+          [
+            11,
+            17
+          ]
+        ],
+        "width": 21
+      },
+      "observation_labels": [
+        "robot_row",
+        "robot_col",
+        "target_row",
+        "target_col",
+        "target_offset_row",
+        "target_offset_col",
+        "distance_to_target",
+        "battery_fraction",
+        "carrying",
+        "charger_offset_row",
+        "charger_offset_col",
+        "distance_to_charger",
+        "patch[-2,-2]",
+        "patch[-2,-1]",
+        "patch[-2,+0]",
+        "patch[-2,+1]",
+        "patch[-2,+2]",
+        "patch[-1,-2]",
+        "patch[-1,-1]",
+        "patch[-1,+0]",
+        "patch[-1,+1]",
+        "patch[-1,+2]",
+        "patch[+0,-2]",
+        "patch[+0,-1]",
+        "patch[+0,+0]",
+        "patch[+0,+1]",
+        "patch[+0,+2]",
+        "patch[+1,-2]",
+        "patch[+1,-1]",
+        "patch[+1,+0]",
+        "patch[+1,+1]",
+        "patch[+1,+2]",
+        "patch[+2,-2]",
+        "patch[+2,-1]",
+        "patch[+2,+0]",
+        "patch[+2,+1]",
+        "patch[+2,+2]"
+      ],
+      "reset": {
+        "observation": [
+          0.928571,
+          0.05,
+          0.357143,
+          0.15,
+          -0.571429,
+          0.1,
+          0.333333,
+          0.45,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "optimal_path_length": 31,
+        "task": {
+          "dropoff": [
+            13,
+            16
+          ],
+          "pickup": [
+            5,
+            3
+          ]
+        }
+      },
+      "reward_component_keys": [
+        "battery_depleted",
+        "battery_reserve",
+        "collision",
+        "delivery",
+        "energy",
+        "pickup",
+        "progress",
+        "step_penalty",
+        "timeout",
+        "wait"
+      ],
+      "scenario_file": "configs/scenarios/battery_tuned.yaml",
+      "spaces": {
+        "n_actions": 5,
+        "observation_high": 1.0,
+        "observation_low": -1.0,
+        "observation_shape": [
+          37
+        ]
+      },
+      "steps": [
+        {
+          "action": 0,
+          "battery": 43.5,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.03,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 9,
+          "events": [],
+          "i": 0,
+          "reward": 0.92,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 0,
+          "battery": 42.0,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.03,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 8,
+          "events": [],
+          "i": 1,
+          "reward": 0.92,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 0,
+          "battery": 40.5,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.03,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 7,
+          "events": [],
+          "i": 2,
+          "reward": 0.92,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 3,
+          "battery": 39.0,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.03,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 6,
+          "events": [],
+          "i": 3,
+          "reward": 0.92,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 3,
+          "battery": 38.9,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.002,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 6,
+          "events": [
+            "collision_static"
+          ],
+          "i": 4,
+          "reward": -1.052,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 3,
+          "battery": 38.8,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.002,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 6,
+          "events": [
+            "collision_static"
+          ],
+          "i": 5,
+          "reward": -1.052,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 1,
+          "battery": 37.3,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.03,
+            "pickup": 0.0,
+            "progress": -1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 7,
+          "events": [],
+          "i": 6,
+          "reward": -1.08,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 1,
+          "battery": 35.8,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.03,
+            "pickup": 0.0,
+            "progress": -1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 8,
+          "events": [],
+          "i": 7,
+          "reward": -1.08,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 2,
+          "battery": 34.3,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.03,
+            "pickup": 0.0,
+            "progress": -1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 9,
+          "events": [],
+          "i": 8,
+          "reward": -1.08,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 2,
+          "battery": 34.2,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.002,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 9,
+          "events": [
+            "collision_static"
+          ],
+          "i": 9,
+          "reward": -1.052,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 4,
+          "battery": 34.1,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.002,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": -0.5
+          },
+          "distance_to_target": 9,
+          "events": [],
+          "i": 10,
+          "reward": -0.552,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 0,
+          "battery": 32.6,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.03,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 8,
+          "events": [],
+          "i": 11,
+          "reward": 0.92,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 0,
+          "battery": 31.1,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.03,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 7,
+          "events": [],
+          "i": 12,
+          "reward": 0.92,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 3,
+          "battery": 29.6,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.03,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 6,
+          "events": [],
+          "i": 13,
+          "reward": 0.92,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 3,
+          "battery": 29.5,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.002,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 6,
+          "events": [
+            "collision_static"
+          ],
+          "i": 14,
+          "reward": -1.052,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 1,
+          "battery": 28.0,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.03,
+            "pickup": 0.0,
+            "progress": -1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 7,
+          "events": [],
+          "i": 15,
+          "reward": -1.08,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 2,
+          "battery": 26.5,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.03,
+            "pickup": 0.0,
+            "progress": -1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 8,
+          "events": [],
+          "i": 16,
+          "reward": -1.08,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 4,
+          "battery": 26.4,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.002,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": -0.5
+          },
+          "distance_to_target": 8,
+          "events": [],
+          "i": 17,
+          "reward": -0.552,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 4,
+          "battery": 26.3,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.002,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": -0.5
+          },
+          "distance_to_target": 8,
+          "events": [],
+          "i": 18,
+          "reward": -0.552,
+          "terminated": false,
+          "truncated": false
+        }
+      ]
+    },
+    "complex_static": {
+      "astar_episode": {
+        "counters": {
+          "charging_events": 0,
+          "collisions": 0,
+          "dynamic_collisions": 0,
+          "energy_consumed": 19.5,
+          "idle_steps": 0,
+          "moves": 39,
+          "optimal_path_length": 39,
+          "static_collisions": 0,
+          "steps": 39,
+          "tasks_delivered": 1,
+          "tasks_failed": 0,
+          "termination_reason": "all_tasks_delivered"
+        },
+        "events_sha256": "ee8b061249369d480b95475a240343fc654beb1d7cef0839667813ed7dcf59fe",
+        "final_battery": 80.5,
+        "n_events": 2,
+        "terminated": true,
+        "total_reward": 60.66,
+        "truncated": false
+      },
+      "config": {
+        "battery": {
+          "capacity": 100.0,
+          "charge_rate": 8.0,
+          "critical_threshold": 10.0,
+          "idle_cost": 0.05,
+          "low_threshold": 30.0,
+          "move_cost": 0.5,
+          "start_level": 100.0
+        },
+        "description": "31x21 warehouse with denser shelving. Paths are longer and contain more forced detours, which is where a shaped RL policy and A* start to differ.\n",
+        "layout": {
+          "aisle_width": 1,
+          "height": 21,
+          "n_charging_stations": 2,
+          "n_packing_stations": 3,
+          "shelf_block_height": 3,
+          "shelf_block_width": 3,
+          "station_rows": 2,
+          "top_aisle": 1,
+          "width": 31
+        },
+        "max_steps": 600,
+        "name": "complex_static",
+        "observation_window": 5,
+        "obstacles": {
+          "behaviour": "random_walk",
+          "move_probability": 0.6,
+          "n_dynamic": 0
+        },
+        "random_start_charger": false,
+        "reward": {
+          "battery_depleted_penalty": 10.0,
+          "battery_reserve_safety": 2.0,
+          "battery_reserve_weight": 0.0,
+          "collision_penalty": 1.0,
+          "delivery_reward": 20.0,
+          "energy_weight": 0.02,
+          "pickup_reward": 5.0,
+          "progress_weight": 1.0,
+          "shaping_gamma": 1.0,
+          "step_penalty": 0.05,
+          "timeout_penalty": 5.0,
+          "wait_penalty": 0.1
+        },
+        "seed": 0,
+        "tasks": {
+          "min_separation": 10,
+          "tasks_per_episode": 1
+        }
+      },
+      "layout": {
+        "charging_stations": [
+          [
+            19,
+            1
+          ],
+          [
+            19,
+            29
+          ]
+        ],
+        "grid_sha256": "3c36990147ba37617eb5666085b87faff9ec6236c1e7c4570deffd83febfef5e",
+        "height": 21,
+        "packing_stations": [
+          [
+            19,
+            4
+          ],
+          [
+            19,
+            15
+          ],
+          [
+            19,
+            26
+          ]
+        ],
+        "storage_points": [
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            6
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            14
+          ],
+          [
+            1,
+            18
+          ],
+          [
+            1,
+            22
+          ],
+          [
+            1,
+            26
+          ],
+          [
+            5,
+            2
+          ],
+          [
+            5,
+            4
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            12
+          ],
+          [
+            5,
+            14
+          ],
+          [
+            5,
+            16
+          ],
+          [
+            5,
+            18
+          ],
+          [
+            5,
+            20
+          ],
+          [
+            5,
+            22
+          ],
+          [
+            5,
+            24
+          ],
+          [
+            5,
+            26
+          ],
+          [
+            5,
+            28
+          ],
+          [
+            9,
+            2
+          ],
+          [
+            9,
+            4
+          ],
+          [
+            9,
+            6
+          ],
+          [
+            9,
+            8
+          ],
+          [
+            9,
+            10
+          ],
+          [
+            9,
+            12
+          ],
+          [
+            9,
+            14
+          ],
+          [
+            9,
+            16
+          ],
+          [
+            9,
+            18
+          ],
+          [
+            9,
+            20
+          ],
+          [
+            9,
+            22
+          ],
+          [
+            9,
+            24
+          ],
+          [
+            9,
+            26
+          ],
+          [
+            9,
+            28
+          ],
+          [
+            13,
+            2
+          ],
+          [
+            13,
+            4
+          ],
+          [
+            13,
+            6
+          ],
+          [
+            13,
+            8
+          ],
+          [
+            13,
+            10
+          ],
+          [
+            13,
+            12
+          ],
+          [
+            13,
+            14
+          ],
+          [
+            13,
+            16
+          ],
+          [
+            13,
+            18
+          ],
+          [
+            13,
+            20
+          ],
+          [
+            13,
+            22
+          ],
+          [
+            13,
+            24
+          ],
+          [
+            13,
+            26
+          ],
+          [
+            13,
+            28
+          ],
+          [
+            17,
+            4
+          ],
+          [
+            17,
+            8
+          ],
+          [
+            17,
+            12
+          ],
+          [
+            17,
+            16
+          ],
+          [
+            17,
+            20
+          ],
+          [
+            17,
+            24
+          ],
+          [
+            17,
+            28
+          ]
+        ],
+        "width": 31
+      },
+      "observation_labels": [
+        "robot_row",
+        "robot_col",
+        "target_row",
+        "target_col",
+        "target_offset_row",
+        "target_offset_col",
+        "distance_to_target",
+        "battery_fraction",
+        "carrying",
+        "charger_offset_row",
+        "charger_offset_col",
+        "distance_to_charger",
+        "patch[-2,-2]",
+        "patch[-2,-1]",
+        "patch[-2,+0]",
+        "patch[-2,+1]",
+        "patch[-2,+2]",
+        "patch[-1,-2]",
+        "patch[-1,-1]",
+        "patch[-1,+0]",
+        "patch[-1,+1]",
+        "patch[-1,+2]",
+        "patch[+0,-2]",
+        "patch[+0,-1]",
+        "patch[+0,+0]",
+        "patch[+0,+1]",
+        "patch[+0,+2]",
+        "patch[+1,-2]",
+        "patch[+1,-1]",
+        "patch[+1,+0]",
+        "patch[+1,+1]",
+        "patch[+1,+2]",
+        "patch[+2,-2]",
+        "patch[+2,-1]",
+        "patch[+2,+0]",
+        "patch[+2,+1]",
+        "patch[+2,+2]"
+      ],
+      "reset": {
+        "observation": [
+          0.95,
+          0.033333,
+          0.25,
+          0.266667,
+          -0.7,
+          0.233333,
+          0.456522,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "optimal_path_length": 39,
+        "task": {
+          "dropoff": [
+            19,
+            4
+          ],
+          "pickup": [
+            5,
+            8
+          ]
+        }
+      },
+      "reward_component_keys": [
+        "battery_depleted",
+        "battery_reserve",
+        "collision",
+        "delivery",
+        "energy",
+        "pickup",
+        "progress",
+        "step_penalty",
+        "timeout",
+        "wait"
+      ],
+      "scenario_file": "configs/scenarios/complex_static.yaml",
+      "spaces": {
+        "n_actions": 5,
+        "observation_high": 1.0,
+        "observation_low": -1.0,
+        "observation_shape": [
+          37
+        ]
+      },
+      "steps": [
+        {
+          "action": 0,
+          "battery": 99.5,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 20,
+          "events": [],
+          "i": 0,
+          "reward": 0.94,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 0,
+          "battery": 99.0,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 19,
+          "events": [],
+          "i": 1,
+          "reward": 0.94,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 0,
+          "battery": 98.5,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 18,
+          "events": [],
+          "i": 2,
+          "reward": 0.94,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 3,
+          "battery": 98.45,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 18,
+          "events": [
+            "collision_static"
+          ],
+          "i": 3,
+          "reward": -1.051,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 3,
+          "battery": 98.4,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 18,
+          "events": [
+            "collision_static"
+          ],
+          "i": 4,
+          "reward": -1.051,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 3,
+          "battery": 98.35,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 18,
+          "events": [
+            "collision_static"
+          ],
+          "i": 5,
+          "reward": -1.051,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 1,
+          "battery": 97.85,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": -1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 19,
+          "events": [],
+          "i": 6,
+          "reward": -1.06,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 1,
+          "battery": 97.35,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": -1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 20,
+          "events": [],
+          "i": 7,
+          "reward": -1.06,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 2,
+          "battery": 97.3,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 20,
+          "events": [
+            "collision_static"
+          ],
+          "i": 8,
+          "reward": -1.051,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 2,
+          "battery": 97.25,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 20,
+          "events": [
+            "collision_static"
+          ],
+          "i": 9,
+          "reward": -1.051,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 4,
+          "battery": 97.2,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": -0.1
+          },
+          "distance_to_target": 20,
+          "events": [],
+          "i": 10,
+          "reward": -0.151,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 0,
+          "battery": 96.7,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 19,
+          "events": [],
+          "i": 11,
+          "reward": 0.94,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 0,
+          "battery": 96.2,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 18,
+          "events": [],
+          "i": 12,
+          "reward": 0.94,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 3,
+          "battery": 96.15,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 18,
+          "events": [
+            "collision_static"
+          ],
+          "i": 13,
+          "reward": -1.051,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 3,
+          "battery": 96.1,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 18,
+          "events": [
+            "collision_static"
+          ],
+          "i": 14,
+          "reward": -1.051,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 1,
+          "battery": 95.6,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": -1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 19,
+          "events": [],
+          "i": 15,
+          "reward": -1.06,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 2,
+          "battery": 95.55,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 19,
+          "events": [
+            "collision_static"
+          ],
+          "i": 16,
+          "reward": -1.051,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 4,
+          "battery": 95.5,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": -0.1
+          },
+          "distance_to_target": 19,
+          "events": [],
+          "i": 17,
+          "reward": -0.151,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 4,
+          "battery": 95.45,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": -0.1
+          },
+          "distance_to_target": 19,
+          "events": [],
+          "i": 18,
+          "reward": -0.151,
+          "terminated": false,
+          "truncated": false
+        }
+      ]
+    },
+    "default": {
+      "astar_episode": {
+        "counters": {
+          "charging_events": 0,
+          "collisions": 0,
+          "dynamic_collisions": 0,
+          "energy_consumed": 15.5,
+          "idle_steps": 0,
+          "moves": 31,
+          "optimal_path_length": 31,
+          "static_collisions": 0,
+          "steps": 31,
+          "tasks_delivered": 1,
+          "tasks_failed": 0,
+          "termination_reason": "all_tasks_delivered"
+        },
+        "events_sha256": "ee8b061249369d480b95475a240343fc654beb1d7cef0839667813ed7dcf59fe",
+        "final_battery": 84.5,
+        "n_events": 2,
+        "terminated": true,
+        "total_reward": 53.14,
+        "truncated": false
+      },
+      "config": {
+        "battery": {
+          "capacity": 100.0,
+          "charge_rate": 8.0,
+          "critical_threshold": 10.0,
+          "idle_cost": 0.05,
+          "low_threshold": 30.0,
+          "move_cost": 0.5,
+          "start_level": 100.0
+        },
+        "description": "21x15 warehouse, one robot, one pickup-and-delivery task, no dynamic obstacles, battery large enough that it is not the limiting factor.\n",
+        "layout": {
+          "aisle_width": 1,
+          "height": 15,
+          "n_charging_stations": 2,
+          "n_packing_stations": 2,
+          "shelf_block_height": 2,
+          "shelf_block_width": 3,
+          "station_rows": 2,
+          "top_aisle": 1,
+          "width": 21
+        },
+        "max_steps": 400,
+        "name": "default",
+        "observation_window": 5,
+        "obstacles": {
+          "behaviour": "random_walk",
+          "move_probability": 0.6,
+          "n_dynamic": 0
+        },
+        "random_start_charger": false,
+        "reward": {
+          "battery_depleted_penalty": 10.0,
+          "battery_reserve_safety": 2.0,
+          "battery_reserve_weight": 0.0,
+          "collision_penalty": 1.0,
+          "delivery_reward": 20.0,
+          "energy_weight": 0.02,
+          "pickup_reward": 5.0,
+          "progress_weight": 1.0,
+          "shaping_gamma": 1.0,
+          "step_penalty": 0.05,
+          "timeout_penalty": 5.0,
+          "wait_penalty": 0.1
+        },
+        "seed": 0,
+        "tasks": {
+          "min_separation": 6,
+          "tasks_per_episode": 1
+        }
+      },
+      "layout": {
+        "charging_stations": [
+          [
+            13,
+            1
+          ],
+          [
+            13,
+            19
+          ]
+        ],
+        "grid_sha256": "2a741ec5cd0bbca0f20cf3e12b8e5876b2f325257cf921d33e648bb07e8c19e3",
+        "height": 15,
+        "packing_stations": [
+          [
+            13,
+            4
+          ],
+          [
+            13,
+            16
+          ]
+        ],
+        "storage_points": [
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            7
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            2,
+            15
+          ],
+          [
+            5,
+            3
+          ],
+          [
+            5,
+            5
+          ],
+          [
+            5,
+            7
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            5,
+            13
+          ],
+          [
+            5,
+            15
+          ],
+          [
+            5,
+            17
+          ],
+          [
+            8,
+            3
+          ],
+          [
+            8,
+            5
+          ],
+          [
+            8,
+            7
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            8,
+            11
+          ],
+          [
+            8,
+            13
+          ],
+          [
+            8,
+            15
+          ],
+          [
+            8,
+            17
+          ],
+          [
+            11,
+            5
+          ],
+          [
+            11,
+            9
+          ],
+          [
+            11,
+            13
+          ],
+          [
+            11,
+            17
+          ]
+        ],
+        "width": 21
+      },
+      "observation_labels": [
+        "robot_row",
+        "robot_col",
+        "target_row",
+        "target_col",
+        "target_offset_row",
+        "target_offset_col",
+        "distance_to_target",
+        "battery_fraction",
+        "carrying",
+        "charger_offset_row",
+        "charger_offset_col",
+        "distance_to_charger",
+        "patch[-2,-2]",
+        "patch[-2,-1]",
+        "patch[-2,+0]",
+        "patch[-2,+1]",
+        "patch[-2,+2]",
+        "patch[-1,-2]",
+        "patch[-1,-1]",
+        "patch[-1,+0]",
+        "patch[-1,+1]",
+        "patch[-1,+2]",
+        "patch[+0,-2]",
+        "patch[+0,-1]",
+        "patch[+0,+0]",
+        "patch[+0,+1]",
+        "patch[+0,+2]",
+        "patch[+1,-2]",
+        "patch[+1,-1]",
+        "patch[+1,+0]",
+        "patch[+1,+1]",
+        "patch[+1,+2]",
+        "patch[+2,-2]",
+        "patch[+2,-1]",
+        "patch[+2,+0]",
+        "patch[+2,+1]",
+        "patch[+2,+2]"
+      ],
+      "reset": {
+        "observation": [
+          0.928571,
+          0.05,
+          0.357143,
+          0.15,
+          -0.571429,
+          0.1,
+          0.333333,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "optimal_path_length": 31,
+        "task": {
+          "dropoff": [
+            13,
+            16
+          ],
+          "pickup": [
+            5,
+            3
+          ]
+        }
+      },
+      "reward_component_keys": [
+        "battery_depleted",
+        "battery_reserve",
+        "collision",
+        "delivery",
+        "energy",
+        "pickup",
+        "progress",
+        "step_penalty",
+        "timeout",
+        "wait"
+      ],
+      "scenario_file": "configs/default.yaml",
+      "spaces": {
+        "n_actions": 5,
+        "observation_high": 1.0,
+        "observation_low": -1.0,
+        "observation_shape": [
+          37
+        ]
+      },
+      "steps": [
+        {
+          "action": 0,
+          "battery": 99.5,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 9,
+          "events": [],
+          "i": 0,
+          "reward": 0.94,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 0,
+          "battery": 99.0,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 8,
+          "events": [],
+          "i": 1,
+          "reward": 0.94,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 0,
+          "battery": 98.5,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 7,
+          "events": [],
+          "i": 2,
+          "reward": 0.94,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 3,
+          "battery": 98.0,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 6,
+          "events": [],
+          "i": 3,
+          "reward": 0.94,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 3,
+          "battery": 97.95,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 6,
+          "events": [
+            "collision_static"
+          ],
+          "i": 4,
+          "reward": -1.051,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 3,
+          "battery": 97.9,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 6,
+          "events": [
+            "collision_static"
+          ],
+          "i": 5,
+          "reward": -1.051,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 1,
+          "battery": 97.4,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": -1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 7,
+          "events": [],
+          "i": 6,
+          "reward": -1.06,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 1,
+          "battery": 96.9,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": -1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 8,
+          "events": [],
+          "i": 7,
+          "reward": -1.06,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 2,
+          "battery": 96.4,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": -1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 9,
+          "events": [],
+          "i": 8,
+          "reward": -1.06,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 2,
+          "battery": 96.35,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 9,
+          "events": [
+            "collision_static"
+          ],
+          "i": 9,
+          "reward": -1.051,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 4,
+          "battery": 96.3,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": -0.1
+          },
+          "distance_to_target": 9,
+          "events": [],
+          "i": 10,
+          "reward": -0.151,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 0,
+          "battery": 95.8,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 8,
+          "events": [],
+          "i": 11,
+          "reward": 0.94,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 0,
+          "battery": 95.3,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 7,
+          "events": [],
+          "i": 12,
+          "reward": 0.94,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 3,
+          "battery": 94.8,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 6,
+          "events": [],
+          "i": 13,
+          "reward": 0.94,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 3,
+          "battery": 94.75,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 6,
+          "events": [
+            "collision_static"
+          ],
+          "i": 14,
+          "reward": -1.051,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 1,
+          "battery": 94.25,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": -1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 7,
+          "events": [],
+          "i": 15,
+          "reward": -1.06,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 2,
+          "battery": 93.75,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": -1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 8,
+          "events": [],
+          "i": 16,
+          "reward": -1.06,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 4,
+          "battery": 93.7,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": -0.1
+          },
+          "distance_to_target": 8,
+          "events": [],
+          "i": 17,
+          "reward": -0.151,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 4,
+          "battery": 93.65,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": -0.1
+          },
+          "distance_to_target": 8,
+          "events": [],
+          "i": 18,
+          "reward": -0.151,
+          "terminated": false,
+          "truncated": false
+        }
+      ]
+    },
+    "dynamic_obstacles": {
+      "astar_episode": {
+        "counters": {
+          "charging_events": 0,
+          "collisions": 0,
+          "dynamic_collisions": 0,
+          "energy_consumed": 17.5,
+          "idle_steps": 0,
+          "moves": 35,
+          "optimal_path_length": 31,
+          "static_collisions": 0,
+          "steps": 35,
+          "tasks_delivered": 1,
+          "tasks_failed": 0,
+          "termination_reason": "all_tasks_delivered"
+        },
+        "events_sha256": "ee8b061249369d480b95475a240343fc654beb1d7cef0839667813ed7dcf59fe",
+        "final_battery": 82.5,
+        "n_events": 2,
+        "terminated": true,
+        "total_reward": 52.9,
+        "truncated": false
+      },
+      "config": {
+        "battery": {
+          "capacity": 100.0,
+          "charge_rate": 8.0,
+          "critical_threshold": 10.0,
+          "idle_cost": 0.05,
+          "low_threshold": 30.0,
+          "move_cost": 0.5,
+          "start_level": 100.0
+        },
+        "description": "21x15 warehouse with 8 randomly walking dynamic obstacles. Obstacles never step onto the robot, so every collision recorded here was caused by the controller driving into an obstacle.\n",
+        "layout": {
+          "aisle_width": 1,
+          "height": 15,
+          "n_charging_stations": 2,
+          "n_packing_stations": 2,
+          "shelf_block_height": 2,
+          "shelf_block_width": 3,
+          "station_rows": 2,
+          "top_aisle": 1,
+          "width": 21
+        },
+        "max_steps": 500,
+        "name": "dynamic_obstacles",
+        "observation_window": 5,
+        "obstacles": {
+          "behaviour": "random_walk",
+          "move_probability": 0.6,
+          "n_dynamic": 8
+        },
+        "random_start_charger": false,
+        "reward": {
+          "battery_depleted_penalty": 10.0,
+          "battery_reserve_safety": 2.0,
+          "battery_reserve_weight": 0.0,
+          "collision_penalty": 1.0,
+          "delivery_reward": 20.0,
+          "energy_weight": 0.02,
+          "pickup_reward": 5.0,
+          "progress_weight": 1.0,
+          "shaping_gamma": 1.0,
+          "step_penalty": 0.05,
+          "timeout_penalty": 5.0,
+          "wait_penalty": 0.1
+        },
+        "seed": 0,
+        "tasks": {
+          "min_separation": 6,
+          "tasks_per_episode": 1
+        }
+      },
+      "layout": {
+        "charging_stations": [
+          [
+            13,
+            1
+          ],
+          [
+            13,
+            19
+          ]
+        ],
+        "grid_sha256": "2a741ec5cd0bbca0f20cf3e12b8e5876b2f325257cf921d33e648bb07e8c19e3",
+        "height": 15,
+        "packing_stations": [
+          [
+            13,
+            4
+          ],
+          [
+            13,
+            16
+          ]
+        ],
+        "storage_points": [
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            7
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            2,
+            15
+          ],
+          [
+            5,
+            3
+          ],
+          [
+            5,
+            5
+          ],
+          [
+            5,
+            7
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            5,
+            13
+          ],
+          [
+            5,
+            15
+          ],
+          [
+            5,
+            17
+          ],
+          [
+            8,
+            3
+          ],
+          [
+            8,
+            5
+          ],
+          [
+            8,
+            7
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            8,
+            11
+          ],
+          [
+            8,
+            13
+          ],
+          [
+            8,
+            15
+          ],
+          [
+            8,
+            17
+          ],
+          [
+            11,
+            5
+          ],
+          [
+            11,
+            9
+          ],
+          [
+            11,
+            13
+          ],
+          [
+            11,
+            17
+          ]
+        ],
+        "width": 21
+      },
+      "observation_labels": [
+        "robot_row",
+        "robot_col",
+        "target_row",
+        "target_col",
+        "target_offset_row",
+        "target_offset_col",
+        "distance_to_target",
+        "battery_fraction",
+        "carrying",
+        "charger_offset_row",
+        "charger_offset_col",
+        "distance_to_charger",
+        "patch[-2,-2]",
+        "patch[-2,-1]",
+        "patch[-2,+0]",
+        "patch[-2,+1]",
+        "patch[-2,+2]",
+        "patch[-1,-2]",
+        "patch[-1,-1]",
+        "patch[-1,+0]",
+        "patch[-1,+1]",
+        "patch[-1,+2]",
+        "patch[+0,-2]",
+        "patch[+0,-1]",
+        "patch[+0,+0]",
+        "patch[+0,+1]",
+        "patch[+0,+2]",
+        "patch[+1,-2]",
+        "patch[+1,-1]",
+        "patch[+1,+0]",
+        "patch[+1,+1]",
+        "patch[+1,+2]",
+        "patch[+2,-2]",
+        "patch[+2,-1]",
+        "patch[+2,+0]",
+        "patch[+2,+1]",
+        "patch[+2,+2]"
+      ],
+      "reset": {
+        "observation": [
+          0.928571,
+          0.05,
+          0.357143,
+          0.15,
+          -0.571429,
+          0.1,
+          0.333333,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "optimal_path_length": 31,
+        "task": {
+          "dropoff": [
+            13,
+            16
+          ],
+          "pickup": [
+            5,
+            3
+          ]
+        }
+      },
+      "reward_component_keys": [
+        "battery_depleted",
+        "battery_reserve",
+        "collision",
+        "delivery",
+        "energy",
+        "pickup",
+        "progress",
+        "step_penalty",
+        "timeout",
+        "wait"
+      ],
+      "scenario_file": "configs/scenarios/dynamic_obstacles.yaml",
+      "spaces": {
+        "n_actions": 5,
+        "observation_high": 1.0,
+        "observation_low": -1.0,
+        "observation_shape": [
+          37
+        ]
+      },
+      "steps": [
+        {
+          "action": 0,
+          "battery": 99.5,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 9,
+          "events": [],
+          "i": 0,
+          "reward": 0.94,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 0,
+          "battery": 99.0,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 8,
+          "events": [],
+          "i": 1,
+          "reward": 0.94,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 0,
+          "battery": 98.5,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 7,
+          "events": [],
+          "i": 2,
+          "reward": 0.94,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 3,
+          "battery": 98.0,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 6,
+          "events": [],
+          "i": 3,
+          "reward": 0.94,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 3,
+          "battery": 97.95,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 6,
+          "events": [
+            "collision_static"
+          ],
+          "i": 4,
+          "reward": -1.051,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 3,
+          "battery": 97.9,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 6,
+          "events": [
+            "collision_static"
+          ],
+          "i": 5,
+          "reward": -1.051,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 1,
+          "battery": 97.4,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": -1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 7,
+          "events": [],
+          "i": 6,
+          "reward": -1.06,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 1,
+          "battery": 96.9,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": -1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 8,
+          "events": [],
+          "i": 7,
+          "reward": -1.06,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 2,
+          "battery": 96.4,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": -1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 9,
+          "events": [],
+          "i": 8,
+          "reward": -1.06,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 2,
+          "battery": 96.35,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 9,
+          "events": [
+            "collision_static"
+          ],
+          "i": 9,
+          "reward": -1.051,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 4,
+          "battery": 96.3,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": -0.1
+          },
+          "distance_to_target": 9,
+          "events": [],
+          "i": 10,
+          "reward": -0.151,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 0,
+          "battery": 95.8,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 8,
+          "events": [],
+          "i": 11,
+          "reward": 0.94,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 0,
+          "battery": 95.3,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 7,
+          "events": [],
+          "i": 12,
+          "reward": 0.94,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 3,
+          "battery": 94.8,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 6,
+          "events": [],
+          "i": 13,
+          "reward": 0.94,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 3,
+          "battery": 94.75,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 6,
+          "events": [
+            "collision_static"
+          ],
+          "i": 14,
+          "reward": -1.051,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 1,
+          "battery": 94.25,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": -1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 7,
+          "events": [],
+          "i": 15,
+          "reward": -1.06,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 2,
+          "battery": 93.75,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": -1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 8,
+          "events": [],
+          "i": 16,
+          "reward": -1.06,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 4,
+          "battery": 93.7,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": -0.1
+          },
+          "distance_to_target": 8,
+          "events": [],
+          "i": 17,
+          "reward": -0.151,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 4,
+          "battery": 93.65,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": -0.1
+          },
+          "distance_to_target": 8,
+          "events": [],
+          "i": 18,
+          "reward": -0.151,
+          "terminated": false,
+          "truncated": false
+        }
+      ]
+    },
+    "simple_static": {
+      "astar_episode": {
+        "counters": {
+          "charging_events": 0,
+          "collisions": 0,
+          "dynamic_collisions": 0,
+          "energy_consumed": 14.0,
+          "idle_steps": 0,
+          "moves": 28,
+          "optimal_path_length": 28,
+          "static_collisions": 0,
+          "steps": 28,
+          "tasks_delivered": 1,
+          "tasks_failed": 0,
+          "termination_reason": "all_tasks_delivered"
+        },
+        "events_sha256": "ee8b061249369d480b95475a240343fc654beb1d7cef0839667813ed7dcf59fe",
+        "final_battery": 86.0,
+        "n_events": 2,
+        "terminated": true,
+        "total_reward": 50.32,
+        "truncated": false
+      },
+      "config": {
+        "battery": {
+          "capacity": 100.0,
+          "charge_rate": 8.0,
+          "critical_threshold": 10.0,
+          "idle_cost": 0.05,
+          "low_threshold": 30.0,
+          "move_cost": 0.5,
+          "start_level": 100.0
+        },
+        "description": "15x11 warehouse with a single row of shelf blocks, no dynamic obstacles and an effectively unlimited battery. Shortest paths are short and unobstructed.\n",
+        "layout": {
+          "aisle_width": 1,
+          "height": 11,
+          "n_charging_stations": 2,
+          "n_packing_stations": 1,
+          "shelf_block_height": 2,
+          "shelf_block_width": 3,
+          "station_rows": 2,
+          "top_aisle": 1,
+          "width": 15
+        },
+        "max_steps": 200,
+        "name": "simple_static",
+        "observation_window": 5,
+        "obstacles": {
+          "behaviour": "random_walk",
+          "move_probability": 0.6,
+          "n_dynamic": 0
+        },
+        "random_start_charger": false,
+        "reward": {
+          "battery_depleted_penalty": 10.0,
+          "battery_reserve_safety": 2.0,
+          "battery_reserve_weight": 0.0,
+          "collision_penalty": 1.0,
+          "delivery_reward": 20.0,
+          "energy_weight": 0.02,
+          "pickup_reward": 5.0,
+          "progress_weight": 1.0,
+          "shaping_gamma": 1.0,
+          "step_penalty": 0.05,
+          "timeout_penalty": 5.0,
+          "wait_penalty": 0.1
+        },
+        "seed": 0,
+        "tasks": {
+          "min_separation": 4,
+          "tasks_per_episode": 1
+        }
+      },
+      "layout": {
+        "charging_stations": [
+          [
+            9,
+            1
+          ],
+          [
+            9,
+            13
+          ]
+        ],
+        "grid_sha256": "d379a19873fa4f62e4915be6f39cad3e7b5e7e612b2b00b77b6d77ff4a7abe5c",
+        "height": 11,
+        "packing_stations": [
+          [
+            9,
+            7
+          ]
+        ],
+        "storage_points": [
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            6
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            4,
+            6
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            12
+          ],
+          [
+            7,
+            4
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            12
+          ]
+        ],
+        "width": 15
+      },
+      "observation_labels": [
+        "robot_row",
+        "robot_col",
+        "target_row",
+        "target_col",
+        "target_offset_row",
+        "target_offset_col",
+        "distance_to_target",
+        "battery_fraction",
+        "carrying",
+        "charger_offset_row",
+        "charger_offset_col",
+        "distance_to_charger",
+        "patch[-2,-2]",
+        "patch[-2,-1]",
+        "patch[-2,+0]",
+        "patch[-2,+1]",
+        "patch[-2,+2]",
+        "patch[-1,-2]",
+        "patch[-1,-1]",
+        "patch[-1,+0]",
+        "patch[-1,+1]",
+        "patch[-1,+2]",
+        "patch[+0,-2]",
+        "patch[+0,-1]",
+        "patch[+0,+0]",
+        "patch[+0,+1]",
+        "patch[+0,+2]",
+        "patch[+1,-2]",
+        "patch[+1,-1]",
+        "patch[+1,+0]",
+        "patch[+1,+1]",
+        "patch[+1,+2]",
+        "patch[+2,-2]",
+        "patch[+2,-1]",
+        "patch[+2,+0]",
+        "patch[+2,+1]",
+        "patch[+2,+2]"
+      ],
+      "reset": {
+        "observation": [
+          0.9,
+          0.071429,
+          0.1,
+          0.714286,
+          -0.8,
+          0.642857,
+          0.85,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "optimal_path_length": 28,
+        "task": {
+          "dropoff": [
+            9,
+            7
+          ],
+          "pickup": [
+            1,
+            10
+          ]
+        }
+      },
+      "reward_component_keys": [
+        "battery_depleted",
+        "battery_reserve",
+        "collision",
+        "delivery",
+        "energy",
+        "pickup",
+        "progress",
+        "step_penalty",
+        "timeout",
+        "wait"
+      ],
+      "scenario_file": "configs/scenarios/simple_static.yaml",
+      "spaces": {
+        "n_actions": 5,
+        "observation_high": 1.0,
+        "observation_low": -1.0,
+        "observation_shape": [
+          37
+        ]
+      },
+      "steps": [
+        {
+          "action": 0,
+          "battery": 99.5,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 16,
+          "events": [],
+          "i": 0,
+          "reward": 0.94,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 0,
+          "battery": 99.0,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 15,
+          "events": [],
+          "i": 1,
+          "reward": 0.94,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 0,
+          "battery": 98.5,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 14,
+          "events": [],
+          "i": 2,
+          "reward": 0.94,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 3,
+          "battery": 98.45,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 14,
+          "events": [
+            "collision_static"
+          ],
+          "i": 3,
+          "reward": -1.051,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 3,
+          "battery": 98.4,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 14,
+          "events": [
+            "collision_static"
+          ],
+          "i": 4,
+          "reward": -1.051,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 3,
+          "battery": 98.35,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 14,
+          "events": [
+            "collision_static"
+          ],
+          "i": 5,
+          "reward": -1.051,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 1,
+          "battery": 97.85,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": -1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 15,
+          "events": [],
+          "i": 6,
+          "reward": -1.06,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 1,
+          "battery": 97.35,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": -1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 16,
+          "events": [],
+          "i": 7,
+          "reward": -1.06,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 2,
+          "battery": 97.3,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 16,
+          "events": [
+            "collision_static"
+          ],
+          "i": 8,
+          "reward": -1.051,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 2,
+          "battery": 97.25,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 16,
+          "events": [
+            "collision_static"
+          ],
+          "i": 9,
+          "reward": -1.051,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 4,
+          "battery": 97.2,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": -0.1
+          },
+          "distance_to_target": 16,
+          "events": [],
+          "i": 10,
+          "reward": -0.151,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 0,
+          "battery": 96.7,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 15,
+          "events": [],
+          "i": 11,
+          "reward": 0.94,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 0,
+          "battery": 96.2,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": 1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 14,
+          "events": [],
+          "i": 12,
+          "reward": 0.94,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 3,
+          "battery": 96.15,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 14,
+          "events": [
+            "collision_static"
+          ],
+          "i": 13,
+          "reward": -1.051,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 3,
+          "battery": 96.1,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 14,
+          "events": [
+            "collision_static"
+          ],
+          "i": 14,
+          "reward": -1.051,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 1,
+          "battery": 95.6,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.01,
+            "pickup": 0.0,
+            "progress": -1.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 15,
+          "events": [],
+          "i": 15,
+          "reward": -1.06,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 2,
+          "battery": 95.55,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": -1.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": 0.0
+          },
+          "distance_to_target": 15,
+          "events": [
+            "collision_static"
+          ],
+          "i": 16,
+          "reward": -1.051,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 4,
+          "battery": 95.5,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": -0.1
+          },
+          "distance_to_target": 15,
+          "events": [],
+          "i": 17,
+          "reward": -0.151,
+          "terminated": false,
+          "truncated": false
+        },
+        {
+          "action": 4,
+          "battery": 95.45,
+          "components": {
+            "battery_depleted": 0.0,
+            "battery_reserve": 0.0,
+            "collision": 0.0,
+            "delivery": 0.0,
+            "energy": -0.001,
+            "pickup": 0.0,
+            "progress": 0.0,
+            "step_penalty": -0.05,
+            "timeout": 0.0,
+            "wait": -0.1
+          },
+          "distance_to_target": 15,
+          "events": [],
+          "i": 18,
+          "reward": -0.151,
+          "terminated": false,
+          "truncated": false
+        }
+      ]
+    }
+  },
+  "seed": 1000
+}

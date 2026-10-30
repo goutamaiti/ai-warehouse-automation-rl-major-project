@@ -238,7 +238,36 @@ def layout_from_grid(grid: Sequence[Sequence[int]]) -> WarehouseLayout:
     generated layouts still runs, so a hand-drawn warehouse gets the same
     connectivity and walkability guarantees as a procedural one.
     """
-    array = np.asarray(grid, dtype=np.int64)
+    # Rows are measured before NumPy sees them. np.asarray on a ragged grid
+    # raises "setting an array element with a sequence. The requested array has
+    # an inhomogeneous shape after 1 dimensions..." - a NumPy internal that
+    # travelled all the way out to the HTTP client as the body of a 404, next
+    # to siblings like "grid must be at least 5x5". Every message this function
+    # raises is read by a person, so this one is phrased too.
+    try:
+        widths = {len(row) for row in grid}
+    except TypeError as exc:
+        raise ValueError("grid must be a 2D array of cell-type integers") from exc
+    if len(widths) > 1:
+        raise ValueError(
+            "every row must have the same width; got widths "
+            f"{sorted(widths)}"
+        )
+
+    # OverflowError is caught alongside ValueError because a Python int too
+    # large for int64 raises the former, which is an ArithmeticError and so
+    # escaped every `except ValueError` between here and the HTTP layer: a grid
+    # of 2**63 answered POST /api/run with a 500. One cell value below that
+    # (2**63 - 1) was already rejected properly as an unknown cell type, so the
+    # only thing separating a clean 4xx from a server error was the width of an
+    # integer.
+    try:
+        array = np.asarray(grid, dtype=np.int64)
+    except (OverflowError, ValueError, TypeError) as exc:
+        raise ValueError(
+            "grid must contain only cell-type integers in "
+            f"{sorted(int(member) for member in CellType)}"
+        ) from exc
     if array.ndim != 2:
         raise ValueError("grid must be a 2D array of cell-type integers")
     height, width = array.shape

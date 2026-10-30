@@ -56,6 +56,7 @@ def build_config(args: argparse.Namespace) -> PPOConfig:
         learning_rate=args.learning_rate,
         seed=args.seed,
         eval_freq=args.eval_freq,
+        init_from=args.init_from,
     )
     config.validate()
     return config
@@ -124,6 +125,25 @@ def train(config: PPOConfig, tag: str = "ppo_warehouse") -> Path:
         verbose=1,
     )
 
+    if config.init_from:
+        # Transfer only the network weights, not the donor's hyper-parameters:
+        # the run must be described by *this* config, otherwise the metadata
+        # written below would not match what actually ran.
+        donor = PPO.load(config.init_from, device="cpu")
+        if donor.observation_space.shape != model.observation_space.shape:
+            raise SystemExit(
+                f"cannot initialise from {config.init_from}: observation space "
+                f"{donor.observation_space.shape} does not match "
+                f"{model.observation_space.shape}"
+            )
+        if donor.action_space.n != model.action_space.n:
+            raise SystemExit(
+                f"cannot initialise from {config.init_from}: action space "
+                f"{donor.action_space.n} does not match {model.action_space.n}"
+            )
+        model.policy.load_state_dict(donor.policy.state_dict())
+        print(f"initialised policy weights from {config.init_from}")
+
     started = time.time()
     model.learn(total_timesteps=config.total_timesteps, callback=callbacks)
     duration = time.time() - started
@@ -162,6 +182,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--learning-rate", type=float, default=defaults.learning_rate)
     parser.add_argument("--seed", type=int, default=defaults.seed)
     parser.add_argument("--eval-freq", type=int, default=defaults.eval_freq)
+    parser.add_argument(
+        "--init-from",
+        default=defaults.init_from,
+        help="path to a trained .zip whose policy weights this run starts from "
+        "(transfer learning); observation and action spaces must match",
+    )
     parser.add_argument("--tag", default="ppo_warehouse", help="name for model and log files")
     return parser.parse_args(argv)
 

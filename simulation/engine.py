@@ -153,7 +153,13 @@ class WarehouseSimulation:
         if seed is not None:
             self.rng = np.random.default_rng(seed)
 
-        start = self.layout.charging_stations[0]
+        stations = self.layout.charging_stations
+        if self.config.random_start_charger and len(stations) > 1:
+            # Drawn from the episode RNG, so reset(seed=k) still rebuilds
+            # episode k exactly - the start is varied, not nondeterministic.
+            start = stations[int(self.rng.integers(len(stations)))]
+        else:
+            start = stations[0]
         self.robot = Robot(
             robot_id=0,
             position=start,
@@ -230,7 +236,14 @@ class WarehouseSimulation:
 
         # --- 4. termination checks ------------------------------------
         self.counters.steps += 1
-        if self.robot.is_depleted():
+        # The `not all_tasks_done` guard mirrors the timeout branch below.
+        # Without it, a robot whose battery reached exactly 0 on the step it
+        # made its FINAL delivery was recorded as delivered AND failed, with the
+        # termination reason overwritten to battery_depleted and a -penalty
+        # charged on a successful run. Checked before fixing: none of the 540
+        # committed evaluation episodes hit this edge, so no reported number
+        # moves.
+        if self.robot.is_depleted() and not outcome.all_tasks_done:
             outcome.battery_depleted = True
             outcome.events.append("battery_depleted")
             self.task.mark_failed()

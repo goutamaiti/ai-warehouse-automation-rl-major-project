@@ -1,0 +1,10 @@
+# Reward ablation arm: dynamic_obstacles with ONE reward term switched off.
+# Everything else - world, traffic, budget, hyper-parameters - is identical, so
+# any difference against dynamic_obstacles is caused by this term alone.
+# Run by scripts/run_reward_studies.py; results in data/ablation/.
+extends: ../scenarios/dynamic_obstacles.yaml
+
+name: ablation_no_wait
+
+reward:
+  wait_penalty: 0.0
