@@ -1,0 +1,20 @@
+# Battery rules for the 46x30 Live floor. Fleet only: no PPO policy is trained
+# on this, so it lives outside configs/scenarios/ and the frozen contract.
+#
+# battery_constrained is sized for the 21x15 floor, where the median
+# charger-pickup-station-charger cycle is 25 moves. On the 46x30 floor it is 66,
+# 2.64 times longer, so those rules leave a robot unable to finish a typical
+# cycle. Dividing the move and idle costs by 2.64 keeps the battery exactly as
+# tight as it is on the small floor: a typical cycle costs the same share of a
+# charge, and the 45% start still rules out finishing without charging.
+extends: ../scenarios/battery_constrained.yaml
+
+name: battery_large_floor
+description: >
+  46x30 robotic-fulfilment floor with the battery as a real constraint. The
+  battery_constrained rules scaled to this floor: 45% start, 175 moves on a
+  full charge.
+
+battery:
+  move_cost: 0.57       # 1.5 / 2.64: 175 moves on a full charge, 79 on the start
+  idle_cost: 0.04       # 0.1 / 2.64

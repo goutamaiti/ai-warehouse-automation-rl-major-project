@@ -48,10 +48,15 @@ def scenario_files() -> list[Path]:
     return [path for path in files if path.is_file()]
 
 
+def fleet_scenario_files() -> list[Path]:
+    """Rules only the Live floor uses: no policy or episode exists for these."""
+    return sorted((CONFIGS_DIR / "fleet").glob("*.yaml"))
+
+
 @lru_cache(maxsize=32)
 def load_scenario_config(name: str) -> ScenarioConfig:
     """Load a scenario by name, cached because layouts are deterministic."""
-    for path in scenario_files():
+    for path in scenario_files() + fleet_scenario_files():
         if path.stem == name:
             return load_scenario(path)
     raise ServiceError(f"unknown scenario {name!r}")

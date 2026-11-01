@@ -262,30 +262,24 @@ def test_a_fleet_places_and_runs_on_the_realistic_floor():
     assert counters["moves"] > 0, "nobody moved"
 
 
-def test_one_way_routing_reduces_robot_on_robot_blocking():
-    """The measured benefit of the one-way field - and its honest size.
+def test_one_way_lanes_cost_extra_driving_per_delivery():
+    """What one-way lanes measurably do, in data/fleet/one_way.json.
 
-    Twelve robots and a 200-product backlog, because the effect is a congestion
-    effect. Measured with the current fleet controller over seeds 1000-1004:
-    the one-way field averages 17.6 robot-on-robot refusals against 102.4 on the
-    two-way floor (about 5.8x fewer, on every seed), while delivering slightly
-    LESS - 50.6 against 52.4 products in 400 ticks - because one-way lanes force
-    detours. It is a trade-off, not a free win.
+    Over seeds 1000-1004, 12 robots and a 200-product backlog, one-way lanes
+    deliver about 6% less in 400 ticks (54.6 against 58.0) and do not reduce
+    blocking (27.4 refusals against 24.0), because they force detours.
 
-    An earlier version of this test claimed a hundredfold gap and required the
-    two-way floor to record over 200 refusals. Those thousands of refusals were
-    mostly robots caught in a charging loop in the fleet controller (charge to
-    90%, leave, dip under 90%, turn back - see baselines/fleet_controller.py).
-    With the loop fixed the two-way floor records tens to about a hundred, not
-    thousands. The assertion stays loose - 1.5x over three seeds against a
-    measured 5-6x - so it tests the mechanism, not a specific seed.
+    This test used to assert a 5.8x cut in refusals. That figure was wrong: a
+    boxed-in robot on a one-way floor waited silently while the same robot on a
+    two-way floor attempted the move and was refused, so only the two-way side
+    was counted. With both counted the same way the gap is gone.
     """
     from baselines.fleet_controller import FleetPlannerController
 
     layout, direction = floor()
     config = load_scenario(find_scenario("default"))
 
-    def blocked_events(directions, seed):
+    def moves_and_deliveries(directions, seed):
         queue = TaskQueue()
         sim = FleetSimulation(
             config, n_robots=12, layout=layout, task_queue=queue, directions=directions
@@ -306,13 +300,14 @@ def test_one_way_routing_reduces_robot_on_robot_blocking():
             if sim.done:
                 break
             sim.step(controller.act(sim))
-        return sim.fleet_counters()["blocked_by_robot"]
+        counters = sim.fleet_counters()
+        return counters["moves"], counters["tasks_delivered"]
 
-    seeds = (1000, 1001, 1002)
-    one_way = sum(blocked_events(direction, seed) for seed in seeds)
-    two_way = sum(blocked_events(None, seed) for seed in seeds)
-    assert two_way > 0, "the load produced no congestion at all to compare"
-    assert one_way * 1.5 < two_way, f"one-way {one_way} vs two-way {two_way}"
+    def moves_per_delivery(directions):
+        runs = [moves_and_deliveries(directions, seed) for seed in (1000, 1001, 1002)]
+        return sum(m for m, _ in runs) / sum(d for _, d in runs)
+
+    assert moves_per_delivery(direction) > moves_per_delivery(None)
 
 
 def test_a_full_robot_does_not_park_at_a_charger_it_no_longer_needs():

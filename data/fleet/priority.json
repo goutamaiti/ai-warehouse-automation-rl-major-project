@@ -1,0 +1,86 @@
+{
+  "summary": {
+    "urgent": {
+      "late_turnaround": 57.68,
+      "backlog_turnaround": 116.57000000000001,
+      "delivered": 125
+    },
+    "normal": {
+      "late_turnaround": 194.0,
+      "backlog_turnaround": 90.64999999999999,
+      "delivered": 125
+    }
+  },
+  "runs": [
+    {
+      "late_priority": "urgent",
+      "seed": 0,
+      "delivered": 25,
+      "late_turnaround": 57,
+      "backlog_turnaround": 120.2
+    },
+    {
+      "late_priority": "urgent",
+      "seed": 1,
+      "delivered": 25,
+      "late_turnaround": 61,
+      "backlog_turnaround": 120.75
+    },
+    {
+      "late_priority": "urgent",
+      "seed": 2,
+      "delivered": 25,
+      "late_turnaround": 62.4,
+      "backlog_turnaround": 113.2
+    },
+    {
+      "late_priority": "urgent",
+      "seed": 3,
+      "delivered": 25,
+      "late_turnaround": 53.8,
+      "backlog_turnaround": 119.3
+    },
+    {
+      "late_priority": "urgent",
+      "seed": 4,
+      "delivered": 25,
+      "late_turnaround": 54.2,
+      "backlog_turnaround": 109.4
+    },
+    {
+      "late_priority": "normal",
+      "seed": 0,
+      "delivered": 25,
+      "late_turnaround": 181,
+      "backlog_turnaround": 84.25
+    },
+    {
+      "late_priority": "normal",
+      "seed": 1,
+      "delivered": 25,
+      "late_turnaround": 186.8,
+      "backlog_turnaround": 85.35
+    },
+    {
+      "late_priority": "normal",
+      "seed": 2,
+      "delivered": 25,
+      "late_turnaround": 186.8,
+      "backlog_turnaround": 88.3
+    },
+    {
+      "late_priority": "normal",
+      "seed": 3,
+      "delivered": 25,
+      "late_turnaround": 196.6,
+      "backlog_turnaround": 96.3
+    },
+    {
+      "late_priority": "normal",
+      "seed": 4,
+      "delivered": 25,
+      "late_turnaround": 218.8,
+      "backlog_turnaround": 99.05
+    }
+  ]
+}

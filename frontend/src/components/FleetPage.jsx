@@ -31,13 +31,15 @@ const SCENARIOS = [
   { id: 'default', label: 'Default floor' },
   { id: 'dynamic_obstacles', label: 'With moving traffic' },
   { id: 'battery_tuned', label: 'Battery constrained' },
+  { id: 'battery_large_floor', label: 'Battery constrained, large floor' },
 ];
 
 /** Rules a floor cannot run. The battery rules were sized for the 21×15 floor:
  *  30 moves on the starting charge, 67 on a full one. On the 46×30 floor the
  *  median charger → pickup → station → charger cycle is 66 moves and only 160
- *  of 306 pick points fit a full battery, so every robot runs flat. */
-const UNSUPPORTED = { rmfs: ['battery_tuned'] };
+ *  of 306 pick points fit a full battery, so every robot runs flat. The large
+ *  floor has its own rules, scaled to that cycle. */
+const UNSUPPORTED = { rmfs: ['battery_tuned'], default: ['battery_large_floor'] };
 
 const supports = (floorId, scenarioId) => !(UNSUPPORTED[floorId] ?? []).includes(scenarioId);
 
@@ -291,7 +293,7 @@ export default function FleetPage() {
             {SCENARIOS.map((option) => (
               <option key={option.id} value={option.id} disabled={!supports(floor, option.id)}>
                 {option.label}
-                {supports(floor, option.id) ? '' : ' (21×15 floor only)'}
+                {supports(floor, option.id) ? '' : ` (${floor === 'rmfs' ? '21×15' : '46×30'} floor only)`}
               </option>
             ))}
           </select>
@@ -335,6 +337,12 @@ export default function FleetPage() {
       {frame?.stopped ? (
         <p className="floor-error">
           The floor stopped: {frame.stopped_reason}. Press Start to run it again.
+        </p>
+      ) : null}
+      {frame?.fleet?.stalled_robots?.length ? (
+        <p className="floor-error">
+          Stuck, no closer to their target for a minute of ticks: robot{' '}
+          {frame.fleet.stalled_robots.map((id) => id + 1).join(', ')}.
         </p>
       ) : null}
 

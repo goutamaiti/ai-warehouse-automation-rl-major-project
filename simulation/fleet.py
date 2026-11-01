@@ -49,6 +49,12 @@ from .zones import Zone, build_zones, zone_of
 #: a continuous session wastes minutes on it.
 DEADLOCK_STREAK = 8
 
+#: Ticks a working robot may get no closer to its target before it is reported
+#: as stalled. DEADLOCK_STREAK only fires when the whole fleet stops, so two
+#: robots jammed in a corner of a floor where the others keep working went
+#: unnoticed until they ran flat. Long enough for a detour around a one-way block.
+STALL_WARNING_TICKS = 60
+
 #: Consecutive refusals by a peer before a robot steps aside to break the
 #: standoff. Three is long enough that ordinary contention resolves on its own -
 #: a robot waiting one or two ticks for an aisle to clear is normal - and short
@@ -141,6 +147,9 @@ class FleetMember:
     #: Consecutive ticks this robot has been refused by a peer. Reset by any
     #: successful move; drives the yielding rule.
     blocked_streak: int = 0
+    #: Closest it has been to its current target, and ticks since it improved.
+    closest_to_target: int | None = None
+    no_progress_ticks: int = 0
     #: False once the robot's battery is flat; it stops acting but stays on the
     #: floor as an obstacle, because a dead robot does not vanish from an aisle.
     alive: bool = True
@@ -474,6 +483,7 @@ class FleetSimulation:
 
             self._handle_interactions(member, robot_outcome)
             self._handle_charging(member, robot_outcome)
+            self._track_progress(member, robot_outcome)
 
             if member.robot.is_depleted():
                 member.alive = False
@@ -681,6 +691,27 @@ class FleetSimulation:
                 outcome.events.append("charging")
                 member.counters.charging_events += 1
 
+    def _track_progress(self, member: FleetMember, outcome: RobotStepOutcome) -> None:
+        """Count the ticks a working robot has got no closer to its target.
+
+        Distance rather than movement, so a robot dancing on the spot counts.
+        """
+        if (
+            member.task is None
+            or outcome.charged > 0
+            or outcome.picked_up
+            or outcome.delivered
+        ):
+            member.closest_to_target = None
+            member.no_progress_ticks = 0
+            return
+        distance = self.distance_to_target(member.robot_id)
+        if member.closest_to_target is None or distance < member.closest_to_target:
+            member.closest_to_target = distance
+            member.no_progress_ticks = 0
+        else:
+            member.no_progress_ticks += 1
+
     def _dispatch(self) -> list[DispatchDecision]:
         """Hand waiting requests to the nearest idle robots."""
         if self.queue is None:
@@ -794,6 +825,16 @@ class FleetSimulation:
                 best, best_distance = station, distance
         return best, best_distance
 
+    def chargers_by_distance(self, position: Position) -> list[tuple[Position, int]]:
+        """Every reachable charging station, nearest first."""
+        ranked = [
+            (station, int(self._field(station)[position]))
+            for station in self.layout.charging_stations
+        ]
+        return sorted(
+            ((station, d) for station, d in ranked if d >= 0), key=lambda item: item[1]
+        )
+
     def blocked_grid(self, exclude: int | None = None) -> np.ndarray:
         """Cells a robot may not enter: walls, shelves, traffic and peers.
 
@@ -825,6 +866,11 @@ class FleetSimulation:
             "tasks_delivered": sum(c.tasks_delivered for c in per_robot.values()),
             "robots_alive": sum(1 for m in self.members.values() if m.alive),
             "deadlock_streak": self._idle_streak,
+            "stalled_robots": sorted(
+                rid
+                for rid, m in self.members.items()
+                if m.alive and m.no_progress_ticks >= STALL_WARNING_TICKS
+            ),
             "outstanding_work": self.has_outstanding_work(),
             "per_robot": {rid: c.to_dict() for rid, c in per_robot.items()},
         }

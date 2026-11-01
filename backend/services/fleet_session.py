@@ -48,9 +48,13 @@ MAX_PENDING_REQUESTS = 500
 MAX_TICKS_PER_CALL = 200
 
 #: Rulesets whose battery cannot serve the realistic floor. Measured, not
-#: guessed: with 45% start, 1.5% per move and 8 chargers along one edge, a
-#: 5-robot fleet ran flat by tick 133 having delivered 2 of 5 products.
+#: guessed (data/fleet/reliability.json): with 45% start and 1.5% per move, 0 of
+#: 90 runs delivered everything and 1,021 of 1,050 robots ran flat.
 BATTERY_RULES_TOO_SMALL_FOR_RMFS = frozenset({"battery_constrained", "battery_tuned"})
+
+#: Rulesets scaled to the realistic floor. On the 21x15 floor the same battery is
+#: not a constraint at all, so the choice would look like a test and not be one.
+RULES_SIZED_FOR_RMFS = frozenset({"battery_large_floor"})
 
 
 class FleetSessionError(Exception):
@@ -94,6 +98,11 @@ class FleetSession:
         elif floor != "default":
             raise FleetSessionError(
                 f"unknown floor {floor!r}; expected 'default' or 'rmfs'"
+            )
+        elif config.name in RULES_SIZED_FOR_RMFS:
+            raise FleetSessionError(
+                f"the {config.name!r} rules are sized for the 46x30 floor; use "
+                "them with floor 'rmfs'"
             )
         self.queue = TaskQueue()
         try:

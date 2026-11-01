@@ -324,29 +324,74 @@ same products, seeds 0-4:
 
 | The 5 late products marked | Their mean turnaround | The 20-product backlog's mean turnaround |
 |---|---|---|
-| urgent | **58.3 ticks** | 123.5 ticks |
-| normal | 187.1 ticks | **87.2 ticks** |
+| urgent | **57.7 ticks** | 116.6 ticks |
+| normal | 194.0 ticks | **90.6 ticks** |
 
-Urgent products arrive about 3.2x faster; the backlog waits about 42% longer
+Urgent products arrive about 3.4x faster; the backlog waits about 29% longer
 to pay for it. Priority moves waiting time, it does not create capacity. All 25
 products were delivered on every seed.
 
-One-way lanes on the 46x30 floor, 12 robots, 200-product backlog, 400 ticks,
-seeds 1000-1004:
+One-way lanes on the 46x30 floor, 200-product backlog, 400 ticks, seeds
+1000-1004 (`data/fleet/one_way.json`):
 
-| Floor | Robot-on-robot refusals (mean) | Products delivered (mean) |
+| Floor | Robots | Robot-on-robot refusals (mean) | Products delivered (mean) |
+|---|---|---|---|
+| one-way lanes | 12 | 27.4 | 54.6 |
+| two-way | 12 | **24.0** | **58.0** |
+| one-way lanes | 20 | 102.0 | 86.4 |
+| two-way | 20 | **75.2** | **91.8** |
+
+**One-way lanes do not reduce blocking on this floor, and they deliver about 6%
+less.** This replaces an earlier claim of 5.8x less blocking, which was wrong in
+how it counted: on the one-way floor a boxed-in robot waited silently, while on
+the two-way floor the same robot attempted the move and was refused, so only the
+two-way floor recorded its congestion. With both counted alike the gap is gone.
+Two earlier figures (a hundredfold cut, then 2.5x) were withdrawn for other
+reasons. Each time the controller changed, the measurement was rerun rather than
+kept. These are 400-tick runs; long-run reliability of the two-way floor has not
+been measured.
+
+### Traffic and battery on the 46x30 floor
+
+The battery rules were first refused on this floor because a full charge covers
+67 moves against a median 66-move cycle. That was true but it was not the whole
+problem. Over 200-product runs on the 200-move rules, only 5 of 10 runs delivered
+everything, and 31 of 33 dead robots had stood still for at least 40 ticks: they
+were jammed, and draining flat where they stood. Four causes, each traced on a
+real run and each with a rule and a test in `tests/test_fleet_traffic.py`:
+
+| Trap | What happened | Rule |
 |---|---|---|
-| one-way lanes | **17.6** | 50.6 |
-| two-way | 102.4 | **52.4** |
+| Head-on jam | Two robots with tasks wanted each other's cells, and only idle robots gave way | A boxed-in robot attempts the move, and a working robot steps aside if head-on or stuck for 4 ticks |
+| Charger queue | Six robots queued for one charger while six of eight stood empty | Each robot claims the nearest free charger it can reach |
+| Dodging in step | Two robots in a two-wide corridor dodged to the same side for ever, each still moving | A robot about to reverse waits one tick if a lower-numbered robot is close |
+| Shadowed exit | A robot beside another on a parallel lane found every exit occupied and was carried past each one until it ran flat | If a detour is over 2 moves longer than the route ignoring peers, try that route and queue |
 
-One-way lanes cut robot-on-robot blocking about 5.8x, on every seed, at the
-cost of about 3% throughput from the forced detours. These figures are for the
-current fleet controller; they replace two earlier ones. A hundredfold reduction
-was measured while the controller had a charging loop, whose thousands of
-refusals were mostly looping robots. A 2.5x reduction (15.0 vs 37.8 refusals,
-45.8 vs 49.2 delivered) was measured after that fix but before the three
-stress-sweep rules above, which changed how robots move around each other.
-Each time the controller changed, the measurement was rerun rather than kept.
+`DEADLOCK_STREAK` only fires when the whole fleet stops, so none of this was
+reported. A new warning, `stalled_robots`, names any working robot that has got
+no closer to its target for 60 ticks, and the Live floor shows it.
+
+`configs/fleet/battery_large_floor.yaml` then adds battery rules for this floor:
+`battery_constrained` with its move and idle costs divided by 2.64, the ratio of
+the two floors' median cycles (66 moves against 25), so the battery is as tight
+here as it is on the small floor. It is a fleet-only ruleset with no PPO policy.
+
+Held-out test, `python scripts/run_fleet_studies.py reliability`. 5, 10 and 20
+robots; a burst of 40, a burst of 200, and a steady flow of 200 at about 80% of
+capacity; 10 runs of each, 90 per ruleset, 1,050 robots. Seeds 2000-2009 played
+no part in tuning: seeds 0-4 and 1000-1009 did (`data/fleet/reliability.json`).
+
+| Rules | Runs delivering everything | Robots flat | Runs stopped early |
+|---|---|---|---|
+| `battery_tuned` (67 moves, 45% start), still refused in the app | **0 / 90** | 1,021 / 1,050 | 90 |
+| `battery_large_floor` (175 moves, 45% start) | **90 / 90** | 0 / 1,050 | 0 |
+| `default` (200 moves, 100% start) | **90 / 90** | 1 / 1,050 | 0 |
+
+The one flat robot was in a 20-robot steady run, which still delivered all 200.
+It was not chased, because tuning against these seeds would end their use as a
+test. Eight chargers were enough, so the floor itself did not change. The 1,050
+is simulated robots across simulated runs: none of this has been compared with a
+real warehouse.
 
 ## Summary against the research question
 

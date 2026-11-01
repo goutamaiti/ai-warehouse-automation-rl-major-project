@@ -58,14 +58,14 @@ and verified; `[ ]` means not done, with the reason. Numbers come from
 - [x] Dashboard: replays, per-step reward breakdown, results chart (one metric at a time, 95% CI brackets), learning curves
 - [x] Live floor: multiple robots, add a product, nearest-robot dispatch, live stream
 - [x] Live-floor queue table: every product in order with pickup, station, robot and status, ticked when delivered
-- [x] Battery-constrained rules refused on the 46x30 floor (battery too small: median cycle 66 moves vs 67 on a full charge; measured 5 robots flat by tick 133)
+- [x] Battery-constrained rules refused on the 46x30 floor (battery too small: median cycle 66 moves vs 67 on a full charge; measured 0 of 90 runs finished; the floor now has its own rules)
 - [x] Editor: paint a warehouse, run it (backend or in-browser sandbox)
 - [x] Info: method explained, reward walked step by step on a real recording, results read live
 - [x] One shared cell vocabulary (marks, not shades) across every map
 
 ## Week 9 - Integration and testing
 - [x] FastAPI backend (16 endpoints), hostile-input hardened (fuzzed: no 5xx, no traceback leaks, no path traversal)
-- [x] 276 automated tests, including a 50-test frozen-contract tripwire
+- [x] 297 automated tests, including a 50-test frozen-contract tripwire
 - [x] `run_test_cases.py` - 27 demo test cases (functional, input validation, error handling), expected vs actual, against the live API: 27/27 (`docs/test-cases.md`)
 - [x] `verify_live_floor.py` - 8 scenarios, 112/112 products, nearest robot, correct cells
 - [x] `verify_single_robot.py` - every scenario x controller, same PPO models as published, 540/540 episodes
@@ -84,7 +84,8 @@ and verified; `[ ]` means not done, with the reason. Numbers come from
 
 ## Extensions beyond the plan
 - [x] Multi-robot fleet (classical): shared queue, nearest-robot dispatch by path distance, charger zones and waiting points, deadlock detection, yielding, battery hysteresis
-- [x] Realistic 46x30 robotic-fulfilment floor: 300 pods, 306 pick points, 8 stations, 8 chargers, one-way lanes (5.8x fewer blockings, 3% less throughput)
+- [x] Realistic 46x30 robotic-fulfilment floor: 300 pods, 306 pick points, 8 stations, 8 chargers, one-way lanes (no blocking benefit once counted fairly, about 6% less throughput; the earlier 5.8x was withdrawn)
+- [x] 46x30 traffic rules, stuck-robot warning and its own battery rules: 90/90 held-out runs delivered everything, 0 of 1,050 robots flat (`data/fleet/`)
 - [x] Deployed to Vercel from `main` (static; the Live floor needs the local backend)
 - [ ] Multi-agent RL (MAPPO) on the fleet - future scope
 - [x] Battery policy reliability: best-checkpoint selection 72/90 -> 82/90 (30 / 27 / 25), camping gone; seed 0 matches A* (`data/stability/`)

@@ -70,10 +70,10 @@ robots bouncing on the charge threshold, and a jammed charger doorway) - all
 fixed and covered by regression tests. Before the fixes, 14 of 60 stress runs
 on the 21x15 floor failed.
 
-**"Do one-way lanes help?"** They cut robot-on-robot blocking about 5.8x
-(17.6 vs 102.4 over 5 seeds) but deliver about 3% less (50.6 vs 52.4) because of the
-detours. A trade-off. An earlier "hundredfold" figure was measured with the
-charging-loop bug and was withdrawn.
+**"Do one-way lanes help?"** No, not on this floor. With 12 robots they
+give 27.4 refusals against 24.0 and deliver about 6% less (54.6 vs 58.0), because
+of the detours. Earlier figures of 5.8x and a hundredfold were withdrawn: the 5.8x
+came from counting refusals on the two-way floor only.
 
 **"Is this one lucky training run?"** No - every policy was retrained with two
 more seeds (`data/seeds/summary.md`). The static ties with A* and the traffic
@@ -104,4 +104,4 @@ buffer. Q-Learning/DQN validation was planned and skipped deliberately.
 urgent product is dispatched before any normal one; within a level, first come
 first served. A robot already carrying a package is never reassigned. Measured:
 5 late products took 58.3 ticks marked urgent against 187.1 marked normal, and
-the rest of the backlog waited about 42% longer to pay for it.
+the rest of the backlog waited about 29% longer to pay for it.

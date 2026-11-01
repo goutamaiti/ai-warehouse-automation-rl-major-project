@@ -59,6 +59,16 @@ PLANNERS = {"astar": astar, "bfs": bfs}
 #: delivering, below it they die one to four cells short of a charger.
 DEFAULT_SAFETY_FACTOR = 2.0
 
+#: Consecutive ticks a robot may fail to move before it counts as jammed, which
+#: is what lets a robot holding a task be asked to step aside. Two or three
+#: ticks of waiting is ordinary contention, and a working robot should not be
+#: pushed around for it.
+STALL_TICKS = 4
+
+#: Extra moves a robot accepts to drive around a peer instead of waiting for it.
+#: Stepping past one robot in a two-wide corridor costs two.
+DETOUR_SLACK = 2
+
 
 def _action_towards(current: Position, nxt: Position) -> int:
     delta = (nxt[0] - current[0], nxt[1] - current[1])
@@ -113,6 +123,11 @@ class FleetPlannerController:
         #: (or sitting on) a charger until it reaches ``charge_until`` - the
         #: second threshold of a two-threshold hysteresis.
         self._charging: set[int] = set()
+        #: robot id -> consecutive ticks it has tried to move and not moved.
+        self._stalled: dict[int, int] = {}
+        self._last_position: dict[int, Position] = {}
+        #: robot id -> the charger it is heading for or sitting on.
+        self._claimed: dict[int, Position] = {}
 
     @property
     def name(self) -> str:
@@ -122,6 +137,9 @@ class FleetPlannerController:
         self.nodes_expanded = 0
         self._committed = {}
         self._charging = set()
+        self._stalled = {}
+        self._last_position = {}
+        self._claimed = {}
 
     # ------------------------------------------------------------------
     def act(self, sim: FleetSimulation) -> dict[int, int]:
@@ -131,11 +149,51 @@ class FleetPlannerController:
             if not member.alive:
                 continue
             actions[robot_id] = self._act_one(sim, robot_id)
+        self._hold_reversals(sim, actions)
+        self._update_stalls(sim, actions)
         return self._make_way(sim, actions)
+
+    def _hold_reversals(self, sim: FleetSimulation, actions: dict[int, int]) -> None:
+        """Stop two robots dodging each other in step, for ever.
+
+        Each robot plans around where the other is now, not where it will be.
+        Two robots meeting in a two-wide corridor both dodge to the same side,
+        are face to face again, and both dodge back. Both move every tick, so
+        neither counts as stalled. Measured on the realistic floor (20 robots,
+        200 products, seed 4): a robot one cell from a charger danced from 26%
+        down to flat, burning move cost on every tick.
+
+        So a robot about to step back onto the cell it just left waits one tick
+        if a lower-numbered robot is close by. That breaks the symmetry, and the
+        two then pass.
+        """
+        for robot_id, action in actions.items():
+            if action == int(Action.WAIT):
+                continue
+            row, col = sim.members[robot_id].position
+            d_row, d_col = DIRECTIONS[action]
+            if (row + d_row, col + d_col) != self._last_position.get(robot_id):
+                continue
+            for other_id, other in sim.members.items():
+                near = abs(other.position[0] - row) + abs(other.position[1] - col) <= 2
+                if other_id < robot_id and other.alive and near:
+                    actions[robot_id] = int(Action.WAIT)
+                    break
+
+    def _update_stalls(self, sim: FleetSimulation, actions: dict[int, int]) -> None:
+        """Count, per robot, the ticks it has tried to move and stayed put."""
+        for robot_id, action in actions.items():
+            position = sim.members[robot_id].position
+            stuck = (
+                action != int(Action.WAIT)
+                and self._last_position.get(robot_id) == position
+            )
+            self._stalled[robot_id] = self._stalled.get(robot_id, 0) + 1 if stuck else 0
+            self._last_position[robot_id] = position
 
     # ------------------------------------------------------------------
     def _make_way(self, sim: FleetSimulation, actions: dict[int, int]) -> dict[int, int]:
-        """Idle robots step aside for a robot that needs their cell.
+        """Robots step aside for a robot that needs their cell.
 
         Without this an idle robot, once parked, never moves for anyone. On the
         21x15 floor the waiting cells beside a charger form a diagonal that
@@ -146,8 +204,9 @@ class FleetPlannerController:
         bursts, steady arrivals and long gaps, four seeds) deadlocked or left a
         product undelivered.
 
-        Only a robot with no task makes way, so a delivery is never delayed to
-        let someone else through, and it moves only when it was not leaving
+        A robot with no task makes way. A robot with a task only does so to
+        break a jam: it is head-on with the robot it blocks, or has itself been
+        stuck for STALL_TICKS. Either way it moves only when it was not leaving
         anyway. It steps to a free neighbouring cell nobody else is entering,
         preferring the one furthest from the robot it is making way for; next
         tick it heads back to the nearest free waiting cell as usual.
@@ -171,8 +230,15 @@ class FleetPlannerController:
             if blocker is None or blocker == rid or blocker not in actions:
                 continue
             blocker_member = sim.members[blocker]
+            head_on = intended[blocker] == positions[rid]
+            # A robot holding a task keeps its place in ordinary traffic, but
+            # not in a jam. Measured on the realistic floor (200 products, seeds
+            # 0-4): 31 of 33 dead robots had stood still for at least 40 ticks.
+            # Two working robots wanted each other's cells, neither was idle, so
+            # neither ever moved, and both drained flat where they stood.
             if blocker_member.task is not None:
-                continue
+                if not head_on and self._stalled.get(blocker, 0) < STALL_TICKS:
+                    continue
             # Only a robot with charge to spare makes way. One below the
             # top-up level is on its way to a charger (or charging on one);
             # pushing it aside instead was measured to run two robots flat,
@@ -185,8 +251,11 @@ class FleetPlannerController:
             # robots on the 21x15 floor: the queue waited there until six
             # robots ran flat. The blocker steps aside; it is next in line.
             capacity = sim.config.battery.capacity
-            head_on = intended[blocker] == positions[rid]
-            if blocker_member.robot.battery < capacity * self.charge_until and not head_on:
+            if (
+                blocker_member.task is None
+                and blocker_member.robot.battery < capacity * self.charge_until
+                and not head_on
+            ):
                 continue
             leaving = intended[blocker]
             if leaving != positions[blocker] and leaving not in at:
@@ -230,6 +299,13 @@ class FleetPlannerController:
             # controller replans, proposes the same route, and the robot
             # thrashes - measured at 1 delivery against 19.
             path = astar_directed(blocked, self.directions, position, goal)
+            if len(path) < 2:
+                # Boxed in: the same static fallback as below, for the same
+                # reason. Waiting here hid the refusal, so _make_way never
+                # learned that this robot needed a cell.
+                path = astar_directed(~sim.walkable, self.directions, position, goal)
+            elif self._stalled.get(robot_id, 0) < STALL_TICKS:
+                path = self._wait_rather_than_detour(sim, robot_id, goal, path)
             if len(path) >= 2:
                 return _action_towards(position, path[1])
             return int(Action.WAIT)
@@ -248,7 +324,87 @@ class FleetPlannerController:
 
         return _action_towards(position, plan.path[1])
 
+    def _wait_rather_than_detour(
+        self, sim: FleetSimulation, robot_id: int, goal: Position, path: tuple
+    ) -> tuple:
+        """Queue behind a passing robot instead of driving a long way round.
+
+        A one-way lane cannot be reversed, so a robot that misses its exit has
+        to carry on to the next. Measured on the realistic floor (5 robots, 200
+        products, seed 1000): a robot heading for a charger drove the length of
+        a lane beside another robot that stood on every exit as it reached it,
+        and ran flat with the charger 8 moves away when it first missed one.
+
+        A planned detour around a peer is a guess that the peer will still be
+        there. If it is much longer than the route without peers, the robot
+        tries that route instead, and is refused for a tick at worst. Flat
+        robots stay in the map: they will still be there. STALL_TICKS in the
+        caller limits the wait for a robot that is not moving on.
+        """
+        position = sim.members[robot_id].position
+        neighbours = {
+            (position[0] + d_row, position[1] + d_col) for d_row, d_col in DIRECTIONS
+        }
+        fixed = ~sim.walkable
+        peer_beside = False
+        for other_id, other in sim.members.items():
+            if other_id == robot_id:
+                continue
+            if not other.alive:
+                fixed[other.position] = True
+            elif other.position in neighbours:
+                peer_beside = True
+        if not peer_beside:
+            return path
+        direct = astar_directed(fixed, self.directions, position, goal)
+        if len(direct) >= 2 and len(path) > len(direct) + DETOUR_SLACK:
+            return direct
+        return path
+
+    def _charger_for(self, sim: FleetSimulation, robot_id: int) -> tuple[Position, int]:
+        """The charger this robot should use, and how far away it is.
+
+        The nearest one that nobody else holds and that it can reach. Measured
+        on the realistic floor (20 robots, seed 1): six robots queued in the
+        station lane for one charger while six of the eight stood empty,
+        because every robot on that side of the floor had the same nearest
+        charger. With every charger taken, or none in range, it falls back to
+        the nearest, which is where it would have queued anyway.
+        """
+        member = sim.members[robot_id]
+        held = self._claimed.get(robot_id)
+        taken = {
+            charger
+            for other, charger in self._claimed.items()
+            if other != robot_id and sim.members[other].alive
+        }
+        # A flat robot on a charger holds it for good, so dead robots count here.
+        taken |= {
+            other.position
+            for other_id, other in sim.members.items()
+            if other_id != robot_id and other.position in sim.layout.charging_stations
+        }
+        ranked = sim.chargers_by_distance(member.position)
+        move_cost = sim.config.battery.move_cost
+        range_left = member.robot.battery / (move_cost * self.safety_factor)
+        for station, distance in ranked:
+            if station == held and held not in taken and distance < range_left:
+                return station, distance
+        for station, distance in ranked:
+            if station not in taken and distance < range_left:
+                return station, distance
+        return ranked[0] if ranked else sim.nearest_charger(member.position)
+
     def _goal_for(self, sim: FleetSimulation, robot_id: int) -> Position:
+        """Where this robot should head, remembering any charger it settles on."""
+        goal = self._choose_goal(sim, robot_id)
+        if goal in sim.layout.charging_stations:
+            self._claimed[robot_id] = goal
+        else:
+            self._claimed.pop(robot_id, None)
+        return goal
+
+    def _choose_goal(self, sim: FleetSimulation, robot_id: int) -> Position:
         """Where this robot should head: its task, a charger, or its waiting cell."""
         member = sim.members[robot_id]
         target = sim.target_for(robot_id)
@@ -257,7 +413,7 @@ class FleetPlannerController:
 
         battery_cfg = sim.config.battery
         battery = member.robot.battery
-        charger, to_charger = sim.nearest_charger(member.position)
+        charger, to_charger = self._charger_for(sim, robot_id)
         if to_charger < 0:  # pragma: no cover - layout validation prevents this
             return target
 

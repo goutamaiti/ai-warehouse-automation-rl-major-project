@@ -79,8 +79,8 @@ def test_an_unplaceable_fleet_is_refused_with_a_usable_message(client):
 
 
 def test_battery_rules_are_refused_on_the_realistic_floor(client):
-    # Measured: on the 46x30 floor these rules run every robot flat (5 robots,
-    # 2 of 5 products delivered by tick 133), so the combination is refused.
+    # Measured: on the 46x30 floor these rules finished 0 of 90 runs, with
+    # 1,021 of 1,050 robots flat, so the combination is refused.
     for scenario in ("battery_tuned", "battery_constrained"):
         response = client.post(
             "/api/fleet/start", json={"scenario": scenario, "n_robots": 5, "floor": "rmfs"}
@@ -89,6 +89,22 @@ def test_battery_rules_are_refused_on_the_realistic_floor(client):
         assert "21x15" in response.json()["detail"]
     # ...while the same rules on the floor they were sized for still start.
     start(client, scenario="battery_tuned")
+
+
+def test_the_large_floor_has_battery_rules_of_its_own(client):
+    state = start(client, scenario="battery_large_floor", floor="rmfs", n_robots=5)
+    assert state["state"]["scenario"] == "battery_large_floor"
+
+    response = client.post(
+        "/api/fleet/start", json={"scenario": "battery_large_floor", "n_robots": 5}
+    )
+    assert response.status_code == 400
+    assert "46x30" in response.json()["detail"]
+
+
+def test_fleet_only_rules_are_not_offered_as_a_trained_scenario(client):
+    names = {scenario["name"] for scenario in client.get("/api/scenarios").json()}
+    assert "battery_large_floor" not in names
 
 
 def test_an_unknown_scenario_is_a_404(client):

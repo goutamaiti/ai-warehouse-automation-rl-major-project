@@ -22,7 +22,7 @@ sequence and the viva questions.
 |---|---|---|
 | 1. All major modules | Dashboard (replay PPO, A*, BFS), Live floor (add products, one urgent), Editor (draw, run), Info (method) | four tabs of the portal |
 | 2. End-to-end execution | Editor: draw a floor -> *Run episode* -> watch the robot deliver; Live floor: add a product -> robot assigned -> delivered | `POST /api/run`, `POST /api/fleet/task` |
-| 3. Validation and testing | `python -m pytest` | 276 passed |
+| 3. Validation and testing | `python -m pytest` | 297 passed |
 | 4. Test cases, expected vs actual | `python scripts/run_test_cases.py` (backend running) | `docs/test-cases.md`, 27/27 |
 | 5. Input validation, error and exception handling | Show V1-V13 and E1-E4 in `docs/test-cases.md`; live: type a wall cell or a cell outside the floor on the Live-floor card and press *Add to the queue* | readable 400/404/422 messages, never a 500 |
 | 6. Runs without interruption | `.\start_demo.ps1 -Verify` the night before | 8/8 live-floor scenarios, 540/540 episodes |
@@ -35,7 +35,7 @@ No database is used: results, replays and models are files in `data/` and
 
 ```bash
 git status                              # must be clean
-python -m pytest -q                     # 276 passed
+python -m pytest -q                     # 297 passed
 .\start_demo.ps1 -Verify                # starts backend + portal after verifying
 python scripts/run_test_cases.py        # with the backend running: 27/27
 ```

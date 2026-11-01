@@ -1,0 +1,210 @@
+{
+  "summary": {
+    "one-way, 12 robots": {
+      "mean_refusals": 27.4,
+      "mean_delivered": 54.6,
+      "mean_moves": 4578.4,
+      "robots_lost": 0
+    },
+    "two-way, 12 robots": {
+      "mean_refusals": 24,
+      "mean_delivered": 58,
+      "mean_moves": 4570.6,
+      "robots_lost": 0
+    },
+    "one-way, 20 robots": {
+      "mean_refusals": 102,
+      "mean_delivered": 86.4,
+      "mean_moves": 7582.4,
+      "robots_lost": 0
+    },
+    "two-way, 20 robots": {
+      "mean_refusals": 75.2,
+      "mean_delivered": 91.8,
+      "mean_moves": 7566,
+      "robots_lost": 0
+    }
+  },
+  "runs": [
+    {
+      "lanes": "one-way",
+      "robots": 12,
+      "seed": 1000,
+      "refusals": 24,
+      "delivered": 51,
+      "moves": 4583,
+      "robots_alive": 12
+    },
+    {
+      "lanes": "one-way",
+      "robots": 12,
+      "seed": 1001,
+      "refusals": 30,
+      "delivered": 57,
+      "moves": 4578,
+      "robots_alive": 12
+    },
+    {
+      "lanes": "one-way",
+      "robots": 12,
+      "seed": 1002,
+      "refusals": 35,
+      "delivered": 56,
+      "moves": 4575,
+      "robots_alive": 12
+    },
+    {
+      "lanes": "one-way",
+      "robots": 12,
+      "seed": 1003,
+      "refusals": 28,
+      "delivered": 58,
+      "moves": 4573,
+      "robots_alive": 12
+    },
+    {
+      "lanes": "one-way",
+      "robots": 12,
+      "seed": 1004,
+      "refusals": 20,
+      "delivered": 51,
+      "moves": 4583,
+      "robots_alive": 12
+    },
+    {
+      "lanes": "one-way",
+      "robots": 20,
+      "seed": 1000,
+      "refusals": 95,
+      "delivered": 82,
+      "moves": 7609,
+      "robots_alive": 20
+    },
+    {
+      "lanes": "one-way",
+      "robots": 20,
+      "seed": 1001,
+      "refusals": 101,
+      "delivered": 84,
+      "moves": 7572,
+      "robots_alive": 20
+    },
+    {
+      "lanes": "one-way",
+      "robots": 20,
+      "seed": 1002,
+      "refusals": 97,
+      "delivered": 88,
+      "moves": 7583,
+      "robots_alive": 20
+    },
+    {
+      "lanes": "one-way",
+      "robots": 20,
+      "seed": 1003,
+      "refusals": 121,
+      "delivered": 91,
+      "moves": 7560,
+      "robots_alive": 20
+    },
+    {
+      "lanes": "one-way",
+      "robots": 20,
+      "seed": 1004,
+      "refusals": 96,
+      "delivered": 87,
+      "moves": 7588,
+      "robots_alive": 20
+    },
+    {
+      "lanes": "two-way",
+      "robots": 12,
+      "seed": 1000,
+      "refusals": 23,
+      "delivered": 53,
+      "moves": 4544,
+      "robots_alive": 12
+    },
+    {
+      "lanes": "two-way",
+      "robots": 12,
+      "seed": 1001,
+      "refusals": 23,
+      "delivered": 60,
+      "moves": 4578,
+      "robots_alive": 12
+    },
+    {
+      "lanes": "two-way",
+      "robots": 12,
+      "seed": 1002,
+      "refusals": 20,
+      "delivered": 60,
+      "moves": 4590,
+      "robots_alive": 12
+    },
+    {
+      "lanes": "two-way",
+      "robots": 12,
+      "seed": 1003,
+      "refusals": 31,
+      "delivered": 62,
+      "moves": 4572,
+      "robots_alive": 12
+    },
+    {
+      "lanes": "two-way",
+      "robots": 12,
+      "seed": 1004,
+      "refusals": 23,
+      "delivered": 55,
+      "moves": 4569,
+      "robots_alive": 12
+    },
+    {
+      "lanes": "two-way",
+      "robots": 20,
+      "seed": 1000,
+      "refusals": 66,
+      "delivered": 85,
+      "moves": 7567,
+      "robots_alive": 20
+    },
+    {
+      "lanes": "two-way",
+      "robots": 20,
+      "seed": 1001,
+      "refusals": 63,
+      "delivered": 90,
+      "moves": 7579,
+      "robots_alive": 20
+    },
+    {
+      "lanes": "two-way",
+      "robots": 20,
+      "seed": 1002,
+      "refusals": 94,
+      "delivered": 94,
+      "moves": 7529,
+      "robots_alive": 20
+    },
+    {
+      "lanes": "two-way",
+      "robots": 20,
+      "seed": 1003,
+      "refusals": 95,
+      "delivered": 99,
+      "moves": 7550,
+      "robots_alive": 20
+    },
+    {
+      "lanes": "two-way",
+      "robots": 20,
+      "seed": 1004,
+      "refusals": 58,
+      "delivered": 91,
+      "moves": 7605,
+      "robots_alive": 20
+    }
+  ]
+}
