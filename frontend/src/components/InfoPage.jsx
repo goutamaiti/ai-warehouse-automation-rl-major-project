@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { loadEpisode, loadIndex, loadResult } from '../lib/api';
-import { byComplexity, scenarioAdds, scenarioRank, scenarioTier } from '../lib/complexity';
-import { controllerLabel, titleCase } from '../lib/format';
+import { byComplexity, scenarioAdds, scenarioLabel, scenarioRank, scenarioTier } from '../lib/complexity';
+import { controllerLabel } from '../lib/format';
 import { REWARD_TERMS, RULESETS } from '../lib/rulesets';
 
 /**
@@ -216,8 +216,8 @@ export default function InfoPage() {
       <header className="info-hero">
         <h1>AI-Based Warehouse Automation System</h1>
         <p className="subtitle">
-          Reinforcement Learning for Intelligent Robot Navigation — what this project is, what was
-          built, and what the numbers actually show.
+          Reinforcement Learning for Intelligent Robot Navigation: what was built, how it was
+          measured, and what the numbers show.
         </p>
       </header>
 
@@ -230,20 +230,43 @@ export default function InfoPage() {
         </p>
       </Section>
 
+      <Section title="Words used on this site">
+        <p>
+          The site uses plain words. This page also uses the technical terms, because it is the
+          reference for the report.
+        </p>
+        <table className="info-table">
+          <thead>
+            <tr><th>On this site</th><th>Technical term</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Trained AI</td><td>PPO, a reinforcement learning policy</td></tr>
+            <tr><td>Route planner</td><td>A* search</td></tr>
+            <tr><td>Basic search</td><td>Breadth-first search (BFS)</td></tr>
+            <tr><td>Driving method</td><td>Controller</td></tr>
+            <tr><td>Warehouse setup</td><td>Scenario</td></tr>
+            <tr><td>Run</td><td>Episode</td></tr>
+            <tr><td>Step, or time on the live floor</td><td>Simulation step, or tick</td></tr>
+            <tr><td>Route quality</td><td>Path efficiency: shortest possible route ÷ route driven</td></tr>
+          </tbody>
+        </table>
+      </Section>
+
       <Section title="How a warehouse is built">
         <p>
           A warehouse is a 2D grid of six cell types: <strong>walls</strong> and{' '}
           <strong>racking</strong> block movement; <strong>pick points</strong> are where a package
           is collected (<code>storage_points</code> in the simulation code);{' '}
           <strong>packing stations</strong> are delivery targets; <strong>chargers</strong> are
-          where the robot starts and can recharge. The Editor tab paints with exactly these six, and
+          where the robot starts and can recharge. The Test a plan page paints with exactly these six, and
           draws each as its own mark rather than its own shade — a filled square for a pick point, a
           hollow one for packing, a dashed one for a charger — so a floor looks the same while you
           are drawing it as it does when a robot runs on it. A layout is only accepted if every
           point of interest is walkable and all of them can reach each other — the same check runs
           whether
           the map was generated procedurally (the six measured scenarios), drawn by hand on the
-          Editor tab, or generated as the larger robotic-fulfilment floor the Live floor tab offers.
+          Test a plan page, or generated as the larger robotic-fulfilment floor that Watch it run
+          offers.
         </p>
       </Section>
 
@@ -277,7 +300,7 @@ export default function InfoPage() {
                 onClick={() => setEpisodeId(item.id)}
               >
                 {scenarioTier(item.scenario) ? `${scenarioTier(item.scenario)}. ` : ''}
-                {titleCase(item.scenario)}
+                {scenarioLabel(item.scenario)}
               </button>
             ))}
           </div>
@@ -449,14 +472,14 @@ export default function InfoPage() {
             <div key={block.id} className="info-result-block">
               <h3>
                 {scenarioTier(block.scenario) ? `${scenarioTier(block.scenario)}. ` : ''}
-                {titleCase(block.scenario)}
+                {scenarioLabel(block.scenario)}
               </h3>
               <p className="muted small">{scenarioAdds(block.scenario)}</p>
               <div className="table-scroll">
                 <table className="info-table">
                   <thead>
                     <tr>
-                      <th>Controller</th><th>Success</th><th>Steps</th>
+                      <th>Driving method</th><th>Success</th><th>Steps</th>
                       <th>Path efficiency</th><th>Collisions</th>
                     </tr>
                   </thead>
@@ -492,7 +515,7 @@ export default function InfoPage() {
           correctly maximising a reward function that paid it to die — every one of those failing
           episodes still scored positively, because the −10 depletion penalty was cheaper than the
           credit a policy could bank first: one pickup (+5), one delivery (+20) and roughly 27 of
-          accumulated progress shaping. Select <strong>Battery constrained</strong> in the
+          accumulated progress shaping. Select <strong>Tight battery, first attempt</strong> in the
           walkthrough above and drag to the final step to read it off the recording: the episode
           ends on <code>battery_depleted</code>, the term charges −10, and the cumulative reward is
           still <b className="num">+21.60</b>. Nothing was broken. Dying was simply the better deal.
@@ -512,21 +535,21 @@ export default function InfoPage() {
       <Section title="What does not work yet">
         <p>
           Multi-robot operation runs, but no learned policy drives it: the trained policies have
-          never seen another robot, and the Live floor tab is driven by the classical controller
-          only, so nothing on it is a reinforcement-learning result. Above roughly eight robots some
-          still run out of charge under charger contention. A reward-weight ablation study, multiple
-          training seeds per configuration, and multi-agent RL are all unimplemented — see the
-          repository README for the roadmap.
+          never seen another robot, and Watch it run is driven by the classical controller only, so
+          nothing on it is a reinforcement-learning result. The fleet has been tested with up to 20
+          robots on the 46×30 floor and up to 8 on the 21×15 floor. Nothing here has been compared
+          with a real warehouse, and multi-agent RL is not implemented. See the repository README
+          for the roadmap.
         </p>
       </Section>
 
-      <Section title="Dashboard tabs">
+      <Section title="Where things are">
         <table className="info-table">
           <tbody>
-            <tr><th>Dashboard</th><td>Replays real recorded episodes (<code>data/episodes/</code>) and shows the aggregated result tables (<code>data/results/</code>) — this is where the official, reported numbers live.</td></tr>
-            <tr><th>Live floor</th><td>A warehouse that keeps running, with several robots working a shared queue. Add a product and the nearest free robot is assigned on the next tick. A demonstration, not a measured result: its numbers depend on how long the page was left open.</td></tr>
-            <tr><th>Editor</th><td>Paint a custom warehouse, pick a ruleset and a controller, and run it. With a connected backend this runs the real Python simulation, including PPO; without one, the classical controllers run in an in-browser sandbox for exploration only — its numbers are never part of the reported results.</td></tr>
-            <tr><th>Info</th><td>This page.</td></tr>
+            <tr><th>Home</th><td>What the project is, who it is for, and one worked example read from <code>data/fleet/</code>.</td></tr>
+            <tr><th>Test a plan</th><td>Paint a custom warehouse, pick a ruleset and a controller, and run one robot on it. With a connected backend this runs the real Python simulation, including PPO; without one, the classical controllers run in an in-browser sandbox for exploration only, and its numbers are never part of the reported results.</td></tr>
+            <tr><th>Watch it run</th><td>A warehouse that keeps running, with several robots working a shared queue. Add an order and the nearest free robot is assigned on the next tick. A demonstration, not a measured result: its numbers depend on how long the page was left open.</td></tr>
+            <tr><th>The research</th><td>Findings replays real recorded episodes (<code>data/episodes/</code>) and shows the aggregated result tables (<code>data/results/</code>), where the official, reported numbers live. How it was built is this page.</td></tr>
           </tbody>
         </table>
       </Section>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+import Findings from './Findings';
 import MetricsPanel from './MetricsPanel';
 import PlaybackControls from './PlaybackControls';
 import ResultsTable from './ResultsTable';
@@ -14,8 +15,8 @@ import {
   loadScenarios,
   runLiveEpisode,
 } from '../lib/api';
-import { byComplexity, scenarioTier } from '../lib/complexity';
-import { controllerLabel, titleCase } from '../lib/format';
+import { byComplexity, scenarioLabel, scenarioTier } from '../lib/complexity';
+import { controllerLabel, controllerShort } from '../lib/format';
 import { useEpisodePlayer } from '../lib/useEpisodePlayer';
 
 /**
@@ -141,6 +142,10 @@ export default function DashboardPage({ health }) {
     <>
       {error && <p className="error">{error}</p>}
 
+      <Findings results={results} />
+
+      <h2 className="section-title">Watch each driving method on the same run</h2>
+
       <div className="layout">
         <main className="stage">
           <div className="stage-header">
@@ -150,7 +155,7 @@ export default function DashboardPage({ health }) {
                 is picking a coordinate on the comparison grid, and switching
                 controller on one scenario is one click instead of a hunt. */}
             <label>
-              Scenario
+              Warehouse setup
               <select
                 value={selected?.scenario ?? ''}
                 onChange={(event) => pickEpisode(event.target.value, selected?.controller)}
@@ -158,13 +163,13 @@ export default function DashboardPage({ health }) {
                 {scenarioOrder.map((name) => (
                   <option key={name} value={name}>
                     {scenarioTier(name) ? `${scenarioTier(name)}. ` : ''}
-                    {titleCase(name)}
+                    {scenarioLabel(name)}
                   </option>
                 ))}
               </select>
             </label>
             <div className="controller-pick">
-              <span className="pick-label">Controller</span>
+              <span className="pick-label">Driving method</span>
               {CONTROLLER_ORDER.map((name) => {
                 const available = (index.episodes ?? []).some(
                   (e) => e.scenario === selected?.scenario && e.controller === name
@@ -177,7 +182,7 @@ export default function DashboardPage({ health }) {
                     disabled={!available}
                     onClick={() => pickEpisode(selected?.scenario, name)}
                   >
-                    {name === 'astar' ? 'A*' : name === 'bfs' ? 'BFS' : 'PPO'}
+                    {controllerShort(name)}
                   </button>
                 );
               })}
@@ -204,28 +209,28 @@ export default function DashboardPage({ health }) {
               />
             </>
           ) : (
-            <p className="muted">Loading episode…</p>
+            <p className="muted">Loading the run…</p>
           )}
 
           {health ? (
             <form className="live-run" onSubmit={runLive}>
-              <h2>Run a new episode</h2>
+              <h2>Run it yourself</h2>
               <div className="live-controls">
                 <label>
-                  Scenario
+                  Warehouse setup
                   <select
                     value={liveForm.scenario}
                     onChange={(e) => setLiveForm({ ...liveForm, scenario: e.target.value })}
                   >
                     {(scenarios.length ? scenarios.map((s) => s.name) : ['default']).map((name) => (
                       <option key={name} value={name}>
-                        {titleCase(name)}
+                        {scenarioLabel(name)}
                       </option>
                     ))}
                   </select>
                 </label>
                 <label>
-                  Controller
+                  Driving method
                   <select
                     value={liveForm.controller}
                     onChange={(e) => setLiveForm({ ...liveForm, controller: e.target.value })}
@@ -237,8 +242,14 @@ export default function DashboardPage({ health }) {
                     ))}
                   </select>
                 </label>
+                <button type="submit" className="primary" disabled={running}>
+                  {running ? 'Running…' : 'Run it'}
+                </button>
+              </div>
+              <details className="advanced">
+                <summary>Advanced</summary>
                 <label>
-                  Seed
+                  Random seed
                   <input
                     type="number"
                     min="0"
@@ -246,15 +257,12 @@ export default function DashboardPage({ health }) {
                     onChange={(e) => setLiveForm({ ...liveForm, seed: Number(e.target.value) })}
                   />
                 </label>
-                <button type="submit" className="primary" disabled={running}>
-                  {running ? 'Running…' : 'Run episode'}
-                </button>
-              </div>
+              </details>
             </form>
           ) : (
             backendConfigured && (
               <p className="muted small">
-                Backend configured but unreachable — showing recorded episodes only.
+                The simulator is not reachable, so this page shows recorded runs only.
               </p>
             )
           )}
@@ -269,23 +277,29 @@ export default function DashboardPage({ health }) {
         />
       </div>
 
-      <RewardPanel
-        rewardConfig={episode?.reward_config}
-        components={player.frame?.reward_components}
-        reward={player.frame?.reward}
-        cumulative={player.cumulativeReward}
-        stepIndex={player.frameIndex}
-      />
-
       <ResultsTable results={results} />
 
-      <TrainingCurves training={index.training} />
+      <details className="panel reveal-panel">
+        <summary>How the trained AI was scored on this run</summary>
+        <RewardPanel
+          rewardConfig={episode?.reward_config}
+          components={player.frame?.reward_components}
+          reward={player.frame?.reward}
+          cumulative={player.cumulativeReward}
+          stepIndex={player.frameIndex}
+        />
+      </details>
+
+      <details className="panel reveal-panel">
+        <summary>How the trained AI improved during training</summary>
+        <TrainingCurves training={index.training} />
+      </details>
 
       <footer className="app-footer">
         <p>
-          Every animation and number on this page is read from files produced by an actual
+          Every animation and number on this page is read from files written by a real
           simulation run (<code>data/episodes</code>, <code>data/results</code>). Nothing here is
-          mocked or hand-written.
+          mocked or typed in by hand.
         </p>
       </footer>
     </>

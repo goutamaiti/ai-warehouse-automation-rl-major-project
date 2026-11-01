@@ -43,7 +43,7 @@ VITE_API_BASE = https://your-backend-host
 ```
 
 Redeploy. The dashboard will detect the backend, show "Backend connected" and
-enable the "Run a new episode" form on the Dashboard tab plus the full Editor
+enable the "Run it yourself" form under The research plus the full Test a plan
 tab: PPO, moving obstacles, and running a hand-drawn warehouse through the
 real Python simulation (`POST /api/run` accepts an optional `layout` grid that
 overrides the named scenario's own map). Without a backend, the Editor still

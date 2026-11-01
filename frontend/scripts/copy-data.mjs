@@ -38,6 +38,7 @@ async function main() {
   await rm(targetDir, { recursive: true, force: true });
   await mkdir(join(targetDir, 'episodes'), { recursive: true });
   await mkdir(join(targetDir, 'results'), { recursive: true });
+  await mkdir(join(targetDir, 'fleet'), { recursive: true });
 
   const episodes = await readJsonFiles(join(sourceDir, 'episodes'));
   const results = await readJsonFiles(join(sourceDir, 'results'));
@@ -50,6 +51,18 @@ async function main() {
   }
   for (const result of results) {
     await writeFile(join(targetDir, 'results', `${result.id}.json`), result.text);
+  }
+
+  // The home page's recording and its proof figures. The per-run rows of the
+  // study are left out: the page only needs the totals.
+  for (const study of await readJsonFiles(join(sourceDir, 'fleet'))) {
+    if (study.id === 'home_floor') {
+      await writeFile(join(targetDir, 'fleet', 'home_floor.json'), study.text);
+    }
+    if (study.id === 'reliability') {
+      const { runs, ...totals } = study.data;
+      await writeFile(join(targetDir, 'fleet', 'reliability.json'), JSON.stringify(totals));
+    }
   }
 
   const index = {

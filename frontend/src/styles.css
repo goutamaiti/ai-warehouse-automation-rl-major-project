@@ -1,66 +1,68 @@
 :root {
-  /* One hue, many tints. Nothing on this site is a second colour: controllers,
-     robot states and results are told apart by how dark they are and whether
-     they are filled or outlined, never by hue.
+  /* A cool slate ramp for surfaces and text, one blue accent for what can be
+     clicked, and green, amber and red only where they mean pass, caution and
+     fail. Light by default: the demo is a projector in a lit room, and the page
+     prints into the report unchanged. */
+  --s0: #ffffff;   /* card */
+  --s1: #f1f5f9;   /* fill, inactive, track */
+  --s2: #e2e8f0;   /* hairline */
+  --s3: #cbd5e1;   /* light mark */
+  --s4: #5b6b82;   /* secondary text, mid mark */
+  --s5: #334155;   /* strong mark */
+  --s6: #0f172a;   /* ink, primary mark */
 
-     Light ground because the demo is a projector in a lit room, where a dark
-     theme washes out - and because it prints into the report unchanged. */
-  --s0: #ffffff;   /* page */
-  --s1: #f6f7f8;   /* fill, inactive, track */
-  --s2: #e8eaec;   /* hairline */
-  --s3: #c3c8cd;   /* light mark */
-  --s4: #8b9299;   /* secondary text, mid mark */
-  --s5: #4a5057;   /* strong mark */
-  --s6: #1c2024;   /* ink, primary mark */
-
-  /* Semantic names kept so the existing rules keep working, now mapped onto
-     the ramp. --ok/--warn/--danger are deliberately NOT colours any more;
-     state is carried by weight and fill, which is what "everything the same
-     colour" has to mean if it is to stay legible. */
-  --bg: var(--s0);
+  --bg: #f8fafc;
   --surface: var(--s0);
   --surface-2: var(--s1);
   --border: var(--s2);
   --text: var(--s6);
   --muted: var(--s4);
-  --accent: var(--s6);
-  --ok: var(--s5);
-  --warn: var(--s4);
-  --danger: var(--s6);
+  --accent: #2563eb;
+  --accent-ink: #ffffff;
+  --accent-soft: #dbeafe;
+  --ok: #15803d;
+  --ok-soft: #dcfce7;
+  --warn: #b45309;
+  --danger: #dc2626;
+  --danger-soft: #fee2e2;
 
-  --mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Consolas, monospace;
+  --navy: #0b1220;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 8px 24px rgba(15, 23, 42, 0.05);
+
+  --display: 'Space Grotesk', Inter, system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Mono', Consolas, monospace;
   color-scheme: light;
 }
 
 /* Dark mode, for projectors that wash out a white page. The same ramp run in
-   reverse: every rule reads --s0..--s6, so nothing else needs a dark variant.
-   The steps are spaced wider than a straight inversion because projectors
-   crush the low end - #1c1f23 against #121417 would vanish. */
+   reverse: every rule reads --s0..--s6, so nothing else needs a dark variant. */
 :root[data-theme='dark'] {
-  --s0: #121417;   /* page */
-  --s1: #1f2227;   /* fill, inactive, track */
-  --s2: #33383f;   /* hairline */
-  --s3: #555c64;   /* light mark */
-  --s4: #a3aab1;   /* secondary text, mid mark */
-  --s5: #cfd4d9;   /* strong mark */
-  --s6: #f3f5f7;   /* ink, primary mark */
+  --s0: #111a2b;   /* card */
+  --s1: #1b2638;   /* fill, inactive, track */
+  --s2: #2b384e;   /* hairline */
+  --s3: #46556d;   /* light mark */
+  --s4: #a3b1c6;   /* secondary text, mid mark */
+  --s5: #cbd5e1;   /* strong mark */
+  --s6: #f1f5f9;   /* ink, primary mark */
+
+  --bg: #0b1220;
+  --accent: #60a5fa;
+  --accent-ink: #0b1220;
+  --accent-soft: #1e3a5f;
+  --ok: #4ade80;
+  --ok-soft: #14352a;
+  --warn: #fbbf24;
+  --danger: #f87171;
+  --danger-soft: #3f1d24;
+  --shadow: none;
   color-scheme: dark;
 }
 
 /* Maps are not inverted here: they have their own dark palette in
    lib/mapTheme, because inverting would turn the blue floor orange and the
    yellow "carrying" robot blue. */
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.theme-toggle {
-  font-size: 0.75rem;
-  padding: 2px 10px;
-}
 
 * {
   box-sizing: border-box;
@@ -81,28 +83,13 @@ code {
   font-size: 0.9em;
   background: var(--surface-2);
   padding: 0.1em 0.35em;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
 }
 
 .app {
   max-width: 1600px;
   margin: 0 auto;
   padding: 24px 20px 48px;
-}
-
-.app-header {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: center;
-  justify-content: space-between;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border);
-}
-
-.app-header h1 {
-  margin: 0;
-  font-size: 1.4rem;
 }
 
 .subtitle {
@@ -131,8 +118,9 @@ code {
 .live-run {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 2px;
-  padding: 16px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
 }
 
 .stage-header {
@@ -157,7 +145,7 @@ input[type='number'] {
   background: var(--surface-2);
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 6px 8px;
   font-size: 0.9rem;
   min-width: 120px;
@@ -167,7 +155,7 @@ button {
   background: var(--surface-2);
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 6px 12px;
   font-size: 0.9rem;
   cursor: pointer;
@@ -184,7 +172,7 @@ button:disabled {
 
 button.primary {
   background: var(--accent);
-  color: var(--s0);
+  color: var(--accent-ink);
   border-color: var(--accent);
   font-weight: 600;
 }
@@ -196,7 +184,7 @@ button.primary {
 
 canvas {
   display: block;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: var(--s1);
 }
 
@@ -258,12 +246,8 @@ canvas {
 }
 
 .panel h2,
-.results h2,
 .live-run h2 {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted);
+  font-size: 1rem;
   margin: 18px 0 8px;
 }
 
@@ -299,7 +283,7 @@ canvas {
 .badge {
   display: inline-block;
   padding: 2px 8px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   font-size: 0.75rem;
   background: var(--surface-2);
   border: 1px solid var(--border);
@@ -393,7 +377,7 @@ table {
 }
 
 /* Scoped to the results tables. As a bare `th, td` this applied to every table
-   on the site, so the Info tab's prose tables could not wrap and the page
+   on the site, so the method page's prose tables could not wrap and the page
    scrolled sideways by over a thousand pixels - a pre-existing bug, not a
    theme one. Numbers should not wrap; explanations must. */
 .results th,
@@ -442,7 +426,7 @@ thead th {
   border-left: 2px solid var(--s6);
   color: var(--s6);
   padding: 10px 14px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   margin: 16px 0 0;
 }
 
@@ -534,7 +518,7 @@ thead th {
   color: var(--s5);
   background: var(--s0);
   border: 1px solid var(--s2);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
 }
 
@@ -650,7 +634,7 @@ thead th {
 
 .reward-term {
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 10px 12px;
   background: var(--surface-2);
   opacity: 0.65;
@@ -725,7 +709,7 @@ thead th {
 }
 
 /* ---------------------------------------------------------------- */
-/* Info page                                                         */
+/* Method page                                                       */
 /* ---------------------------------------------------------------- */
 
 .info-page {
@@ -741,7 +725,7 @@ thead th {
 .info-section {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 18px 20px;
   margin-top: 16px;
 }
@@ -812,7 +796,7 @@ thead th {
 
 /* ------------------------------------------------------------------ fixes */
 
-/* The Info tab's definition table overflowed the page by 1,241px: long
+/* The method page's definition table overflowed the page by 1,241px: long
    explanatory cells do not wrap on their own, so the table grew to 1,331px and
    the whole page scrolled sideways. A fixed layout plus wrapping keeps the
    measure inside the column. */
@@ -835,15 +819,14 @@ thead th {
 
 /* ------------------------------------------- picker and comparison chart */
 
-/* A segmented pick, used for the controller choice and the metric choice.
-   Active is solid ink, inactive is a hairline - fill carries state, not hue. */
+/* A segmented pick, used for the driving method and the metric choice. */
 .pick {
   font: inherit;
   font-size: 0.82rem;
   color: var(--s5);
   background: var(--s0);
   border: 1px solid var(--s2);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 5px 11px;
   cursor: pointer;
 }
@@ -853,9 +836,9 @@ thead th {
 }
 
 .pick.active {
-  background: var(--s6);
-  border-color: var(--s6);
-  color: var(--s0);
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
 }
 
 .pick:disabled {
@@ -865,6 +848,7 @@ thead th {
 
 .controller-pick {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 6px;
 }
@@ -922,7 +906,7 @@ thead th {
 
 .bar-row {
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr) 58px;
+  grid-template-columns: 92px minmax(0, 1fr) 58px;
   gap: 12px;
   align-items: center;
 }
@@ -983,7 +967,7 @@ thead th {
    line instead of fighting for width. */
 .tied {
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr) 58px;
+  grid-template-columns: 92px minmax(0, 1fr) 58px;
   gap: 5px 12px;
   align-items: center;
 }

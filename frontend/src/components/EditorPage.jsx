@@ -9,12 +9,13 @@ import { RULESETS, DEFAULT_RULESET } from '../lib/rulesets';
 import { OFFLINE_CONTROLLERS, runOfflineEpisode } from '../lib/offlineSimulation';
 import { runLiveEpisode, loadEpisode } from '../lib/api';
 import { useEpisodePlayer } from '../lib/useEpisodePlayer';
-import { controllerLabel, titleCase } from '../lib/format';
+import { scenarioLabel } from '../lib/complexity';
+import { controllerLabel, episodeSucceeded, outcomeLabel } from '../lib/format';
 
 const RULESET_OPTIONS = [
-  { name: 'default', label: RULESETS.default.label, backendOnly: false },
-  { name: 'dynamic_obstacles', label: 'Dynamic obstacles', backendOnly: true },
-  { name: 'battery_constrained', label: RULESETS.battery_constrained.label, backendOnly: false },
+  { name: 'default', label: 'Standard battery', backendOnly: false },
+  { name: 'dynamic_obstacles', label: 'Standard battery, moving traffic', backendOnly: true },
+  { name: 'battery_constrained', label: 'Tight battery', backendOnly: false },
 ];
 
 const CONTROLLER_OPTIONS = [
@@ -38,17 +39,17 @@ const CONTROLLER_OPTIONS = [
  * template loads.
  */
 const TEMPLATES = [
-  { id: 'simple_static_astar_seed1000', label: 'Simple', hint: 'smallest grid, no obstacles' },
-  { id: 'default_astar_seed1000', label: 'Default', hint: 'the baseline floor' },
-  { id: 'complex_static_astar_seed1000', label: 'Complex', hint: 'largest grid, densest racking' },
+  { id: 'simple_static_astar_seed1000', label: 'Small', hint: 'smallest grid, no obstacles' },
+  { id: 'default_astar_seed1000', label: 'Standard', hint: 'the baseline floor' },
+  { id: 'complex_static_astar_seed1000', label: 'Dense', hint: 'largest grid, densest racking' },
   {
     id: 'dynamic_obstacles_astar_seed1000',
-    label: 'Dynamic',
+    label: 'Moving traffic',
     hint: 'the moving-traffic floor - its layout only; the traffic itself needs a backend',
   },
   {
     id: 'battery_constrained_astar_seed1000',
-    label: 'Battery',
+    label: 'Tight battery',
     hint: 'the floor where charging is mandatory',
   },
 ];
@@ -127,8 +128,16 @@ export default function EditorPage({ backendHealth }) {
 
   return (
     <div className="editor-page">
+      <header className="page-head">
+        <h1>Test a plan</h1>
+        <p>
+          Draw a warehouse, choose the battery and how the robot drives, then run it. This page tests
+          one robot. To see a whole fleet, use <a href="#/watch">Watch it run</a>.
+        </p>
+      </header>
+
       <section className="panel">
-        <h2>Draw a warehouse</h2>
+        <h2>1. Draw your warehouse</h2>
         <div className="template-row">
           <span className="pick-label">Start from</span>
           {TEMPLATES.map((t) => (
@@ -147,10 +156,10 @@ export default function EditorPage({ backendHealth }) {
       </section>
 
       <section className="panel run-panel">
-        <h2>Run it</h2>
+        <h2>2. Run the test</h2>
         <div className="live-controls">
           <label>
-            Ruleset
+            Battery and traffic
             <select value={rulesetName} onChange={(e) => setRulesetName(e.target.value)}>
               {RULESET_OPTIONS.filter((r) => !r.backendOnly || backendReachable).map((r) => (
                 <option key={r.name} value={r.name}>
@@ -160,7 +169,7 @@ export default function EditorPage({ backendHealth }) {
             </select>
           </label>
           <label>
-            Controller
+            Driving method
             <select value={controller} onChange={(e) => setController(e.target.value)}>
               {CONTROLLER_OPTIONS.filter((c) => c.name !== 'ppo' || ppoAvailable).map((c) => (
                 <option key={c.name} value={c.name}>
@@ -169,53 +178,61 @@ export default function EditorPage({ backendHealth }) {
               ))}
             </select>
           </label>
-          <label>
-            Seed
-            <input type="number" min="0" value={seed} onChange={(e) => setSeed(Number(e.target.value))} />
-          </label>
           <button type="button" className="primary" onClick={run} disabled={!validation.valid || running}>
-            {running ? 'Running…' : 'Run episode'}
+            {running ? 'Running…' : 'Run the test'}
           </button>
         </div>
+        <details className="advanced">
+          <summary>Advanced</summary>
+          <label>
+            Random seed
+            <input type="number" min="0" value={seed} onChange={(e) => setSeed(Number(e.target.value))} />
+          </label>
+        </details>
         <p className="muted small">
           {backendReachable
-            ? 'Running through the connected backend — real physics and reward, same code as every reported result.'
-            : 'No backend connected: running A*, BFS or Random in an in-browser sandbox. PPO and moving obstacles need a backend — see the Info page.'}
+            ? 'Running on the full simulator, the same code behind every measured result.'
+            : 'Running in your browser with the classic methods. The trained AI and moving traffic need the full simulator, which runs on your own computer. Results here are for exploring and are not part of the measured results.'}
         </p>
         {error && <p className="error">{error}</p>}
       </section>
 
       {replay && (
         <>
-          <section className="panel stage">
-            <div className="stage-header">
+          {replay.summary && (
+            <section className={`verdict ${episodeSucceeded(replay.summary) ? 'works' : 'fails'}`}>
               <h2>
-                {titleCase(meta.scenario)} · {controllerLabel(meta.controller)} · seed {meta.seed}
+                {episodeSucceeded(replay.summary) ? 'This plan works: ' : 'This plan failed: '}
+                {outcomeLabel(replay.summary.termination_reason).toLowerCase()}
               </h2>
-              <span className={`badge ${source === 'backend' ? 'ok' : 'neutral'}`}>
-                {source === 'backend' ? 'Backend run' : 'Offline sandbox'}
-              </span>
-            </div>
-            <WarehouseCanvas layout={replay.layout} frame={player.frame} trail={player.trail} />
-            <PlaybackControls
-              playing={player.playing}
-              onTogglePlay={player.togglePlay}
-              frameIndex={player.frameIndex}
-              totalFrames={player.totalFrames}
-              onSeek={player.seek}
-              speed={player.speed}
-              onSpeedChange={player.setSpeed}
-            />
-          </section>
+              <p>
+                {replay.summary.tasks_delivered ?? 0} delivered in {replay.summary.steps} steps, using{' '}
+                {replay.summary.energy_consumed}% of a battery.
+              </p>
+            </section>
+          )}
 
-          <div className="layout editor-results">
-            <RewardPanel
-              rewardConfig={replay.reward_config}
-              components={player.frame?.reward_components}
-              reward={player.frame?.reward}
-              cumulative={player.cumulativeReward}
-              stepIndex={player.frameIndex}
-            />
+          <div className="layout">
+            <section className="panel stage">
+              <div className="stage-header">
+                <h2>
+                  {scenarioLabel(meta.scenario)} · {controllerLabel(meta.controller)}
+                </h2>
+                <span className={`badge ${source === 'backend' ? 'ok' : 'neutral'}`}>
+                  {source === 'backend' ? 'Full simulator' : 'In your browser'}
+                </span>
+              </div>
+              <WarehouseCanvas layout={replay.layout} frame={player.frame} trail={player.trail} />
+              <PlaybackControls
+                playing={player.playing}
+                onTogglePlay={player.togglePlay}
+                frameIndex={player.frameIndex}
+                totalFrames={player.totalFrames}
+                onSeek={player.seek}
+                speed={player.speed}
+                onSpeedChange={player.setSpeed}
+              />
+            </section>
             <MetricsPanel
               meta={meta}
               frame={player.frame}
@@ -224,6 +241,17 @@ export default function EditorPage({ backendHealth }) {
               totalFrames={player.totalFrames}
             />
           </div>
+
+          <details className="panel reveal-panel">
+            <summary>How the trained AI would score this run</summary>
+            <RewardPanel
+              rewardConfig={replay.reward_config}
+              components={player.frame?.reward_components}
+              reward={player.frame?.reward}
+              cumulative={player.cumulativeReward}
+              stepIndex={player.frameIndex}
+            />
+          </details>
         </>
       )}
     </div>

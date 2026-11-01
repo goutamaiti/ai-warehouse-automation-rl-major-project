@@ -31,10 +31,16 @@ const MIN_LABEL_CELL = 15;
 //: cells by eye, which is exactly the thing that made the card unusable.
 const GUTTER = 20;
 
-export default function FleetCanvas({ layout, frame, highlight }) {
+/**
+ * `plain` drops the rulers, lane arrows, grid and robot labels, which are there
+ * for someone reading coordinates, and draws larger robots. `palette` overrides
+ * the site theme, for a map that sits on a dark band in either theme.
+ */
+export default function FleetCanvas({ layout, frame, highlight, palette, plain = false }) {
   const canvasRef = useRef(null);
   const wrapperRef = useRef(null);
-  const INK = useMapTheme();
+  const siteInk = useMapTheme();
+  const INK = palette ?? siteInk;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -42,13 +48,14 @@ export default function FleetCanvas({ layout, frame, highlight }) {
     if (!canvas || !wrapper || !layout) return undefined;
 
     const draw = () => {
+      const gutter = plain ? 0 : GUTTER;
       const available = wrapper.clientWidth || 640;
       const cell = Math.max(
-        6,
-        Math.min(MAX_CELL, Math.floor((available - GUTTER) / layout.width))
+        plain ? 4 : 6,
+        Math.min(MAX_CELL, Math.floor((available - gutter) / layout.width))
       );
-      const width = cell * layout.width + GUTTER;
-      const height = cell * layout.height + GUTTER;
+      const width = cell * layout.width + gutter;
+      const height = cell * layout.height + gutter;
       const ratio = window.devicePixelRatio || 1;
 
       canvas.width = width * ratio;
@@ -63,20 +70,22 @@ export default function FleetCanvas({ layout, frame, highlight }) {
 
       // Rulers first, in page coordinates, then shift the origin so every
       // drawing call below can keep using plain cell indices.
-      const step = cell >= 15 ? 1 : cell >= 10 ? 2 : 5;
-      ctx.fillStyle = INK.ruler;
-      ctx.font = `500 ${Math.min(11, Math.max(8, Math.round(cell * 0.46)))}px ${MONO}`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      for (let col = 0; col < layout.width; col += step) {
-        ctx.fillText(String(col), GUTTER + col * cell + cell / 2, GUTTER / 2);
+      if (!plain) {
+        const step = cell >= 15 ? 1 : cell >= 10 ? 2 : 5;
+        ctx.fillStyle = INK.ruler;
+        ctx.font = `500 ${Math.min(11, Math.max(8, Math.round(cell * 0.46)))}px ${MONO}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        for (let col = 0; col < layout.width; col += step) {
+          ctx.fillText(String(col), GUTTER + col * cell + cell / 2, GUTTER / 2);
+        }
+        ctx.textAlign = 'right';
+        for (let row = 0; row < layout.height; row += step) {
+          ctx.fillText(String(row), GUTTER - 5, GUTTER + row * cell + cell / 2);
+        }
+        ctx.textAlign = 'center';
+        ctx.translate(GUTTER, GUTTER);
       }
-      ctx.textAlign = 'right';
-      for (let row = 0; row < layout.height; row += step) {
-        ctx.fillText(String(row), GUTTER - 5, GUTTER + row * cell + cell / 2);
-      }
-      ctx.textAlign = 'center';
-      ctx.translate(GUTTER, GUTTER);
 
       ctx.fillStyle = INK.floor;
       ctx.fillRect(0, 0, cell * layout.width, cell * layout.height);
@@ -108,7 +117,7 @@ export default function FleetCanvas({ layout, frame, highlight }) {
 
       // 2b. one-way lane arrows, faint. This is the floor's actual traffic
       //     rule, and seeing it is how the congestion difference is explained.
-      if (layout.directions) {
+      if (layout.directions && !plain) {
         ctx.strokeStyle = INK.arrow;
         ctx.lineWidth = 1;
         const every = cell >= 14 ? 2 : 3;
@@ -132,13 +141,13 @@ export default function FleetCanvas({ layout, frame, highlight }) {
       // 3. a faint grid, because this is a grid world and hiding that helps nobody
       ctx.strokeStyle = INK.grid;
       ctx.lineWidth = 1;
-      for (let col = 0; col <= layout.width; col += 1) {
+      for (let col = 0; col <= layout.width && !plain; col += 1) {
         ctx.beginPath();
         ctx.moveTo(col * cell + 0.5, 0);
         ctx.lineTo(col * cell + 0.5, height);
         ctx.stroke();
       }
-      for (let row = 0; row <= layout.height; row += 1) {
+      for (let row = 0; row <= layout.height && !plain; row += 1) {
         ctx.beginPath();
         ctx.moveTo(0, row * cell + 0.5);
         ctx.lineTo(width, row * cell + 0.5);
@@ -196,7 +205,7 @@ export default function FleetCanvas({ layout, frame, highlight }) {
         const [row, col] = robot.position;
         const x = col * cell + cell / 2;
         const y = row * cell + cell / 2;
-        const radius = cell * 0.34;
+        const radius = cell * (plain ? 0.5 : 0.34);
 
         ctx.fillStyle = !robot.alive
           ? INK.robotDead
@@ -214,7 +223,7 @@ export default function FleetCanvas({ layout, frame, highlight }) {
           ctx.lineWidth = 1;
         }
 
-        if (robot.alive) {
+        if (robot.alive && !plain) {
           const level = Math.max(0, Math.min(1, (robot.battery ?? 0) / 100));
           ctx.strokeStyle = INK.battery;
           ctx.lineWidth = 2;
@@ -224,7 +233,7 @@ export default function FleetCanvas({ layout, frame, highlight }) {
           ctx.lineWidth = 1;
         }
 
-        if (cell >= MIN_LABEL_CELL) {
+        if (cell >= MIN_LABEL_CELL && !plain) {
           ctx.fillStyle = robot.alive && robot.carrying ? INK.robotCarryingLabel : INK.robotLabel;
           ctx.font = `600 ${Math.round(cell * 0.42)}px ${MONO}`;
           ctx.textAlign = 'center';
@@ -238,7 +247,7 @@ export default function FleetCanvas({ layout, frame, highlight }) {
     const observer = new ResizeObserver(draw);
     observer.observe(wrapper);
     return () => observer.disconnect();
-  }, [layout, frame, highlight, INK]);
+  }, [layout, frame, highlight, INK, plain]);
 
   return (
     <div className="floor-canvas" ref={wrapperRef}>

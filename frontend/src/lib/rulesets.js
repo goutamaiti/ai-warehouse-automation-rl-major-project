@@ -5,7 +5,7 @@
  * exactly - they are not invented numbers. Keep them in sync if those files
  * change. Dynamic obstacles are not offered here because the editor paints a
  * static map only; a scenario with moving traffic still runs for real through
- * the backend's "Run a new episode" panel on the Dashboard tab.
+ * the backend's "Run it yourself" panel under The research.
  */
 
 export const RULESETS = {

@@ -1,5 +1,9 @@
 # Demo 2 - run sheet
 
+> The website was renamed after this script was written. Live floor is now
+> **Watch it run**, Editor is **Test a plan**, and Dashboard and Info are the two
+> views of **The research**. A new script follows once the planner is decided.
+
 Slides: `presentation/Second_Project_Demo.pptx` (21 slides). The live part is
 slide 15's sequence, about 6 minutes. Every number below is in `data/results/`,
 `data/training/` or the output of the two verify scripts.

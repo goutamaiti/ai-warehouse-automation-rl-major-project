@@ -3,8 +3,7 @@
  * are decided, used by every canvas (replay, editor, live floor, swatches) and
  * by the legends that explain them.
  *
- * The map is the one place on the site with hue, on purpose, so every entity
- * can be told apart from the back of a room: a blue floor and grid, a robot
+ * Every entity can be told apart from the back of a room: a blue floor and grid, a robot
  * that is black when empty and turns YELLOW when it is carrying, a pick point
  * that turns GREEN while its product is waiting to be collected, red delivery
  * stations, violet chargers and magenta moving obstacles. Yellow is used for
@@ -53,7 +52,7 @@ export const MAP_THEMES = {
   // waiting product stays green in both themes, so the colours always mean
   // the same thing.
   dark: {
-    page: '#121417',
+    page: '#111a2b',
     floor: '#0b1b36',
     grid: '#24508f',
     wall: '#4b6fb0',

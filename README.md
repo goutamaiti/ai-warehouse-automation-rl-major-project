@@ -26,12 +26,12 @@ in Python plus a React dashboard.
 | Battery-aware RL | **Works after a reward fix** - PPO 0/30 on `battery_constrained` (original reward) -> **27/30** on `battery_tuned` (corrected reward, 2M steps); across 3 training seeds 27, 26 and 19 of 30 (vs 0, 0 and 6 before the fix), **82 of 90 keeping the best checkpoint**; still below A*'s 30/30 |
 | Multi-robot fleet (Live floor) | Implemented with **classical** control - shared task queue with normal/urgent priority (urgent served 3.4x faster under load), nearest-robot dispatch, charger zones, deadlock detection and a stuck-robot warning, 46x30 one-way robotic-fulfilment floor with its own battery rules (90 of 90 held-out runs delivered everything, no robot flat). No learned policy drives it. |
 | FastAPI backend | Implemented, tested, accepts a user-drawn custom layout |
-| React dashboard (Dashboard / Live floor / Editor / Info tabs) | Implemented, replays real recordings, live per-step reward breakdown |
+| React website, FloorCheck (Home / Test a plan / Watch it run / The research) | Implemented, replays real recordings, live per-step reward breakdown |
 | Multi-agent RL (MAPPO etc.) | **Not implemented** - future scope |
 | Multiple training seeds | **Run** - every PPO policy trained with 3 seeds; see [Across training seeds](#across-training-seeds) |
 | Reward-weight ablation study | **Run** - 5 terms x 3 seeds; progress shaping and the collision penalty matter, energy/step/waiting showed no measurable effect; see [Reward-weight ablation](#reward-weight-ablation) |
 
-Tests: `297 passed`, including a 50-test frozen-contract tripwire that pins the
+Tests: `299 passed`, including a 50-test frozen-contract tripwire that pins the
 exact single-robot behaviour every result was measured with. Two one-command
 checks prove the demo end to end (`scripts/verify_live_floor.py`,
 `scripts/verify_single_robot.py`; see [Testing](#testing)). Every number in this
@@ -222,7 +222,7 @@ backend/        FastAPI service (scenarios, replays, live runs)
 frontend/       React + Vite dashboard (deployed to Vercel)
 configs/        scenario YAML files - one file fully defines an experiment
 data/           real experiment output: replays, results, training logs
-tests/          297 tests: simulator, env, planners, fleet, analytics, API, frozen contract
+tests/          299 tests: simulator, env, planners, fleet, analytics, API, frozen contract
 docs/           architecture, RL formulation, experiments, deployment
 scripts/        run_experiments.py (reproduce results), verify_*.py (pre-demo proof)
 ```

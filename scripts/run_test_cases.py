@@ -161,7 +161,7 @@ def main(argv=None) -> int:
         f"**{passed} of {len(rows)} passed.**",
         "",
         "F = functional (end to end), V = input validation, E = error and exception handling.",
-        "The 297 unit and integration tests (`python -m pytest`) and the verify scripts",
+        "The 299 unit and integration tests (`python -m pytest`) and the verify scripts",
         "(`scripts/verify_live_floor.py`, `scripts/verify_single_robot.py`) cover the rest.",
         "",
         "| ID | Module | Test case | Expected | Actual | Result |",

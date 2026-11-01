@@ -138,10 +138,10 @@ export default function WarehouseCanvas({ layout, frame, trail = [] }) {
     <div className="canvas-wrapper" ref={wrapperRef}>
       <canvas ref={canvasRef} />
       <ul className="legend">
-        <li><span className="swatch" style={{ background: COLORS.robot }} /> robot</li>
+        <li><span className="swatch" style={{ background: COLORS.robot }} /> empty robot</li>
         <li><span className="swatch" style={{ background: COLORS.robotCarrying, borderColor: COLORS.robotOutline }} /> carrying</li>
-        <li><span className="swatch" style={{ background: COLORS.obstacle }} /> obstacle</li>
-        <li><span className="swatch" style={{ background: COLORS.activePickup, borderColor: COLORS.activePickup }} /> product to pick up</li>
+        <li><span className="swatch" style={{ background: COLORS.obstacle }} /> moving traffic</li>
+        <li><span className="swatch" style={{ background: COLORS.activePickup, borderColor: COLORS.activePickup }} /> order waiting</li>
         <li><span className="swatch outline" style={{ borderColor: COLORS.dropoff }} /> drop-off</li>
         <li><CellSwatch type={CELL.SHELF} size={14} /> racking</li>
         <li><CellSwatch type={CELL.STORAGE} size={14} /> pick point</li>

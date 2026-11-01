@@ -15,7 +15,7 @@ and verified; `[ ]` means not done, with the reason. Numbers come from
 - [x] Procedural layouts driven by one YAML file per scenario (`configs/`)
 - [x] Robot movement, collision detection, layout validation (reachability)
 - [x] Terminal renderer (`simulation/renderer.py`)
-- [x] Hand-drawn layouts (`layout_from_grid`, Editor tab)
+- [x] Hand-drawn layouts (`layout_from_grid`, Test a plan page)
 
 ## Week 3 - RL environment
 - [x] Gymnasium environment, passes the API checker
@@ -54,7 +54,7 @@ and verified; `[ ]` means not done, with the reason. Numbers come from
 - [ ] Dijkstra - not needed (uniform-cost grid: same paths as BFS)
 
 ## Week 8 - Dashboard
-- [x] React portal, four tabs, flat monochrome design
+- [x] React website under the working name FloorCheck: Home, Test a plan, Watch it run, The research, in plain language
 - [x] Dashboard: replays, per-step reward breakdown, results chart (one metric at a time, 95% CI brackets), learning curves
 - [x] Live floor: multiple robots, add a product, nearest-robot dispatch, live stream
 - [x] Live-floor queue table: every product in order with pickup, station, robot and status, ticked when delivered
@@ -65,7 +65,7 @@ and verified; `[ ]` means not done, with the reason. Numbers come from
 
 ## Week 9 - Integration and testing
 - [x] FastAPI backend (16 endpoints), hostile-input hardened (fuzzed: no 5xx, no traceback leaks, no path traversal)
-- [x] 297 automated tests, including a 50-test frozen-contract tripwire
+- [x] 299 automated tests, including a 50-test frozen-contract tripwire
 - [x] `run_test_cases.py` - 27 demo test cases (functional, input validation, error handling), expected vs actual, against the live API: 27/27 (`docs/test-cases.md`)
 - [x] `verify_live_floor.py` - 8 scenarios, 112/112 products, nearest robot, correct cells
 - [x] `verify_single_robot.py` - every scenario x controller, same PPO models as published, 540/540 episodes

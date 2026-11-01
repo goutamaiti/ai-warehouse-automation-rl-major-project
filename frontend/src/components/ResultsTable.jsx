@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
-import { controllerRank, scenarioAdds, scenarioRank, scenarioTier } from '../lib/complexity';
-import { controllerLabel, titleCase } from '../lib/format';
+import { controllerRank, scenarioAdds, scenarioLabel, scenarioRank, scenarioTier } from '../lib/complexity';
+import { controllerLabel, controllerShort } from '../lib/format';
 
 /**
  * The measured comparison: one metric at a time, every scenario at once.
@@ -28,17 +28,17 @@ import { controllerLabel, titleCase } from '../lib/format';
  */
 
 const METRICS = [
-  { key: 'path_efficiency', label: 'Path efficiency', better: 'high', fmt: (v) => v.toFixed(2) },
+  { key: 'path_efficiency', label: 'Route quality', better: 'high', fmt: (v) => v.toFixed(2) },
   { key: 'steps', label: 'Steps', better: 'low', fmt: (v) => v.toFixed(1) },
   { key: 'success_rate', label: 'Success', better: 'high', fmt: (v) => v.toFixed(2), flat: true },
   { key: 'collisions', label: 'Collisions', better: 'low', fmt: (v) => v.toFixed(2) },
   { key: 'energy_consumed', label: 'Energy', better: 'low', fmt: (v) => v.toFixed(1) },
-  { key: 'charging_events', label: 'Charging', better: 'low', fmt: (v) => v.toFixed(2) },
+  { key: 'charging_events', label: 'Charging steps', better: 'low', fmt: (v) => v.toFixed(2) },
   { key: 'total_reward', label: 'Reward', better: 'high', fmt: (v) => v.toFixed(1) },
 ];
 
-/** Controllers are told apart by tint, never by hue - there is no second colour. */
-const TINT = { astar: 'var(--s4)', bfs: 'var(--s3)', ppo: 'var(--s6)' };
+/** The trained AI takes the accent, so it stands out against both classical methods. */
+const TINT = { astar: 'var(--s4)', bfs: 'var(--s3)', ppo: 'var(--accent)' };
 
 function read(summary, metric) {
   if (!summary) return null;
@@ -86,8 +86,8 @@ export default function ResultsTable({ results }) {
       <div className="results-head">
         <h2>Measured results</h2>
         <p className="muted small">
-          30 episodes per controller, seeds 1000–1029, every controller on the same
-          episodes. Shaded bar is the mean; the bracket is the 95% interval.
+          30 runs per driving method, every method on the same 30 runs. The bar is the average
+          and the bracket is the 95% interval.
         </p>
       </div>
 
@@ -126,7 +126,7 @@ export default function ResultsTable({ results }) {
               <header>
                 <h3>
                   {scenarioTier(row.scenario) ? `${scenarioTier(row.scenario)}. ` : ''}
-                  {titleCase(row.scenario)}
+                  {scenarioLabel(row.scenario)}
                 </h3>
                 <p className="muted small">{scenarioAdds(row.scenario)}</p>
               </header>
@@ -138,7 +138,7 @@ export default function ResultsTable({ results }) {
                   <span className="tied-bar" style={{ width: `${(present[0].v.mean / peak) * 100}%` }} />
                   <b className="num">{metric.fmt(present[0].v.mean)}</b>
                   <em>
-                    {present.map((x) => controllerLabel(x.controller).split(' ')[0]).join(' = ')} —
+                    {present.map((x) => controllerShort(x.controller)).join(' = ')} —
                     identical on {metric.label.toLowerCase()}
                   </em>
                 </div>
@@ -147,7 +147,7 @@ export default function ResultsTable({ results }) {
                   {values.map(({ controller, v }) => (
                     <div className="bar-row" key={controller}>
                       <span className="bar-name">
-                        {controller === 'astar' ? 'A*' : controller === 'bfs' ? 'BFS' : 'PPO'}
+                        {controllerShort(controller)}
                       </span>
                       <span className="bar-track">
                         {v ? (
@@ -189,9 +189,9 @@ export default function ResultsTable({ results }) {
           <table>
             <thead>
               <tr>
-                <th>Scenario</th>
-                <th>Controller</th>
-                <th>Episodes</th>
+                <th>Warehouse setup</th>
+                <th>Driving method</th>
+                <th>Runs finished</th>
                 <th>{metric.label}</th>
                 <th>± 95%</th>
               </tr>
@@ -204,7 +204,7 @@ export default function ResultsTable({ results }) {
                     const v = read(summary, metric);
                     return (
                       <tr key={`${row.id}-${summary.controller}`}>
-                        <td>{titleCase(row.scenario)}</td>
+                        <td>{scenarioLabel(row.scenario)}</td>
                         <td>{controllerLabel(summary.controller)}</td>
                         <td>
                           {summary.n_successful}/{summary.n_episodes}

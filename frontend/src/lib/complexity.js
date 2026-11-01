@@ -27,12 +27,12 @@
 
 /** Ascending complexity. `tier` is the world; equal tiers are equally hard. */
 export const SCENARIO_COMPLEXITY = [
-  { name: 'simple_static', tier: 1, adds: 'Smallest grid, no obstacles, ample battery' },
-  { name: 'default', tier: 2, adds: 'Baseline grid, longer paths' },
-  { name: 'complex_static', tier: 3, adds: 'Largest static grid, densest shelving' },
-  { name: 'dynamic_obstacles', tier: 4, adds: 'Moving traffic - the static shortest path stops being safe' },
-  { name: 'battery_constrained', tier: 5, adds: 'Two tasks on a charge that covers half of one - charging is mandatory' },
-  { name: 'battery_tuned', tier: 5, adds: 'Same world, corrected reward - the battery fix' },
+  { name: 'simple_static', tier: 1, label: 'Small warehouse', adds: 'Smallest grid, no obstacles, ample battery' },
+  { name: 'default', tier: 2, label: 'Standard warehouse', adds: 'Baseline grid, longer paths' },
+  { name: 'complex_static', tier: 3, label: 'Dense warehouse', adds: 'Largest static grid, densest shelving' },
+  { name: 'dynamic_obstacles', tier: 4, label: 'Moving traffic', adds: 'Moving traffic - the static shortest path stops being safe' },
+  { name: 'battery_constrained', tier: 5, label: 'Tight battery, first attempt', adds: 'Two tasks on a charge that covers half of one - charging is mandatory' },
+  { name: 'battery_tuned', tier: 5, label: 'Tight battery, after the fix', adds: 'Same world, corrected reward - the battery fix' },
 ];
 
 const RANK = new Map(SCENARIO_COMPLEXITY.map((s, i) => [s.name, i]));
@@ -47,6 +47,11 @@ export function scenarioRank(name) {
 
 export function scenarioTier(name) {
   return SCENARIO_COMPLEXITY.find((s) => s.name === name)?.tier ?? null;
+}
+
+/** The plain name a reader sees. The scenario's id stays in the data files. */
+export function scenarioLabel(name) {
+  return SCENARIO_COMPLEXITY.find((s) => s.name === name)?.label ?? name;
 }
 
 export function scenarioAdds(name) {

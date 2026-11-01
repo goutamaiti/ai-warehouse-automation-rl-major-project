@@ -14,7 +14,7 @@ import {
 
 /**
  * The live warehouse floor: several robots, a shared queue, and a card for
- * adding a product by its coordinates.
+ * giving them orders.
  *
  * This page is explicitly a *demonstration*, not a measurement, and says so -
  * its numbers depend on how long it has been left running and when someone
@@ -23,15 +23,15 @@ import {
  */
 
 const FLOORS = [
-  { id: 'default', label: 'Scenario floor · 21×15' },
-  { id: 'rmfs', label: 'Robotic fulfilment floor · 46×30' },
+  { id: 'default', label: 'Small floor, 21×15' },
+  { id: 'rmfs', label: 'Large fulfilment floor, 46×30' },
 ];
 
 const SCENARIOS = [
-  { id: 'default', label: 'Default floor' },
-  { id: 'dynamic_obstacles', label: 'With moving traffic' },
-  { id: 'battery_tuned', label: 'Battery constrained' },
-  { id: 'battery_large_floor', label: 'Battery constrained, large floor' },
+  { id: 'default', label: 'Standard battery' },
+  { id: 'dynamic_obstacles', label: 'Standard battery, moving traffic' },
+  { id: 'battery_tuned', label: 'Tight battery for the small floor' },
+  { id: 'battery_large_floor', label: 'Tight battery for the large floor' },
 ];
 
 /** Rules a floor cannot run. The battery rules were sized for the 21×15 floor:
@@ -43,10 +43,13 @@ const UNSUPPORTED = { rmfs: ['battery_tuned'], default: ['battery_large_floor'] 
 
 const supports = (floorId, scenarioId) => !(UNSUPPORTED[floorId] ?? []).includes(scenarioId);
 
+/** The one-click example: a floor and battery that were measured to work. */
+const EXAMPLE = { floor: 'rmfs', scenario: 'battery_large_floor', nRobots: 10, orders: 20 };
+
 /** What a request is doing right now, in words, from the frame alone. */
 function requestStatus(request, robots) {
   if (request.status === 'delivered') {
-    return `delivered by robot ${request.robot_id} at tick ${request.delivered_step}`;
+    return `delivered by robot ${request.robot_id}`;
   }
   if (request.status === 'failed') return 'failed';
   if (request.status === 'waiting') return 'waiting for a robot';
@@ -62,7 +65,7 @@ function QueueTable({ requests, robots }) {
   if (!requests?.length) {
     return (
       <p className="queue-empty">
-        No products queued yet. Add one on the card to the right.
+        No orders yet. Add some on the card to the right.
       </p>
     );
   }
@@ -71,7 +74,7 @@ function QueueTable({ requests, robots }) {
   return (
     <div className="queue">
       <h3>
-        Queue <span className="queue-count">{done} of {ordered.length} delivered</span>
+        Orders <span className="queue-count">{done} of {ordered.length} delivered</span>
       </h3>
       <div className="queue-scroll">
         <table className="queue-table">
@@ -79,8 +82,6 @@ function QueueTable({ requests, robots }) {
             <tr>
               <th aria-label="delivered" />
               <th>#</th>
-              <th>Pick up</th>
-              <th>Deliver to</th>
               <th>Robot</th>
               <th>Status</th>
             </tr>
@@ -97,8 +98,6 @@ function QueueTable({ requests, robots }) {
                     {request.id}
                     {request.priority === 'urgent' ? <span className="queue-urgent">urgent</span> : null}
                   </td>
-                  <td>[{request.pickup.join(', ')}]</td>
-                  <td>[{request.dropoff.join(', ')}]</td>
                   <td>{request.robot_id ?? '—'}</td>
                   <td className="queue-status">{requestStatus(request, robots)}</td>
                 </tr>
@@ -154,27 +153,51 @@ export default function FleetPage() {
     try {
       return await work();
     } catch (problem) {
-      setError(problem.message);
+      setError(
+        problem instanceof TypeError
+          ? 'The simulator is not responding. Start it on this computer and try again.'
+          : problem.message
+      );
       return null;
     } finally {
       setBusy(false);
     }
   };
 
+  const startFloor = async (plan) => {
+    stopStream();
+    const payload = await startFleet({ ...plan, controller: 'astar', seed: 1000 });
+    setLayout(payload.layout);
+    setFrame(payload.state);
+    setRunning(true);
+    setLastAdded(null);
+    return payload.layout;
+  };
+
   const onStart = () =>
+    guard(() => startFloor({ scenario, nRobots: Number(nRobots), floor }));
+
+  /** Random pick points and stations, so nobody has to read coordinates. */
+  const addOrders = async (floorLayout, count) => {
+    const pickups = floorLayout.pickup_choices ?? [];
+    const dropoffs = floorLayout.dropoff_choices ?? [];
+    const pick = (cells) => cells[Math.floor(Math.random() * cells.length)];
+    for (let i = 0; i < count; i += 1) {
+      await addProduct({ pickup: pick(pickups), dropoff: pick(dropoffs), priority });
+    }
+    setFrame(await fleetState());
+  };
+
+  const onAddOrders = (count) => guard(() => addOrders(layout, count));
+
+  const onExample = () =>
     guard(async () => {
-      stopStream();
-      const payload = await startFleet({
-        scenario,
-        nRobots: Number(nRobots),
-        controller: 'astar',
-        seed: 1000,
-        floor,
-      });
-      setLayout(payload.layout);
-      setFrame(payload.state);
-      setRunning(true);
-      setLastAdded(null);
+      setFloor(EXAMPLE.floor);
+      setScenario(EXAMPLE.scenario);
+      setNRobots(EXAMPLE.nRobots);
+      const floorLayout = await startFloor(EXAMPLE);
+      await addOrders(floorLayout, EXAMPLE.orders);
+      play();
     });
 
   const onStop = () =>
@@ -186,11 +209,7 @@ export default function FleetPage() {
       setLayout(null);
     });
 
-  const onPlay = () => {
-    if (playing) {
-      stopStream();
-      return;
-    }
+  const play = () => {
     setError(null);
     setPlaying(true);
     closeStream.current = streamFleet({
@@ -202,6 +221,8 @@ export default function FleetPage() {
       },
     });
   };
+
+  const onPlay = () => (playing ? stopStream() : play());
 
   const onStep = (ticks) =>
     guard(async () => {
@@ -239,13 +260,20 @@ export default function FleetPage() {
     return (
       <section className="floor">
         <div className="floor-empty">
-          <h2>The live floor needs the backend</h2>
+          <h2>This page needs the simulator running</h2>
           <p>
-            This page drives a warehouse that is actually running, so it cannot work
-            from the static replays the results tab uses. Start the API with{' '}
-            <code>uvicorn backend.main:app --reload</code> and set{' '}
-            <code>VITE_API_BASE</code> in <code>frontend/.env.local</code>.
+            The live floor drives a warehouse that is really running, and this public site does
+            not host the simulator. You can see a recorded run on the{' '}
+            <a href="#/">home page</a>, or draw your own warehouse on{' '}
+            <a href="#/test">Test a plan</a>.
           </p>
+          <details className="advanced">
+            <summary>Run it on your own computer</summary>
+            <p>
+              Start the API with <code>uvicorn backend.main:app --reload</code> and set{' '}
+              <code>VITE_API_BASE</code> in <code>frontend/.env.local</code>.
+            </p>
+          </details>
         </div>
       </section>
     );
@@ -255,13 +283,13 @@ export default function FleetPage() {
     <section className="floor">
       <header className="floor-header">
         <div>
-          <h2>Live floor</h2>
+          <h1>Watch a robot fleet work</h1>
           <p className="floor-sub">
-            Several robots working a shared queue. Add a product and the nearest free
-            robot is assigned on the next tick.
+            Set a floor, a fleet and a battery, give it orders, and see whether the work gets done.
+            The nearest free robot takes each order.
           </p>
         </div>
-        <span className="floor-badge">demonstration, not a measured result</span>
+        <span className="floor-badge">Live demo, not a measured result</span>
       </header>
 
       <div className="floor-controls">
@@ -284,7 +312,7 @@ export default function FleetPage() {
           </select>
         </label>
         <label>
-          Rules
+          Battery and traffic
           <select
             value={scenario}
             onChange={(event) => setScenario(event.target.value)}
@@ -293,7 +321,6 @@ export default function FleetPage() {
             {SCENARIOS.map((option) => (
               <option key={option.id} value={option.id} disabled={!supports(floor, option.id)}>
                 {option.label}
-                {supports(floor, option.id) ? '' : ` (${floor === 'rmfs' ? '21×15' : '46×30'} floor only)`}
               </option>
             ))}
           </select>
@@ -314,21 +341,21 @@ export default function FleetPage() {
               {playing ? 'Pause' : 'Play'}
             </button>
             <button type="button" onClick={() => onStep(1)} disabled={playing || busy}>
-              Step
+              One step
             </button>
             <button type="button" onClick={() => onStep(25)} disabled={playing || busy}>
-              Step 25
+              25 steps
             </button>
             <button type="button" onClick={onStop} disabled={busy}>
               Stop
             </button>
             {/* The floor, rules and robot count are fixed while a floor runs.
                 Greyed out with no reason given, that read as a broken page. */}
-            <span className="floor-hint">Stop the floor to change the floor, rules or robots.</span>
+            <span className="floor-hint">Stop to change the floor, battery or robots.</span>
           </>
         ) : (
-          <button type="button" className="primary" onClick={onStart} disabled={busy}>
-            Start the floor
+          <button type="button" onClick={onStart} disabled={busy}>
+            Start this setup
           </button>
         )}
       </div>
@@ -341,8 +368,8 @@ export default function FleetPage() {
       ) : null}
       {frame?.fleet?.stalled_robots?.length ? (
         <p className="floor-error">
-          Stuck, no closer to their target for a minute of ticks: robot{' '}
-          {frame.fleet.stalled_robots.map((id) => id + 1).join(', ')}.
+          Stuck: {frame.fleet.stalled_robots.length > 1 ? 'robots' : 'robot'}{' '}
+          {frame.fleet.stalled_robots.join(', ')} got no closer to the target for 60 steps.
         </p>
       ) : null}
 
@@ -351,54 +378,34 @@ export default function FleetPage() {
           <div className="floor-main">
             <FleetCanvas layout={layout} frame={frame} highlight={highlight} />
             <ul className="floor-legend">
-              <li><span className="dot" style={{ background: mapInk.robot, borderColor: mapInk.robotOutline }} /> robot</li>
+              <li><span className="dot" style={{ background: mapInk.robot, borderColor: mapInk.robotOutline }} /> empty robot</li>
               <li><span className="dot" style={{ background: mapInk.robotCarrying, borderColor: mapInk.robotOutline }} /> carrying</li>
               <li><span className="dot" style={{ background: mapInk.robotDead, borderColor: mapInk.robotDead }} /> out of charge</li>
-              <li><span className="dot square" style={{ background: mapInk.activePickup, borderColor: mapInk.activePickup }} /> product to pick up</li>
-              <li><span className="dot" style={{ background: mapInk.obstacle, borderColor: mapInk.obstacle }} /> traffic</li>
+              <li><span className="dot square" style={{ background: mapInk.activePickup, borderColor: mapInk.activePickup }} /> order waiting</li>
+              <li><span className="dot" style={{ background: mapInk.obstacle, borderColor: mapInk.obstacle }} /> moving traffic</li>
             </ul>
             <QueueTable requests={frame?.requests} robots={frame?.robots ?? []} />
           </div>
 
           <aside className="floor-side">
             <form className="card" onSubmit={onAddProduct}>
-              <h3>Add a product</h3>
-              {/* This used to say "blue cells are storage points, green ones
-                  packing stations", which survived the move to a single hue and
-                  then described a map with no blue and no green on it. The marks
-                  are what tells them apart now, so the hint names the marks. */}
+              <h3>Give the fleet some orders</h3>
               <p className="card-hint">
-                Read a cell off the rulers along the top and left of the map, or
-                click one below. A pick point is a filled square, a packing
-                station a hollow one.
+                Each order is a product to collect from a shelf and take to a packing station.
               </p>
 
-              <div className="coord-row">
-                <span className="coord-label">Pick up</span>
-                <input
-                  type="number" min="0" placeholder="row" aria-label="pickup row"
-                  value={pickup.row}
-                  onChange={(event) => setPickup({ ...pickup, row: event.target.value })}
-                />
-                <input
-                  type="number" min="0" placeholder="col" aria-label="pickup column"
-                  value={pickup.col}
-                  onChange={(event) => setPickup({ ...pickup, col: event.target.value })}
-                />
-              </div>
-
-              <div className="coord-row">
-                <span className="coord-label">Deliver to</span>
-                <input
-                  type="number" min="0" placeholder="row" aria-label="dropoff row"
-                  value={dropoff.row}
-                  onChange={(event) => setDropoff({ ...dropoff, row: event.target.value })}
-                />
-                <input
-                  type="number" min="0" placeholder="col" aria-label="dropoff column"
-                  value={dropoff.col}
-                  onChange={(event) => setDropoff({ ...dropoff, col: event.target.value })}
-                />
+              <div className="order-buttons">
+                <button
+                  type="button"
+                  className="primary"
+                  onClick={() => onAddOrders(5)}
+                  disabled={busy}
+                >
+                  Add 5 orders
+                </button>
+                <button type="button" onClick={() => onAddOrders(1)} disabled={busy}>
+                  Add 1
+                </button>
               </div>
 
               {/* Urgent jumps the queue: it takes the nearest free robot ahead
@@ -418,13 +425,48 @@ export default function FleetPage() {
                 ))}
               </div>
 
-              <button type="submit" className="primary" disabled={!coordsFilled || busy}>
-                Add to the queue
-              </button>
+              <details className="advanced">
+                <summary>Choose exact cells</summary>
+                <p className="card-hint">
+                  Read a cell off the rulers along the top and left of the map, or click one below.
+                  A pick point is a filled square, a packing station a hollow one.
+                </p>
+
+                <div className="coord-row">
+                  <span className="coord-label">Pick up</span>
+                  <input
+                    type="number" min="0" placeholder="row" aria-label="pickup row"
+                    value={pickup.row}
+                    onChange={(event) => setPickup({ ...pickup, row: event.target.value })}
+                  />
+                  <input
+                    type="number" min="0" placeholder="col" aria-label="pickup column"
+                    value={pickup.col}
+                    onChange={(event) => setPickup({ ...pickup, col: event.target.value })}
+                  />
+                </div>
+
+                <div className="coord-row">
+                  <span className="coord-label">Deliver to</span>
+                  <input
+                    type="number" min="0" placeholder="row" aria-label="dropoff row"
+                    value={dropoff.row}
+                    onChange={(event) => setDropoff({ ...dropoff, row: event.target.value })}
+                  />
+                  <input
+                    type="number" min="0" placeholder="col" aria-label="dropoff column"
+                    value={dropoff.col}
+                    onChange={(event) => setDropoff({ ...dropoff, col: event.target.value })}
+                  />
+                </div>
+
+                <button type="submit" disabled={!coordsFilled || busy}>
+                  Add this order
+                </button>
 
               {lastAdded ? (
                 <p className="card-note">
-                  {lastAdded.priority === 'urgent' ? 'Urgent request' : 'Request'} #{lastAdded.id}{' '}
+                  {lastAdded.priority === 'urgent' ? 'Urgent order' : 'Order'} #{lastAdded.id}{' '}
                   queued from [{lastAdded.pickup.join(', ')}] to [{lastAdded.dropoff.join(', ')}].
                 </p>
               ) : null}
@@ -478,38 +520,39 @@ export default function FleetPage() {
                   })}
                 </p>
               </div>
+              </details>
             </form>
 
             <div className="card">
               <h3>The floor right now</h3>
               <div className="stat-grid">
-                <Stat label="Tick" value={frame?.ticks ?? 0} />
+                <Stat label="Time" value={frame?.ticks ?? 0} hint="simulated steps" />
                 <Stat
                   label="Robots"
                   value={`${fleet?.robots_alive ?? 0}/${frame?.n_robots ?? 0}`}
                   hint="still charged"
                 />
                 <Stat label="Delivered" value={fleet?.tasks_delivered ?? 0} />
-                <Stat label="Waiting" value={queue?.waiting ?? 0} hint="unassigned" />
+                <Stat label="Waiting" value={queue?.waiting ?? 0} hint="no robot yet" />
                 <Stat
-                  label="Turnaround"
+                  label="Delivery time"
                   value={queue?.mean_turnaround ?? '—'}
-                  hint="ticks, request to delivery"
+                  hint="average steps, order to delivery"
                 />
                 <Stat
                   label="Urgent / normal"
                   value={`${queue?.mean_turnaround_by_priority?.urgent ?? '—'} / ${queue?.mean_turnaround_by_priority?.normal ?? '—'}`}
-                  hint="mean turnaround by priority"
+                  hint="average delivery time"
                 />
                 <Stat
                   label="Blocked"
                   value={fleet?.blocked_by_robot ?? 0}
-                  hint="refused by a peer"
+                  hint="robots in each other's way"
                 />
               </div>
               {frame?.idle ? (
                 <p className="card-note">
-                  Caught up — every request delivered. The floor is idle, not stuck.
+                  Caught up. Every order is delivered, so the robots are waiting for more.
                 </p>
               ) : null}
             </div>
@@ -520,7 +563,7 @@ export default function FleetPage() {
                 <ul className="assign-list">
                   {frame.dispatch.map((decision) => (
                     <li key={decision.request_id}>
-                      request #{decision.request_id} → robot {decision.robot_id}
+                      order #{decision.request_id} → robot {decision.robot_id}
                       <span className="muted"> ({decision.distance} cells away)</span>
                     </li>
                   ))}
@@ -532,11 +575,15 @@ export default function FleetPage() {
       ) : (
         !error && (
           <div className="floor-empty">
-            <h2>Nothing is running yet</h2>
+            <h2>See a plan run in one click</h2>
             <p>
-              Choose a floor and a fleet size, then start it. The warehouse keeps running
-              once started — a delivery does not reset it.
+              The example puts {EXAMPLE.nRobots} robots on the large floor with a tight battery and
+              gives them {EXAMPLE.orders} orders. Watch them collect, deliver and recharge.
             </p>
+            <button type="button" className="primary" onClick={onExample} disabled={busy}>
+              Run the example
+            </button>
+            <p className="floor-hint">Or choose your own setup above and start that instead.</p>
           </div>
         )
       )}

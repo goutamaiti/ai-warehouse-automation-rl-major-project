@@ -33,6 +33,11 @@ export function loadResult(id) {
   return getJson(`data/results/${encodeURIComponent(id)}.json`);
 }
 
+/** A measured fleet study, or the recorded run shown on the home page. */
+export function loadFleetStudy(id) {
+  return getJson(`data/fleet/${encodeURIComponent(id)}.json`);
+}
+
 /** Returns the backend health payload, or null when no backend is reachable. */
 export async function checkBackend() {
   if (!backendConfigured) return null;

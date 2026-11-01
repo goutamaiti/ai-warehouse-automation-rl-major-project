@@ -1,6 +1,6 @@
 """Measured studies of the multi-robot Live floor, on seeds kept out of tuning.
 
-    python scripts/run_fleet_studies.py                 # all three, ~15 min
+    python scripts/run_fleet_studies.py                 # all of them, ~15 min
     python scripts/run_fleet_studies.py reliability     # or just one
 
 Writes one JSON file per study to data/fleet/ and prints the same table. Nothing
@@ -15,6 +15,8 @@ one_way      One-way lanes against two-way, 12 and 20 robots, 200-product
              backlog, 400 ticks, seeds 1000-1004.
 priority     Five late products marked urgent against normal on the 21x15 floor,
              4 robots, backlog of 20, seeds 0-4.
+home_floor   One whole run recorded for the website's home page, which has no
+             backend to run one: 10 robots, 40 products, the first held-out seed.
 """
 from __future__ import annotations
 
@@ -30,6 +32,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from backend.services.simulation_service import load_scenario_config  # noqa: E402
+from backend.services.fleet_session import FleetSession  # noqa: E402
 from baselines.fleet_controller import FleetPlannerController  # noqa: E402
 from simulation.dispatch import TaskQueue  # noqa: E402
 from simulation.fleet import FleetSimulation  # noqa: E402
@@ -249,7 +252,63 @@ def priority() -> dict:
     return {"summary": summary, "runs": runs}
 
 
-STUDIES = {"reliability": reliability, "one_way": one_way, "priority": priority}
+def home_floor() -> dict:
+    robots, products, seed = 10, 40, HELD_OUT_SEEDS[0]
+    session = FleetSession(
+        load_scenario_config("battery_large_floor"), n_robots=robots, seed=seed, floor="rmfs"
+    )
+    rng = np.random.default_rng(seed)
+    for _ in range(products):
+        session.queue.add(*_random_product(session.sim.layout, rng), step=0)
+
+    def compact(frame: dict) -> dict:
+        carrying = {r["id"] for r in frame["robots"] if r["carrying"]}
+        return {
+            "robots": [
+                [*r["position"], int(r["carrying"]), round(r["battery"]), int(r["alive"])]
+                for r in frame["robots"]
+            ],
+            "waiting": [
+                q["pickup"]
+                for q in frame["requests"]
+                if q["status"] == "waiting"
+                or (q["status"] == "assigned" and q["robot_id"] not in carrying)
+            ],
+            "delivered": frame["fleet"]["tasks_delivered"],
+        }
+
+    frames = [compact(session.state())]
+    while frames[-1]["delivered"] < products and session.ticks < MAX_TICKS:
+        frames.append(compact(session.tick()))
+        if session.sim.done:
+            break
+
+    layout = session.layout()
+    print(f"{frames[-1]['delivered']} of {products} delivered in {session.ticks} ticks")
+    return {
+        "rules": "battery_large_floor",
+        "seed": seed,
+        "products": products,
+        "layout": {
+            key: layout[key] for key in ("grid", "width", "height", "directions")
+        },
+        "frames": frames,
+        # Full-charge range of the two battery plans the home page compares.
+        "moves_on_full_charge": {
+            rules: round(battery.capacity / battery.move_cost)
+            for rules, battery in (
+                (name, load_scenario_config(name).battery) for name in RULES
+            )
+        },
+    }
+
+
+STUDIES = {
+    "reliability": reliability,
+    "one_way": one_way,
+    "priority": priority,
+    "home_floor": home_floor,
+}
 
 
 def main() -> None:
@@ -258,7 +317,13 @@ def main() -> None:
     for name in chosen:
         print(f"\n--- {name} ---")
         result = STUDIES[name]()
-        (OUT_DIR / f"{name}.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+        # The recording ships with the website, so it is kept small.
+        text = (
+            json.dumps(result, separators=(",", ":"))
+            if name == "home_floor"
+            else json.dumps(result, indent=2)
+        )
+        (OUT_DIR / f"{name}.json").write_text(text + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":

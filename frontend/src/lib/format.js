@@ -43,12 +43,27 @@ export function titleCase(text) {
 }
 
 export const CONTROLLER_LABELS = {
-  ppo: 'PPO (learned)',
-  astar: 'A* (classical)',
-  bfs: 'BFS (classical)',
+  ppo: 'Trained AI (PPO)',
+  astar: 'Route planner (A*)',
+  bfs: 'Basic search (BFS)',
   random: 'Random',
 };
 
 export function controllerLabel(name) {
   return CONTROLLER_LABELS[name] ?? titleCase(name);
+}
+
+/** The same name without its technical term, where space is tight. */
+export function controllerShort(name) {
+  return controllerLabel(name).replace(/ \(.*\)$/, '');
+}
+
+const OUTCOMES = {
+  all_tasks_delivered: 'Everything delivered',
+  battery_depleted: 'Battery ran out',
+  timeout: 'Ran out of time',
+};
+
+export function outcomeLabel(reason) {
+  return OUTCOMES[reason] ?? titleCase(reason);
 }
