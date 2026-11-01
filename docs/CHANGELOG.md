@@ -5,8 +5,8 @@ whole project with a name you can return to. Newest is at the top.
 
 | Checkpoint | Date | What it added | On GitHub | Going back to the checkpoint below it removes |
 |---|---|---|---|---|
-| `checkpoint-3-website-phase-1` | 2026-11-01 | FloorCheck website: home page, plain wording, new look, new tabs, change log | Not yet | The new website. The old dashboard returns |
-| `checkpoint-2-traffic-and-battery` | 2026-11-01 | Live floor traffic fixes, large-floor battery rules, corrected one-way and priority figures | Not yet | The traffic fixes and battery rules, and **brings back the withdrawn 5.8x claim** |
+| `checkpoint-3-website-phase-1` | 2026-11-01 | FloorCheck website: home page, plain wording, new look, new tabs, change log | Yes, `multi-robot` only | The new website. The old dashboard returns |
+| `checkpoint-2-traffic-and-battery` | 2026-11-01 | Live floor traffic fixes, large-floor battery rules, corrected one-way and priority figures | Yes, `multi-robot` only | The traffic fixes and battery rules, and **brings back the withdrawn 5.8x claim** |
 | `checkpoint-1-guide-sheet` | 2026-10-30 | State of the project after the final demo, with the guide's interaction sheet | Yes | Starting point for this log |
 
 ## Rules for every push
